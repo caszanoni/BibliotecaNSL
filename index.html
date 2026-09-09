@@ -124,13 +124,22 @@
     .card { background: #1a1c24; padding: 1.5rem; border-radius: 8px; border: 1px solid #262730; margin-bottom: 1rem; }
     
     /* Tabela */
-    table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: #1a1c24; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0; background: #1a1c24; }
     th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #262730; white-space: nowrap; }
-    th { background: #262730; font-size: 0.85rem; text-transform: uppercase; }
+    th { position: sticky; top: 0; background: #262730; font-size: 0.85rem; text-transform: uppercase; z-index: 10; }
     .atrasado { background-color: #ffcccc !important; color: #000000; }
     .alert { padding: 0.8rem; border-radius: 4px; margin-bottom: 1rem; font-size: 0.9rem; width: 100%; }
     .alert-success { background: #0e2f18; color: #4ade80; border: 1px solid #166534; }
     .alert-error { background: #3b1212; color: #f87171; border: 1px solid #991b1b; }
+
+    /* Estilização e fixação da barra de rolagem da Lista de Livros */
+    .table-scroll-container {
+      max-height: 65vh;
+      overflow: auto;
+      border: 1px solid #262730;
+      border-radius: 6px;
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -615,7 +624,8 @@
         <input type="text" id="inv-busca" placeholder="Filtrar por código, classificação, título, autor ou ISBN" oninput="renderInventario()">
         <button onclick="exportarExcel()" style="width: auto; background: #21a366;">📥 Baixar Lista Completa (Excel)</button>
         
-        <div style="overflow-x: auto;">
+        <!-- Conteiner com altura ajustada e barras de rolagem visíveis de imediato -->
+        <div class="table-scroll-container">
           <table id="table-inventario">
             <thead>
               <tr>
@@ -682,7 +692,7 @@
       }
     });
 
-    // Função de gravação atualizada com a nova planilha bibliotecapnsbd.xlsx
+    // Função de gravação com a planilha bibliotecapnsbd.xlsx
     async function saveDB() {
       localStorage.setItem('biblioteca_db', JSON.stringify(db));
 
@@ -959,7 +969,6 @@
       }
     }
 
-    // NOVAS FUNÇÕES DO SUBMENU LISTA DE LIVROS
     function toggleInventarioMenu() {
       const submenu = document.getElementById('submenu-inventario');
       document.getElementById('submenu-cadastro').classList.add('hidden');
@@ -1275,7 +1284,6 @@
         l.autor.toLowerCase().includes(busca)
       );
 
-      // Ordenação pelo código interno
       livrosFiltrados.sort((a, b) => (a.codigo || '').localeCompare(b.codigo || '', undefined, { numeric: true, sensitivity: 'base' }));
 
       if (livrosFiltrados.length === 0) {
@@ -1471,7 +1479,6 @@
         l.autor.toLowerCase().includes(busca)
       );
 
-      // Ordenação pelo código interno
       livrosFiltrados.sort((a, b) => (a.codigo || '').localeCompare(b.codigo || '', undefined, { numeric: true, sensitivity: 'base' }));
 
       if (livrosFiltrados.length === 0) {
@@ -1547,7 +1554,6 @@
 
       const disp = db.livros.filter(l => l.status === 'Disponível');
       
-      // Ordenação no select de empréstimos pelo código interno
       disp.sort((a, b) => (a.codigo || '').localeCompare(b.codigo || '', undefined, { numeric: true, sensitivity: 'base' }));
 
       selectLivro.innerHTML = disp.length 
@@ -1628,7 +1634,6 @@
       });
     }
 
-    // ATUALIZADO PARA FILTRAR POR STATUS (Disponível / Emprestado / Todos)
     function renderInventario() {
       const busca = document.getElementById('inv-busca').value.toLowerCase();
       const hoje = new Date().toISOString().split('T')[0];
@@ -1644,7 +1649,6 @@
         i.subtitulo.toLowerCase().includes(busca)
       );
 
-      // Filtro conforme o submenu selecionado
       if (filtroStatusInventario !== 'Todos') {
         dados = dados.filter(i => i.status === filtroStatusInventario);
       }
