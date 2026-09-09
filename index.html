@@ -199,7 +199,7 @@
         <button class="nav-btn admin-only" onclick="switchTab('aba-emprestimos', this)">📤 Empréstimos</button>
         <button class="nav-btn admin-only" onclick="switchTab('aba-devolucoes', this)">📥 Devoluções</button>
         
-        <!-- LISTA DE LIVROS E SUBMENUS (ATUALIZADO) -->
+        <!-- LISTA DE LIVROS E SUBMENUS -->
         <button class="nav-btn" id="btn-inventario-main" onclick="toggleInventarioMenu()">📋 Lista de Livros ▾</button>
         <div id="submenu-inventario" class="submenu hidden">
           <button class="subnav-btn active" id="btn-sub-inv-disponivel" onclick="switchInventarioSubtab('Disponível')">✅ Disponível</button>
@@ -659,10 +659,10 @@
     let fileHandle = null;
     let filtroStatusInventario = 'Disponível'; // Filtro padrão dos submenus
 
-    // Carregamento automático antes da tela de login
+    // Carregamento automático antes da tela de login utilizando a planilha bibliotecapnsbd.xlsx
     window.addEventListener('DOMContentLoaded', async () => {
       try {
-        const response = await fetch('bibliotecapnslbd.xlsx');
+        const response = await fetch('bibliotecapnsbd.xlsx');
         if (response.ok) {
           const arrayBuffer = await response.arrayBuffer();
           const workbook = XLSX.read(arrayBuffer, { type: 'array' });
@@ -678,11 +678,11 @@
           localStorage.setItem('biblioteca_db', JSON.stringify(db));
         }
       } catch (err) {
-        console.warn('Arquivo bibliotecapnslbd.xlsx não encontrado localmente. Usando dados locais gravados.');
+        console.warn('Arquivo bibliotecapnsbd.xlsx não encontrado localmente. Usando dados locais gravados.');
       }
     });
 
-    // Função de gravação atualizada com File System Access API
+    // Função de gravação atualizada com a nova planilha bibliotecapnsbd.xlsx
     async function saveDB() {
       localStorage.setItem('biblioteca_db', JSON.stringify(db));
 
@@ -732,13 +732,13 @@
 
       const buffer = await wb.xlsx.writeBuffer();
 
-      // Utilização da File System Access API para sobrescrever o arquivo original
+      // Utilização da File System Access API para sobrescrever o arquivo original bibliotecapnsbd.xlsx
       if ('showOpenFilePicker' in window || 'showSaveFilePicker' in window) {
         try {
           if (!fileHandle) {
-            alert("Selecione o arquivo 'bibliotecapnslbd.xlsx' no seu computador para vincular as alterações e permitir a substituição direta.");
+            alert("Selecione o arquivo 'bibliotecapnsbd.xlsx' no seu computador para vincular as alterações e permitir a substituição direta.");
             const [handle] = await window.showOpenFilePicker({
-              suggestedName: 'bibliotecapnslbd.xlsx',
+              suggestedName: 'bibliotecapnsbd.xlsx',
               types: [{
                 description: 'Planilha do Excel',
                 accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] }
@@ -760,15 +760,15 @@
           const writable = await fileHandle.createWritable();
           await writable.write(buffer);
           await writable.close();
-          showAlert("Arquivo 'bibliotecapnslbd.xlsx' atualizado e substituído com sucesso!");
+          showAlert("Arquivo 'bibliotecapnsbd.xlsx' atualizado e substituído com sucesso!");
         } catch (err) {
           if (err.name !== 'AbortError') {
             console.warn("Não foi possível substituir o arquivo existente via File System API. Baixando como cópia.", err);
-            saveAs(new Blob([buffer]), 'bibliotecapnslbd.xlsx');
+            saveAs(new Blob([buffer]), 'bibliotecapnsbd.xlsx');
           }
         }
       } else {
-        saveAs(new Blob([buffer]), 'bibliotecapnslbd.xlsx');
+        saveAs(new Blob([buffer]), 'bibliotecapnsbd.xlsx');
       }
     }
 
