@@ -657,6 +657,12 @@
   </main>
 
   <script>
+    // Configurações do GitHub REST API
+    const GITHUB_TOKEN = "SEU_PERSONAL_ACCESS_TOKEN"; 
+    const GITHUB_OWNER = "SEU_USUARIO_GITHUB";
+    const GITHUB_REPO = "SEU_REPOSITORIO";
+    const GITHUB_PATH = "bibliotecapnsbd.xlsx";
+
     const initialDB = {
       livros: [],
       usuarios: [{ id: 1, nome: "Administrador", login: "admin", senha: "biblioteca123", tipo: "Administrador" }],
@@ -666,10 +672,8 @@
     let db = JSON.parse(localStorage.getItem('biblioteca_db')) || initialDB;
     let usuarioLogado = null;
     let tempExcelData = [];
-    let fileHandle = null;
-    let filtroStatusInventario = 'Disponível'; // Filtro padrão dos submenus
+    let filtroStatusInventario = 'Disponível';
 
-    // Carregamento automático antes da tela de login utilizando a planilha bibliotecapnsbd.xlsx
     window.addEventListener('DOMContentLoaded', async () => {
       try {
         const response = await fetch('bibliotecapnsbd.xlsx');
@@ -692,11 +696,10 @@
       }
     });
 
-    // Função de gravação com a planilha bibliotecapnsbd.xlsx
+    // Atualização com sincronização no GitHub API
     async function saveDB() {
       localStorage.setItem('biblioteca_db', JSON.stringify(db));
 
-      // Monta as abas no workbook
       const wb = new ExcelJS.Workbook();
       
       const wsLivros = wb.addWorksheet('Livros');
@@ -741,44 +744,55 @@
       db.emprestimos.forEach(item => wsEmprestimos.addRow(item));
 
       const buffer = await wb.xlsx.writeBuffer();
+      
+      // Envio automático para o repositório no GitHub via REST API
+      if (GITHUB_TOKEN !== "SEU_PERSONAL_ACCESS_TOKEN") {
+        await updateGithubFile(buffer);
+      }
+    }
 
-      // Utilização da File System Access API para sobrescrever o arquivo original bibliotecapnsbd.xlsx
-      if ('showOpenFilePicker' in window || 'showSaveFilePicker' in window) {
-        try {
-          if (!fileHandle) {
-            alert("Selecione o arquivo 'bibliotecapnsbd.xlsx' no seu computador para vincular as alterações e permitir a substituição direta.");
-            const [handle] = await window.showOpenFilePicker({
-              suggestedName: 'bibliotecapnsbd.xlsx',
-              types: [{
-                description: 'Planilha do Excel',
-                accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] }
-              }],
-              multiple: false
-            });
-            fileHandle = handle;
-          }
-
-          if (fileHandle.queryPermission) {
-            const opts = { mode: 'readwrite' };
-            if ((await fileHandle.queryPermission(opts)) !== 'granted') {
-              if ((await fileHandle.requestPermission(opts)) !== 'granted') {
-                throw new Error('Permissão para gravação no arquivo não concedida.');
-              }
-            }
-          }
-
-          const writable = await fileHandle.createWritable();
-          await writable.write(buffer);
-          await writable.close();
-          showAlert("Arquivo 'bibliotecapnsbd.xlsx' atualizado e substituído com sucesso!");
-        } catch (err) {
-          if (err.name !== 'AbortError') {
-            console.warn("Não foi possível substituir o arquivo existente via File System API. Baixando como cópia.", err);
-            saveAs(new Blob([buffer]), 'bibliotecapnsbd.xlsx');
-          }
+    async function updateGithubFile(arrayBuffer) {
+      try {
+        const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_PATH}`;
+        
+        let sha = "";
+        const getRes = await fetch(url, {
+          headers: { "Authorization": `token ${GITHUB_TOKEN}` }
+        });
+        if (getRes.ok) {
+          const getData = await getRes.json();
+          sha = getData.sha;
         }
-      } else {
-        saveAs(new Blob([buffer]), 'bibliotecapnsbd.xlsx');
+
+        const bytes = new Uint8Array(arrayBuffer);
+        let binary = '';
+        for (let i = 0; i < bytes.byteLength; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        const base64Content = btoa(binary);
+
+        const bodyData = {
+          message: "Atualização automática da base de dados via sistema",
+          content: base64Content,
+          sha: sha
+        };
+
+        const putRes = await fetch(url, {
+          method: "PUT",
+          headers: {
+            "Authorization": `token ${GITHUB_TOKEN}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(bodyData)
+        });
+
+        if (putRes.ok) {
+          showAlert("Banco de dados sincronizado com o GitHub com sucesso!");
+        } else {
+          console.error("Erro na API do GitHub:", await putRes.text());
+        }
+      } catch (err) {
+        console.error("Falha ao atualizar o arquivo no GitHub:", err);
       }
     }
 
@@ -837,7 +851,7 @@
       }
     }
 
-    function cadastrarNaTelaInicial() {
+    async function cadastrarNaTelaInicial() {
       const nome = document.getElementById('reg-nome').value.trim();
       const loginUser = document.getElementById('reg-user').value.trim();
       const senhaUser = document.getElementById('reg-pass').value.trim();
@@ -855,7 +869,8 @@
       const novoUsuario = { id: newId, nome: nome, login: loginUser, senha: senhaUser, tipo: tipoUser };
       db.usuarios.push(novoUsuario);
       usuarioLogado = novoUsuario;
-      saveDB();
+      
+      await saveDB();
 
       document.getElementById('reg-nome').value = '';
       document.getElementById('reg-user').value = '';
@@ -870,7 +885,8 @@
       showAlert(`Bem-vindo, ${nome}! Sua conta foi criada com sucesso.`);
     }
 
-    function logout() {
+    async function logout() {
+      await saveDB();
       usuarioLogado = null;
       toggleAuthForm('login');
       document.getElementById('login-screen').classList.remove('hidden');
@@ -1012,7 +1028,7 @@
       renderAlterarLivrosTable();
     }
 
-    function cadastrarUsuario() {
+    async function cadastrarUsuario() {
       const nome = document.getElementById('usr-nome').value.trim();
       const loginUser = document.getElementById('usr-login').value.trim();
       const senhaUser = document.getElementById('usr-senha').value.trim();
@@ -1028,7 +1044,8 @@
 
       const newId = db.usuarios.length ? Math.max(...db.usuarios.map(u => u.id)) + 1 : 1;
       db.usuarios.push({ id: newId, nome: nome, login: loginUser, senha: senhaUser, tipo: tipoUser });
-      saveDB();
+      
+      await saveDB();
 
       document.getElementById('usr-nome').value = '';
       document.getElementById('usr-login').value = '';
@@ -1086,7 +1103,7 @@
       document.getElementById('usr-alt-form-container').classList.add('hidden');
     }
 
-    function salvarAlteracaoUsuario() {
+    async function salvarAlteracaoUsuario() {
       const id = parseInt(document.getElementById('usr-alt-id').value);
       const usuario = db.usuarios.find(u => u.id === id);
 
@@ -1110,7 +1127,7 @@
       if (novaSenha) usuario.senha = novaSenha;
       usuario.tipo = novoTipo;
 
-      saveDB();
+      await saveDB();
       cancelarEdicaoUsuario();
       renderAll();
       showAlert("Dados do usuário alterados com sucesso!");
@@ -1169,7 +1186,7 @@
       `).join('');
     }
 
-    function excluirUsuario(id) {
+    async function excluirUsuario(id) {
       const usuario = db.usuarios.find(u => u.id === id);
       if (!usuario) return;
 
@@ -1180,7 +1197,7 @@
 
       if (confirm(`Tem certeza que deseja excluir o usuário "${usuario.nome}" (${usuario.login})?`)) {
         db.usuarios = db.usuarios.filter(u => u.id !== id);
-        saveDB();
+        await saveDB();
         showAlert(`Usuário "${usuario.nome}" excluído com sucesso!`);
         renderAll();
       }
@@ -1210,7 +1227,7 @@
       saveAs(new Blob([buffer]), `relatorio_usuarios_${hoje}.xlsx`);
     }
 
-    function cadastrarManual() {
+    async function cadastrarManual() {
       const codigo = document.getElementById('cad-codigo').value.trim();
       const classificacao = document.getElementById('cad-classificacao').value.trim();
       const titulo = document.getElementById('cad-titulo').value.trim();
@@ -1250,7 +1267,7 @@
         status: 'Disponível' 
       });
       
-      saveDB();
+      await saveDB();
       
       document.getElementById('cad-codigo').value = '';
       document.getElementById('cad-classificacao').value = '';
@@ -1334,7 +1351,7 @@
       document.getElementById('alt-form-container').classList.add('hidden');
     }
 
-    function salvarAlteracaoLivro() {
+    async function salvarAlteracaoLivro() {
       const id = parseInt(document.getElementById('alt-id').value);
       const livro = db.livros.find(l => l.id === id);
 
@@ -1359,7 +1376,7 @@
       livro.paginas = document.getElementById('alt-paginas').value.trim() || '-';
       livro.exemplar = document.getElementById('alt-exemplar').value.trim() || '1';
 
-      saveDB();
+      await saveDB();
       cancelarEdicaoLivro();
       renderAll();
       showAlert("Dados do livro alterados com sucesso!");
@@ -1429,7 +1446,7 @@
       reader.readAsArrayBuffer(file);
     });
 
-    function confirmarImportacao() {
+    async function confirmarImportacao() {
       let currentId = db.livros.length ? Math.max(...db.livros.map(l => l.id)) + 1 : 1;
       let importadosCount = 0;
 
@@ -1457,7 +1474,7 @@
         importadosCount++;
       });
 
-      saveDB();
+      await saveDB();
       document.getElementById('preview-area').classList.add('hidden');
       document.getElementById('cad-file').value = '';
       showAlert(`${importadosCount} livros importados com sucesso!`);
@@ -1511,7 +1528,7 @@
       `).join('');
     }
 
-    function excluirLivro(id) {
+    async function excluirLivro(id) {
       const livro = db.livros.find(l => l.id === id);
       if (!livro) return;
 
@@ -1523,13 +1540,13 @@
         db.livros = db.livros.filter(l => l.id !== id);
         db.emprestimos = db.emprestimos.filter(e => e.id_livro !== id);
         
-        saveDB();
+        await saveDB();
         showAlert(`Livro "${livro.titulo}" excluído com sucesso!`);
         renderAll();
       }
     }
 
-    function excluirTodosLivros() {
+    async function excluirTodosLivros() {
       if (db.livros.length === 0) {
         return showAlert("Não há livros cadastrados para excluir.", false);
       }
@@ -1542,7 +1559,7 @@
       if (confirm("⚠️ ATENÇÃO! Tem certeza que deseja excluir TODOS os livros do sistema? Esta ação não poderá ser desfeita.")) {
         db.livros = [];
         db.emprestimos = [];
-        saveDB();
+        await saveDB();
         showAlert("Todos os livros foram excluídos com sucesso!");
         renderAll();
       }
@@ -1565,7 +1582,7 @@
         : '<option value="">Nenhum usuário cadastrado</option>';
     }
 
-    function registrarEmprestimo() {
+    async function registrarEmprestimo() {
       const idLivro = parseInt(document.getElementById('emp-livro').value);
       const user = document.getElementById('emp-usuario').value;
       const dataRet = document.getElementById('emp-data').value;
@@ -1578,7 +1595,7 @@
       const hoje = new Date().toISOString().split('T')[0];
       db.emprestimos.push({ id_livro: idLivro, usuario: user, data_saida: hoje, data_retorno: dataRet });
 
-      saveDB();
+      await saveDB();
       document.getElementById('emp-data').value = '';
       showAlert("Empréstimo finalizado!");
       renderAll();
@@ -1594,7 +1611,7 @@
         : '<option value="">Nenhum empréstimo ativo</option>';
     }
 
-    function registrarDevolucao() {
+    async function registrarDevolucao() {
       const idLivro = parseInt(document.getElementById('dev-livro').value);
       if (!idLivro) return;
 
@@ -1603,7 +1620,7 @@
 
       db.emprestimos = db.emprestimos.filter(e => e.id_livro !== idLivro);
 
-      saveDB();
+      await saveDB();
       showAlert("Devolução confirmada!");
       renderAll();
     }
