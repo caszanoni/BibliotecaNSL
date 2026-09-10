@@ -1,1744 +1,1546 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Biblioteca Pro 📚</title>
-  
-  <!-- Fontes e Libs Externas -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-    body { background-color: #0e1117; color: #ffffff; display: flex; height: 100vh; overflow: hidden; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão de Biblioteca</title>
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    /* Login / Modal */
-    #login-screen { position: fixed; inset: 0; background: #0e1117; display: flex; justify-content: center; align-items: center; z-index: 999; }
-    .login-card { background: #262730; padding: 2rem; border-radius: 8px; width: 340px; border: 1px solid #363940; display: flex; flex-direction: column; align-items: center; }
-    .login-card h2 { margin-bottom: 1.5rem; text-align: center; }
-    .login-logo { width: 120px; height: auto; margin-bottom: 1rem; display: block; }
-    #form-login, #form-register { width: 100%; }
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --bg-color: #f4f7f6;
+            --sidebar-width: 250px;
+            --card-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.1);
+        }
 
-    /* Layout Principal & Sidebar */
-    aside { width: 260px; background: #161922; padding: 1.5rem 1rem; border-right: 1px solid #262730; display: flex; flex-direction: column; justify-content: space-between; }
-    aside h2 { font-size: 1.2rem; margin-bottom: 1.5rem; padding-left: 0.5rem; color: #ffffff; }
-    
-    main { flex: 1; padding: 2rem; overflow-y: auto; }
-    .hidden { display: none !important; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
 
-    /* Tela Início / Welcome */
-    .home-welcome {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      min-height: 70vh;
-      background: #1a1c24;
-      border: 1px solid #262730;
-      border-radius: 12px;
-      padding: 3rem 2rem;
-    }
-    .home-welcome img {
-      width: 220px;
-      height: auto;
-      margin-bottom: 2rem;
-      filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.5));
-    }
-    .home-welcome h2 {
-      font-size: 2rem;
-      margin-bottom: 0.8rem;
-      color: #ffffff;
-    }
-    .home-welcome p {
-      color: #a0a5b5;
-      font-size: 1.1rem;
-      max-width: 500px;
-    }
+        body {
+            background-color: var(--bg-color);
+            color: #333;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-    /* Form & UI Elements */
-    input, select, button { width: 100%; padding: 0.6rem; margin-top: 0.4rem; margin-bottom: 1rem; border-radius: 4px; border: 1px solid #41444c; background: #262730; color: white; }
-    button { background: #ff4b4b; color: white; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; }
-    button:hover { background: #ff3333; }
-    
-    .btn-secondary { background: transparent; border: 1px solid #ff4b4b; color: #ff4b4b; }
-    .btn-secondary:hover { background: rgba(255, 75, 75, 0.1); }
-    
-    .btn-warning { background: #f59e0b; color: white; border: none; width: auto; padding: 0.4rem 0.8rem; margin: 0; font-size: 0.85rem; }
-    .btn-warning:hover { background: #d97706; }
+        /* --- TELA DE LOGIN / BOAS-VINDAS --- */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        }
 
-    .btn-danger { background: #d32f2f; color: white; border: none; width: auto; padding: 0.4rem 0.8rem; margin: 0; font-size: 0.85rem; }
-    .btn-danger:hover { background: #b71c1c; }
+        .auth-card {
+            background: #fff;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+        }
 
-    /* Menu Lateral (Sidebar Nav) */
-    .sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; }
-    
-    .nav-btn {
-      width: 100%;
-      text-align: left;
-      background: transparent;
-      border: none;
-      color: #808495;
-      padding: 0.75rem 1rem;
-      border-radius: 6px;
-      font-size: 0.95rem;
-      font-weight: 500;
-      cursor: pointer;
-      margin: 0;
-      transition: all 0.2s ease;
-    }
-    .nav-btn:hover { background: #262730; color: #ffffff; }
-    .nav-btn.active { background: #ff4b4b; color: #ffffff; font-weight: 600; }
+        .login-logo {
+            max-width: 120px;
+            height: auto;
+            display: block;
+            margin: 0 auto 1.2rem auto;
+        }
 
-    /* Submenu Lateral */
-    .submenu {
-      display: flex;
-      flex-direction: column;
-      gap: 0.2rem;
-      padding-left: 1rem;
-      margin-top: 0.2rem;
-      margin-bottom: 0.5rem;
-    }
-    .subnav-btn {
-      width: 100%;
-      text-align: left;
-      background: transparent;
-      border: none;
-      color: #808495;
-      padding: 0.5rem 0.8rem;
-      border-radius: 4px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      margin: 0;
-      transition: all 0.2s ease;
-    }
-    .subnav-btn:hover { color: #ffffff; background: #1f232e; }
-    .subnav-btn.active { color: #ff4b4b; font-weight: 600; }
-    
-    /* Layout Grids */
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-    .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-    .card { background: #1a1c24; padding: 1.5rem; border-radius: 8px; border: 1px solid #262730; margin-bottom: 1rem; }
-    
-    /* Tabela */
-    table { width: 100%; border-collapse: collapse; margin-top: 0; background: #1a1c24; }
-    th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #262730; white-space: nowrap; }
-    th { position: sticky; top: 0; background: #262730; font-size: 0.85rem; text-transform: uppercase; z-index: 10; }
-    .atrasado { background-color: #ffcccc !important; color: #000000; }
-    .alert { padding: 0.8rem; border-radius: 4px; margin-bottom: 1rem; font-size: 0.9rem; width: 100%; }
-    .alert-success { background: #0e2f18; color: #4ade80; border: 1px solid #166534; }
-    .alert-error { background: #3b1212; color: #f87171; border: 1px solid #991b1b; }
+        .auth-card h1 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
+        }
 
-    /* Estilização e fixação da barra de rolagem da Lista de Livros */
-    .table-scroll-container {
-      max-height: 65vh;
-      overflow: auto;
-      border: 1px solid #262730;
-      border-radius: 6px;
-      margin-top: 1rem;
-    }
-  </style>
+        .auth-card p {
+            color: #666;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.8rem;
+            background: none;
+            border: none;
+            font-weight: 600;
+            color: #777;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: var(--accent-color);
+            border-bottom: 2px solid var(--accent-color);
+            margin-bottom: -2px;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: #444;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            background-color: #fff;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 0.85rem;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 0.5rem;
+        }
+
+        .btn-submit:hover {
+            background: #2980b9;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .alert-msg {
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        /* --- PAINEL PRINCIPAL (SISTEMA) --- */
+        .app-container {
+            display: none;
+            height: 100vh;
+            flex-direction: row;
+        }
+
+        /* Menu Lateral (Esquerdo) */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--primary-color);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.2rem;
+            color: #ecf0f1;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            margin-top: 1rem;
+            flex: 1;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: #bdc3c7;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .sidebar-menu li a i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-menu li a:hover, .sidebar-menu li.active > a {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        /* Submenu */
+        .has-submenu {
+            position: relative;
+        }
+
+        .submenu-toggle {
+            justify-content: space-between !important;
+            cursor: pointer;
+        }
+
+        .submenu-icon {
+            font-size: 0.8rem;
+            transition: transform 0.3s;
+        }
+
+        .has-submenu.open .submenu-icon {
+            transform: rotate(180deg);
+        }
+
+        .submenu {
+            list-style: none;
+            background: rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+
+        .has-submenu.open .submenu {
+            display: block;
+        }
+
+        .submenu li a {
+            padding-left: 3rem;
+            font-size: 0.9rem;
+        }
+
+        .user-info {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .user-details {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .btn-logout {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        /* Área de Conteúdo */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .content-header {
+            margin-bottom: 2rem;
+        }
+
+        .content-header h1 {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+        }
+
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        .tab-content {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .tab-content img {
+            max-width: 150px;
+            height: auto;
+            display: block;
+            margin: 0 auto 1.5rem auto;
+        }
+
+        .card {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 1.5rem;
+            max-width: 1000px;
+        }
+
+        /* --- AJUSTE DAS BARRAS DE ROLAGEM NA TABELA --- */
+        .table-responsive {
+            width: 100%;
+            max-height: 68vh;
+            overflow: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+        }
+
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            white-space: nowrap;
+            table-layout: auto;
+        }
+
+        .custom-table th, .custom-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            box-sizing: border-box;
+        }
+
+        .custom-table th {
+            background: #f1f5f9;
+            color: #475569;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .badge {
+            padding: 0.25rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-admin {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .badge-comum {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+    </style>
 </head>
 <body>
 
-  <!-- TELA INICIAL (LOGIN E CADASTRO) -->
-  <div id="login-screen">
-    <div class="login-card">
-      <img src="brasao_site_1 pnsl.png" alt="Brasão Paróquia Nossa Senhora da Luz" class="login-logo">
-      <div id="auth-msg"></div>
+    <!-- 1. TELA DE LOGIN / BOAS-VINDAS -->
+    <div id="authScreen" class="auth-container">
+        <div class="auth-card">
+            <img src="brasao_site_1 pnsl.png" alt="Brasão Paróquia Nossa Senhora da Luz" class="login-logo">
+            <h1>Bem-vindo!</h1>
+            <p>Sistema de Gestão de Biblioteca</p>
+            <div id="auth-msg"></div>
 
-      <!-- FORMULÁRIO DE LOGIN -->
-      <div id="form-login">
-        <h2>🔒 Acesso Restrito</h2>
-        <label>Usuário</label>
-        <input type="text" id="login-user">
-        <label>Senha</label>
-        <input type="password" id="login-pass">
-        <button onclick="login()">Entrar</button>
-        <button class="btn-secondary" onclick="toggleAuthForm('register')">Criar Nova Conta</button>
-      </div>
+            <div class="auth-tabs">
+                <button class="tab-btn active" onclick="switchTab('login')">Entrar</button>
+                <button class="tab-btn" onclick="switchTab('register')">Novo Cadastro</button>
+            </div>
 
-      <!-- FORMULÁRIO DE CADASTRO NA TELA INICIAL -->
-      <div id="form-register" class="hidden">
-        <h2>📝 Cadastrar Conta</h2>
-        <label>Nome Completo</label>
-        <input type="text" id="reg-nome">
-        <label>Nome de Usuário (Login)</label>
-        <input type="text" id="reg-user">
-        <label>Senha</label>
-        <input type="password" id="reg-pass">
-        <button onclick="cadastrarNaTelaInicial()">Cadastrar e Entrar</button>
-        <button class="btn-secondary" onclick="toggleAuthForm('login')">Voltar ao Login</button>
-      </div>
+            <div id="alertBox" class="alert-msg"></div>
 
+            <!-- Formulário de Login -->
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Nome de Usuário</label>
+                    <input type="text" id="loginUser" required placeholder="Digite seu usuário">
+                </div>
+                <div class="form-group">
+                    <label>Senha de Acesso</label>
+                    <input type="password" id="loginPass" required placeholder="Digite sua senha">
+                </div>
+                <button type="submit" class="btn-submit">Acessar Sistema</button>
+            </form>
+
+            <!-- Formulário de Cadastro -->
+            <form id="registerForm" onsubmit="handleRegister(event)" style="display: none;">
+                <div class="form-group">
+                    <label>Nome Completo</label>
+                    <input type="text" id="regName" required placeholder="Seu nome completo">
+                </div>
+                <div class="form-group">
+                    <label>Nome de Usuário</label>
+                    <input type="text" id="regUser" required placeholder="Nome de usuário">
+                </div>
+                <div class="form-group">
+                    <label>Senha de Acesso</label>
+                    <input type="password" id="regPass" required placeholder="Crie uma senha">
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Usuário</label>
+                    <select id="regType" required>
+                        <option value="Comum">Comum</option>
+                        <option value="Administrador">Administrador</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-submit">Criar Conta</button>
+            </form>
+        </div>
     </div>
-  </div>
 
-  <!-- APLICAÇÃO PRINCIPAL: MENU LATERAL (SIDEBAR) -->
-  <aside>
-    <div>
-      <h2>Menu Principal</h2>
-      <nav class="sidebar-nav">
-        <!-- BOTAO HOME / INICIO -->
-        <button class="nav-btn active admin-only" id="btn-home" onclick="switchTab('aba-inicio', this)">🏠 Início</button>
-
-        <!-- CADASTRO DE LIVROS E SUBMENUS -->
-        <button class="nav-btn admin-only" id="btn-cad-main" onclick="toggleCadastroMenu()">📝 Cadastro de Livros ▾</button>
-        <div id="submenu-cadastro" class="submenu hidden admin-only">
-          <button class="subnav-btn active" id="btn-sub-incluir" onclick="switchCadastroSubtab('incluir')">➕ Inserir</button>
-          <button class="subnav-btn" id="btn-sub-alterar" onclick="switchCadastroSubtab('alterar')">✏️ Alterar</button>
-          <button class="subnav-btn" id="btn-sub-excluir" onclick="switchCadastroSubtab('excluir')">🗑️ Excluir</button>
-          <button class="subnav-btn" id="btn-sub-importar" onclick="switchCadastroSubtab('importar')">📥 Importar</button>
-          <button class="subnav-btn" id="btn-sub-exportar" onclick="switchCadastroSubtab('exportar')">📤 Exportar</button>
-        </div>
-
-        <!-- GERENCIAMENTO DE USUÁRIOS E SUBMENUS -->
-        <button class="nav-btn admin-only" id="btn-usr-main" onclick="toggleUsuariosMenu()">👤 Usuários ▾</button>
-        <div id="submenu-usuarios" class="submenu hidden admin-only">
-          <button class="subnav-btn active" id="btn-sub-usr-incluir" onclick="switchUsuariosSubtab('incluir')">➕ Inserir</button>
-          <button class="subnav-btn" id="btn-sub-usr-modificar" onclick="switchUsuariosSubtab('modificar')">✏️ Modificar</button>
-          <button class="subnav-btn" id="btn-sub-usr-excluir" onclick="switchUsuariosSubtab('excluir')">🗑️ Excluir</button>
-          <button class="subnav-btn" id="btn-sub-usr-listar" onclick="switchUsuariosSubtab('listar')">📋 Listar</button>
-          <button class="subnav-btn" id="btn-sub-usr-exportar" onclick="switchUsuariosSubtab('exportar')">📤 Exportar</button>
-        </div>
-
-        <button class="nav-btn admin-only" onclick="switchTab('aba-emprestimos', this)">📤 Empréstimos</button>
-        <button class="nav-btn admin-only" onclick="switchTab('aba-devolucoes', this)">📥 Devoluções</button>
+    <!-- 2. PAINEL PRINCIPAL -->
+    <div id="appScreen" class="app-container">
         
-        <!-- LISTA DE LIVROS E SUBMENUS -->
-        <button class="nav-btn" id="btn-inventario-main" onclick="toggleInventarioMenu()">📋 Lista de Livros ▾</button>
-        <div id="submenu-inventario" class="submenu hidden">
-          <button class="subnav-btn active" id="btn-sub-inv-disponivel" onclick="switchInventarioSubtab('Disponível')">✅ Disponível</button>
-          <button class="subnav-btn" id="btn-sub-inv-indisponivel" onclick="switchInventarioSubtab('Emprestado')">❌ Indisponível</button>
-          <button class="subnav-btn" id="btn-sub-inv-todos" onclick="switchInventarioSubtab('Todos')">📚 Todos</button>
-        </div>
-      </nav>
+        <!-- Menu Lateral (Esquerdo) -->
+        <aside class="sidebar">
+            <div>
+                <div class="sidebar-header">
+                    <h2>Biblioteca Nossa Senhora da Luz</h2>
+                </div>
+                <ul class="sidebar-menu">
+                    <li class="active" onclick="navigateTo('inicio', this)">
+                        <a href="#"><i class="fa-solid fa-house"></i> Início</a>
+                    </li>
+                    
+                    <!-- Menu Usuários com Submenu -->
+                    <li class="has-submenu" id="menu-usuarios">
+                        <a href="#" class="submenu-toggle" onclick="toggleSubmenu(event, 'menu-usuarios')">
+                            <span><i class="fa-solid fa-users"></i> Usuários</span>
+                            <i class="fa-solid fa-chevron-down submenu-icon"></i>
+                        </a>
+                        <ul class="submenu">
+                            <li onclick="navigateTo('usuarios-incluir', this)"><a href="#"><i class="fa-solid fa-user-plus"></i> Incluir</a></li>
+                            <li onclick="navigateTo('usuarios-modificar', this)"><a href="#"><i class="fa-solid fa-user-pen"></i> Modificar</a></li>
+                            <li onclick="navigateTo('usuarios-excluir', this)"><a href="#"><i class="fa-solid fa-user-minus"></i> Excluir</a></li>
+                            <li onclick="navigateTo('usuarios-listar', this)"><a href="#"><i class="fa-solid fa-list-ul"></i> Listar</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Menu Livros com Submenu -->
+                    <li class="has-submenu" id="menu-livros">
+                        <a href="#" class="submenu-toggle" onclick="toggleSubmenu(event, 'menu-livros')">
+                            <span><i class="fa-solid fa-book"></i> Livros</span>
+                            <i class="fa-solid fa-chevron-down submenu-icon"></i>
+                        </a>
+                        <ul class="submenu">
+                            <li onclick="navigateTo('livros-incluir', this)"><a href="#"><i class="fa-solid fa-plus"></i> Incluir</a></li>
+                            <li onclick="navigateTo('livros-modificar', this)"><a href="#"><i class="fa-solid fa-pen-to-square"></i> Modificar</a></li>
+                            <li onclick="navigateTo('livros-excluir', this)"><a href="#"><i class="fa-solid fa-trash"></i> Excluir</a></li>
+                            <li onclick="navigateTo('livros-importar', this)"><a href="#"><i class="fa-solid fa-file-import"></i> Importar</a></li>
+                            <li onclick="navigateTo('livros-exportar', this)"><a href="#"><i class="fa-solid fa-file-export"></i> Exportar</a></li>
+                        </ul>
+                    </li>
+
+                    <li onclick="navigateTo('emprestimos', this)">
+                        <a href="#"><i class="fa-solid fa-hand-holding-hand"></i> Empréstimos</a>
+                    </li>
+                    <li onclick="navigateTo('devolucoes', this)">
+                        <a href="#"><i class="fa-solid fa-rotate-left"></i> Devoluções</a>
+                    </li>
+                    <li onclick="navigateTo('lista-livros', this)">
+                        <a href="#"><i class="fa-solid fa-list"></i> Lista de Livros</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="user-info">
+                <div class="user-details">
+                    <div class="user-avatar" id="avatarInitial">U</div>
+                    <div>
+                        <div id="currentUserName" style="font-size: 0.9rem; font-weight: 600;">Usuário</div>
+                        <div id="currentUserType" style="font-size: 0.75rem; color: #aaa;">Comum</div>
+                    </div>
+                </div>
+                <button class="btn-logout" onclick="logout()" title="Sair">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Área de Conteúdo Principal -->
+        <main class="main-content">
+            
+            <!-- Início -->
+            <section id="sec-inicio" class="page-section active">
+                <div id="aba-inicio" class="tab-content">
+                    <img src="brasao_site_1 pnsl.png" alt="Brasão Paróquia Nossa Senhora da Luz">
+                    <h2>Bem-vindo ao Sistema Bibliotecário</h2>
+                    <p>Paróquia Nossa Senhora da Luz</p>
+                </div>
+            </section>
+
+            <!-- SUBOPÇÕES DE USUÁRIOS -->
+            <section id="sec-usuarios-incluir" class="page-section">
+                <div class="content-header">
+                    <h1>Incluir Novo Usuário</h1>
+                </div>
+                <div class="card">
+                    <div id="inc-alert" class="alert-msg"></div>
+                    <form onsubmit="handleAdminAddUser(event)">
+                        <div class="form-group">
+                            <label>Nome Completo</label>
+                            <input type="text" id="incName" required placeholder="Digite o nome completo">
+                        </div>
+                        <div class="form-group">
+                            <label>Nome de Usuário</label>
+                            <input type="text" id="incUser" required placeholder="Digite o usuário de acesso">
+                        </div>
+                        <div class="form-group">
+                            <label>Senha</label>
+                            <input type="password" id="incPass" required placeholder="Digite a senha">
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Usuário</label>
+                            <select id="incType" required>
+                                <option value="Comum">Comum</option>
+                                <option value="Administrador">Administrador</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-submit">Cadastrar Usuário</button>
+                    </form>
+                </div>
+            </section>
+
+            <section id="sec-usuarios-modificar" class="page-section">
+                <div class="content-header">
+                    <h1>Modificar Usuário</h1>
+                </div>
+                <div class="card">
+                    <div id="mod-alert" class="alert-msg"></div>
+                    <div class="form-group">
+                        <label>Selecione o Usuário para Modificar</label>
+                        <select id="modUserSelect" onchange="loadUserToEdit()">
+                            <option value="">-- Selecione um Usuário --</option>
+                        </select>
+                    </div>
+                    <form id="modForm" onsubmit="handleModifyUser(event)" style="display:none; margin-top: 1.5rem;">
+                        <input type="hidden" id="modOriginalUser">
+                        <div class="form-group">
+                            <label>Nome Completo</label>
+                            <input type="text" id="modName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Nome de Usuário</label>
+                            <input type="text" id="modUser" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Nova Senha (deixe em branco para manter a atual)</label>
+                            <input type="password" id="modPass" placeholder="Nova senha opcional">
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Usuário</label>
+                            <select id="modType" required>
+                                <option value="Comum">Comum</option>
+                                <option value="Administrador">Administrador</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-submit">Salvar Alterações</button>
+                    </form>
+                </div>
+            </section>
+
+            <section id="sec-usuarios-excluir" class="page-section">
+                <div class="content-header">
+                    <h1>Excluir Usuário</h1>
+                </div>
+                <div class="card">
+                    <div id="del-alert" class="alert-msg"></div>
+                    <form onsubmit="handleDeleteUser(event)">
+                        <div class="form-group">
+                            <label>Selecione o Usuário que deseja Excluir</label>
+                            <select id="delUserSelect" required>
+                                <option value="">-- Selecione um Usuário --</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-submit btn-danger">Excluir Usuário</button>
+                    </form>
+                </div>
+            </section>
+
+            <section id="sec-usuarios-listar" class="page-section">
+                <div class="content-header">
+                    <h1>Lista de Usuários</h1>
+                </div>
+                <div class="card" style="max-width: 100%;">
+                    <h3>Usuários Cadastrados (usuariosdb)</h3>
+                    <div class="table-responsive">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Nome Completo</th>
+                                    <th>Nome de Usuário</th>
+                                    <th>Tipo de Usuário</th>
+                                    <th>Data Cadastro</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SUBOPÇÕES DE LIVROS -->
+            <!-- 1. Incluir Livro -->
+            <section id="sec-livros-incluir" class="page-section">
+                <div class="content-header">
+                    <h1>Incluir Novo Livro</h1>
+                </div>
+                <div class="card">
+                    <div id="book-inc-alert" class="alert-msg"></div>
+                    <form onsubmit="handleAddBook(event)">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Código Interno</label><input type="text" id="bookIncCodigo" required placeholder="Ex: LIV-001"></div>
+                            <div class="form-group"><label>Título</label><input type="text" id="bookIncTitulo" required placeholder="Título do livro"></div>
+                            <div class="form-group"><label>Subtítulo</label><input type="text" id="bookIncSubtitulo" placeholder="Subtítulo (opcional)"></div>
+                            <div class="form-group"><label>Autor / Org. / Coordenador</label><input type="text" id="bookIncAutor" required placeholder="Nome do autor/org"></div>
+                            <div class="form-group"><label>ISBN</label><input type="text" id="bookIncIsbn" placeholder="ISBN"></div>
+                            <div class="form-group"><label>Tradução</label><input type="text" id="bookIncTraducao" placeholder="Tradutor"></div>
+                            <div class="form-group"><label>Coleção</label><input type="text" id="bookIncColecao" placeholder="Nome da coleção"></div>
+                            <div class="form-group"><label>Edição</label><input type="text" id="bookIncEdicao" placeholder="Ex: 1ª Edição"></div>
+                            <div class="form-group"><label>Volume</label><input type="text" id="bookIncVolume" placeholder="Ex: Vol. 1"></div>
+                            <div class="form-group"><label>Classificação</label><input type="text" id="bookIncClassificacao" placeholder="Ex: Teologia, História"></div>
+                            <div class="form-group"><label>Local de Publicação</label><input type="text" id="bookIncLocal" placeholder="Cidade/UF"></div>
+                            <div class="form-group"><label>Editora</label><input type="text" id="bookIncEditora" placeholder="Editora"></div>
+                            <div class="form-group"><label>Data</label><input type="date" id="bookIncData"></div>
+                            <div class="form-group"><label>Número de Páginas</label><input type="number" id="bookIncPaginas" placeholder="Ex: 250"></div>
+                            <div class="form-group"><label>Exemplar</label><input type="text" id="bookIncExemplar" placeholder="Ex: Ex. 1"></div>
+                        </div>
+                        <button type="submit" class="btn-submit">Cadastrar Livro</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- 2. Modificar Livro -->
+            <section id="sec-livros-modificar" class="page-section">
+                <div class="content-header">
+                    <h1>Modificar Livro</h1>
+                </div>
+                <div class="card">
+                    <div id="book-mod-alert" class="alert-msg"></div>
+                    <div class="form-group">
+                        <label>Selecione o Livro para Modificar</label>
+                        <select id="modBookSelect" onchange="loadBookToEdit()">
+                            <option value="">-- Selecione um Livro --</option>
+                        </select>
+                    </div>
+                    <form id="modBookForm" onsubmit="handleModifyBook(event)" style="display:none; margin-top: 1.5rem;">
+                        <input type="hidden" id="bookModOriginalCodigo">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Código Interno</label><input type="text" id="bookModCodigo" required></div>
+                            <div class="form-group"><label>Título</label><input type="text" id="bookModTitulo" required></div>
+                            <div class="form-group"><label>Subtítulo</label><input type="text" id="bookModSubtitulo"></div>
+                            <div class="form-group"><label>Autor / Org. / Coordenador</label><input type="text" id="bookModAutor" required></div>
+                            <div class="form-group"><label>ISBN</label><input type="text" id="bookModIsbn"></div>
+                            <div class="form-group"><label>Tradução</label><input type="text" id="bookModTraducao"></div>
+                            <div class="form-group"><label>Coleção</label><input type="text" id="bookModColecao"></div>
+                            <div class="form-group"><label>Edição</label><input type="text" id="bookModEdicao"></div>
+                            <div class="form-group"><label>Volume</label><input type="text" id="bookModVolume"></div>
+                            <div class="form-group"><label>Classificação</label><input type="text" id="bookModClassificacao"></div>
+                            <div class="form-group"><label>Local de Publicação</label><input type="text" id="bookModLocal"></div>
+                            <div class="form-group"><label>Editora</label><input type="text" id="bookModEditora"></div>
+                            <div class="form-group"><label>Data</label><input type="date" id="bookModData"></div>
+                            <div class="form-group"><label>Número de Páginas</label><input type="number" id="bookModPaginas"></div>
+                            <div class="form-group"><label>Exemplar</label><input type="text" id="bookModExemplar"></div>
+                        </div>
+                        <button type="submit" class="btn-submit">Salvar Alterações</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- 3. Excluir Livro -->
+            <section id="sec-livros-excluir" class="page-section">
+                <div class="content-header">
+                    <h1>Excluir Livro</h1>
+                </div>
+                <div class="card">
+                    <div id="book-del-alert" class="alert-msg"></div>
+                    <form onsubmit="handleDeleteBook(event)">
+                        <div class="form-group">
+                            <label>Selecione o Livro que deseja Excluir</label>
+                            <select id="delBookSelect" required>
+                                <option value="">-- Selecione um Livro --</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-submit btn-danger">Excluir Livro</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- 4. Importar Livros -->
+            <section id="sec-livros-importar" class="page-section">
+                <div class="content-header">
+                    <h1>Importar Livros (CSV)</h1>
+                </div>
+                <div class="card">
+                    <div id="book-imp-alert" class="alert-msg"></div>
+                    <p style="margin-bottom: 1rem; font-size: 0.9rem; color: #666;">
+                        Selecione um arquivo CSV contendo os dados dos livros nas seguintes colunas organizadas: <br>
+                        <strong>Código Interno, Título, Subtítulo, Autor / Org. / Coordenador, ISBN, Tradução, Coleção, Edição, Volume, Classificação, Local de Publicação, Editora, Data, Número de Páginas, Exemplar</strong>
+                    </p>
+                    <div class="form-group">
+                        <label>Selecione o arquivo CSV</label>
+                        <input type="file" id="importCsvFile" accept=".csv">
+                    </div>
+                    <button type="button" onclick="handleImportBooks()" class="btn-submit">Importar Dados</button>
+                </div>
+            </section>
+
+            <!-- 5. Exportar Livros -->
+            <section id="sec-livros-exportar" class="page-section">
+                <div class="content-header">
+                    <h1>Exportar Livros (CSV)</h1>
+                </div>
+                <div class="card">
+                    <p style="margin-bottom: 1.5rem;">Clique no botão abaixo para baixar a lista completa de livros cadastrados em formato CSV.</p>
+                    <button type="button" onclick="handleExportBooks()" class="btn-submit"><i class="fa-solid fa-file-csv"></i> Baixar Relatório CSV</button>
+                </div>
+            </section>
+
+            <!-- Empréstimos -->
+            <section id="sec-emprestimos" class="page-section">
+                <div class="content-header">
+                    <h1>Controle de Empréstimos</h1>
+                </div>
+                <div class="card">
+                    <p>Módulo para registros de novos empréstimos.</p>
+                </div>
+            </section>
+
+            <!-- Devoluções -->
+            <section id="sec-devolucoes" class="page-section">
+                <div class="content-header">
+                    <h1>Gestão de Devoluções</h1>
+                </div>
+                <div class="card">
+                    <p>Módulo para registro e baixa de devoluções.</p>
+                </div>
+            </section>
+
+            <!-- Lista de Livros -->
+            <section id="sec-lista-livros" class="page-section">
+                <div class="content-header">
+                    <h1>Catálogo de Livros Cadastrados</h1>
+                </div>
+                <div class="card" style="max-width: 100%;">
+                    <div class="table-responsive">
+                        <table class="custom-table" id="booksListTable">
+                            <thead>
+                                <tr id="booksTableHead">
+                                </tr>
+                            </thead>
+                            <tbody id="booksTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
     </div>
 
-    <button onclick="logout()" class="btn-secondary" style="margin-bottom: 0;">🚪 Sair / Logout</button>
-  </aside>
+    <script>
+        const DB_KEY = 'usuariosdb';
+        const BOOKS_KEY = 'livrosdb';
 
-  <main>
-    <div id="alert-container"></div>
+        function initDB() {
+            if (!localStorage.getItem(DB_KEY)) {
+                const defaultUsers = [
+                    { 
+                        name: "Administrador", 
+                        username: "admin", 
+                        pass: "1234", 
+                        type: "Administrador", 
+                        createdAt: new Date().toLocaleDateString('pt-BR') 
+                    }
+                ];
+                localStorage.setItem(DB_KEY, JSON.stringify(defaultUsers));
+            }
 
-    <!-- ABA 0: TELA DE BOAS-VINDAS / LOGO APÓS LOGIN -->
-    <div id="aba-inicio" class="tab-content">
-      <div class="home-welcome">
-        <img src="brasao_site_1 pnsl.png" alt="Brasão Paróquia Nossa Senhora da Luz">
-        <h2>Bem-vindo ao Sistema Bibliotecário</h2>
-        <p>Paróquia Nossa Senhora da Luz</p>
-      </div>
-    </div>
-
-    <!-- ABA 1: CADASTRO DE LIVROS -->
-    <div id="aba-cadastro" class="tab-content hidden">
-      <!-- SUBTAB 1: INSERIR -->
-      <div id="sub-cad-incluir" class="card" style="max-width: 700px;">
-        <h3>Inserir Novo Livro</h3>
-        
-        <div class="grid-inputs">
-          <div>
-            <label>1. Código Interno</label>
-            <input type="text" id="cad-codigo" placeholder="Ex: LIB-001">
-          </div>
-          <div>
-            <label>2. Classificação</label>
-            <input type="text" id="cad-classificacao" placeholder="Ex: 821.111">
-          </div>
-        </div>
-
-        <label>3. Título</label>
-        <input type="text" id="cad-titulo">
-
-        <label>4. Subtítulo</label>
-        <input type="text" id="cad-subtitulo">
-
-        <label>5. Autor / Org. / Coordenador</label>
-        <input type="text" id="cad-autor">
-
-        <div class="grid-inputs">
-          <div>
-            <label>6. Tradução</label>
-            <input type="text" id="cad-traducao" placeholder="Ex: Traduzido por João Silva">
-          </div>
-          <div>
-            <label>7. ISBN</label>
-            <input type="text" id="cad-isbn" placeholder="Ex: 978-3-16-148410-0">
-          </div>
-        </div>
-
-        <div class="grid-inputs">
-          <div>
-            <label>8. Coleção</label>
-            <input type="text" id="cad-colecao">
-          </div>
-          <div>
-            <label>9. Edição</label>
-            <input type="text" id="cad-edicao" placeholder="Ex: 1ª Edição">
-          </div>
-        </div>
-
-        <div class="grid-inputs">
-          <div>
-            <label>10. Vol.</label>
-            <input type="text" id="cad-volume" placeholder="Ex: Vol. 1">
-          </div>
-          <div>
-            <label>11. Lugar de Publicação</label>
-            <input type="text" id="cad-lugar" placeholder="Ex: São Paulo">
-          </div>
-        </div>
-
-        <div class="grid-inputs">
-          <div>
-            <label>12. Editora</label>
-            <input type="text" id="cad-editora">
-          </div>
-          <div>
-            <label>13. Data</label>
-            <input type="text" id="cad-data-pub" placeholder="Ex: 2024 ou 15/05/2024">
-          </div>
-        </div>
-
-        <div class="grid-inputs">
-          <div>
-            <label>14. Número de Páginas</label>
-            <input type="number" id="cad-paginas" placeholder="Ex: 320">
-          </div>
-          <div>
-            <label>15. Exemplar</label>
-            <input type="text" id="cad-exemplar" placeholder="Ex: Ex. 1">
-          </div>
-        </div>
-
-        <button onclick="cadastrarManual()" style="margin-top: 0.5rem;">Salvar Livro</button>
-      </div>
-
-      <!-- SUBTAB 2: ALTERAR LIVROS -->
-      <div id="sub-cad-alterar" class="card hidden">
-        <h3>✏️ Alterar Dados do Livro</h3>
-        
-        <div id="alt-selecao-container" style="max-width: 700px; margin-bottom: 1.5rem;">
-          <p style="font-size: 0.85rem; color: #808495; margin-bottom: 0.5rem;">Pesquise pelo código ou título e clique em <b>Editar</b> para carregar os dados.</p>
-          <input type="text" id="alt-busca" placeholder="Filtrar livro para edição..." oninput="renderAlterarLivrosTable()">
-          <div style="overflow-x: auto; max-height: 250px;">
-            <table id="table-alterar-busca">
-              <thead>
-                <tr>
-                  <th>Código</th>
-                  <th>Classificação</th>
-                  <th>Título</th>
-                  <th>Autor</th>
-                  <th>Ação</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div id="alt-form-container" class="card hidden" style="max-width: 700px; background: #212431; border: 1px solid #363940;">
-          <h4 style="margin-bottom: 1rem; color: #f59e0b;">Editando Livro <span id="alt-id-display"></span></h4>
-          <input type="hidden" id="alt-id">
-
-          <div class="grid-inputs">
-            <div>
-              <label>1. Código Interno</label>
-              <input type="text" id="alt-codigo">
-            </div>
-            <div>
-              <label>2. Classificação</label>
-              <input type="text" id="alt-classificacao">
-            </div>
-          </div>
-
-          <label>3. Título</label>
-          <input type="text" id="alt-titulo">
-
-          <label>4. Subtítulo</label>
-          <input type="text" id="alt-subtitulo">
-
-          <label>5. Autor / Org. / Coordenador</label>
-          <input type="text" id="alt-autor">
-
-          <div class="grid-inputs">
-            <div>
-              <label>6. Tradução</label>
-              <input type="text" id="alt-traducao">
-            </div>
-            <div>
-              <label>7. ISBN</label>
-              <input type="text" id="alt-isbn">
-            </div>
-          </div>
-
-          <div class="grid-inputs">
-            <div>
-              <label>8. Coleção</label>
-              <input type="text" id="alt-colecao">
-            </div>
-            <div>
-              <label>9. Edição</label>
-              <input type="text" id="alt-edicao">
-            </div>
-          </div>
-
-          <div class="grid-inputs">
-            <div>
-              <label>10. Vol.</label>
-              <input type="text" id="alt-volume">
-            </div>
-            <div>
-              <label>11. Lugar de Publicação</label>
-              <input type="text" id="alt-lugar">
-            </div>
-          </div>
-
-          <div class="grid-inputs">
-            <div>
-              <label>12. Editora</label>
-              <input type="text" id="alt-editora">
-            </div>
-            <div>
-              <label>13. Data</label>
-              <input type="text" id="alt-data-pub">
-            </div>
-          </div>
-
-          <div class="grid-inputs">
-            <div>
-              <label>14. Número de Páginas</label>
-              <input type="number" id="alt-paginas">
-            </div>
-            <div>
-              <label>15. Exemplar</label>
-              <input type="text" id="alt-exemplar">
-            </div>
-          </div>
-
-          <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-            <button onclick="salvarAlteracaoLivro()" style="background: #f59e0b;">💾 Salvar Alterações</button>
-            <button onclick="cancelarEdicaoLivro()" class="btn-secondary">Cancelar</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- SUBTAB 3: EXCLUIR LIVROS -->
-      <div id="sub-cad-excluir" class="card hidden">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-          <h3>🗑️ Exclusão de Livros</h3>
-          <button class="btn-danger" onclick="excluirTodosLivros()" style="width: auto;">⚠️ Excluir Todos os Livros</button>
-        </div>
-        <p style="font-size: 0.85rem; color: #808495; margin-bottom: 1rem;">Pesquise pelo código ou título para excluir livros cadastrados acidentalmente ou que saíram do acervo.</p>
-        
-        <input type="text" id="excluir-busca" placeholder="Filtrar por código ou título do livro..." oninput="renderExcluirLivros()">
-
-        <div style="overflow-x: auto;">
-          <table id="table-excluir-livros">
-            <thead>
-              <tr>
-                <th>Código Interno</th>
-                <th>Classificação</th>
-                <th>Título</th>
-                <th>Subtítulo</th>
-                <th>Autor/Org./Coordenador</th>
-                <th>Tradução</th>
-                <th>ISBN</th>
-                <th>Coleção</th>
-                <th>Edição</th>
-                <th>Vol.</th>
-                <th>Lugar de Publicação</th>
-                <th>Editora</th>
-                <th>Data</th>
-                <th>Numero de Páginas</th>
-                <th>Exemplar</th>
-                <th>Status</th>
-                <th>Ação</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- SUBTAB 4: IMPORTAR -->
-      <div id="sub-cad-importar" class="card hidden" style="max-width: 700px;">
-        <h3>Importar</h3>
-        <input type="file" id="cad-file" accept=".xlsx">
-        <div id="preview-area" class="hidden">
-          <p><b>Prévia dos dados identificados:</b></p>
-          <div style="max-height: 250px; overflow-x: auto;">
-            <table id="table-preview"></table>
-          </div>
-          <button onclick="confirmarImportacao()" style="margin-top: 1rem;">Confirmar Importação em Massa</button>
-        </div>
-      </div>
-
-      <!-- SUBTAB 5: EXPORTAR -->
-      <div id="sub-cad-exportar" class="card hidden" style="max-width: 600px;">
-        <h3>📤 Exportar Relatório de Livros (Excel)</h3>
-        <button onclick="exportarExcel()" style="background: #21a366; font-size: 1rem; padding: 0.8rem;">📊 Baixar Planilha Excel Agora</button>
-      </div>
-    </div>
-
-    <!-- ABA 2: GERENCIAMENTO DE USUÁRIOS -->
-    <div id="aba-usuarios" class="tab-content hidden">
-      <div id="sub-usr-incluir" class="card" style="max-width: 500px;">
-        <h3>➕ Cadastrar Novo Usuário</h3>
-        <label>Nome Completo / Leitor</label>
-        <input type="text" id="usr-nome">
-        <label>Nome de Usuário (Login)</label>
-        <input type="text" id="usr-login">
-        <label>Senha de Acesso</label>
-        <input type="password" id="usr-senha">
-        <label>Tipo de Usuário</label>
-        <select id="usr-tipo">
-          <option value="Administrador">Administrador</option>
-          <option value="Usuario">Usuário</option>
-        </select>
-        <button onclick="cadastrarUsuario()">Salvar Usuário</button>
-      </div>
-
-      <!-- SUBTAB USUÁRIOS: MODIFICAR -->
-      <div id="sub-usr-modificar" class="card hidden">
-        <h3>✏️ Modificar Usuário</h3>
-        
-        <div id="usr-alt-selecao-container" style="max-width: 700px; margin-bottom: 1.5rem;">
-          <p style="font-size: 0.85rem; color: #808495; margin-bottom: 0.5rem;">Pesquise pelo nome ou login e clique em <b>Editar</b> para carregar os dados.</p>
-          <input type="text" id="usr-alt-busca" placeholder="Filtrar usuário para edição..." oninput="renderModificarUsuariosTable()">
-          <div style="overflow-x: auto; max-height: 250px;">
-            <table id="table-modificar-usuarios-busca">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Nome Completo</th>
-                  <th>Login</th>
-                  <th>Tipo</th>
-                  <th>Ação</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div id="usr-alt-form-container" class="card hidden" style="max-width: 500px; background: #212431; border: 1px solid #363940;">
-          <h4 style="margin-bottom: 1rem; color: #f59e0b;">Editando Usuário ID <span id="usr-alt-id-display"></span></h4>
-          <input type="hidden" id="usr-alt-id">
-
-          <label>Nome Completo / Leitor</label>
-          <input type="text" id="usr-alt-nome">
-
-          <label>Nome de Usuário (Login)</label>
-          <input type="text" id="usr-alt-login">
-
-          <label>Nova Senha (deixe em branco se não quiser alterar)</label>
-          <input type="password" id="usr-alt-senha" placeholder="Opcional">
-
-          <label>Tipo de Usuário</label>
-          <select id="usr-alt-tipo">
-            <option value="Administrador">Administrador</option>
-            <option value="Usuario">Usuário</option>
-          </select>
-
-          <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-            <button onclick="salvarAlteracaoUsuario()" style="background: #f59e0b;">💾 Salvar Alterações</button>
-            <button onclick="cancelarEdicaoUsuario()" class="btn-secondary">Cancelar</button>
-          </div>
-        </div>
-      </div>
-
-      <div id="sub-usr-excluir" class="card hidden">
-        <h3>🗑️ Excluir Usuários</h3>
-        <p style="font-size: 0.85rem; color: #808495; margin-bottom: 1rem;">Selecione o usuário que deseja remover do sistema.</p>
-        <input type="text" id="usr-busca-excluir" placeholder="Filtrar usuário por nome ou login..." oninput="renderExcluirUsuarios()">
-        <div style="overflow-x: auto;">
-          <table id="table-excluir-usuarios">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nome Completo</th>
-                <th>Login</th>
-                <th>Tipo</th>
-                <th>Ação</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div id="sub-usr-listar" class="card hidden">
-        <h3>📋 Lista de Usuários Cadastrados</h3>
-        <input type="text" id="usr-busca-listar" placeholder="Filtrar usuário..." oninput="renderUsuariosTable()">
-        <div style="overflow-x: auto;">
-          <table id="table-usuarios">
-            <thead>
-              <tr>
-                <th>ID</th><th>Nome</th><th>Login</th><th>Tipo</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- SUBTAB USUÁRIOS: EXPORTAR -->
-      <div id="sub-usr-exportar" class="card hidden" style="max-width: 600px;">
-        <h3>📤 Exportar Relatório de Usuários (Excel)</h3>
-        <button onclick="exportarUsuariosExcel()" style="background: #21a366; font-size: 1rem; padding: 0.8rem;">📊 Baixar Planilha de Usuários (Excel)</button>
-      </div>
-    </div>
-
-    <!-- ABA 3: EMPRÉSTIMOS -->
-    <div id="aba-emprestimos" class="tab-content hidden">
-      <div class="card">
-        <h3>Registrar Saída</h3>
-        <label>Selecione o Livro</label>
-        <select id="emp-livro"></select>
-        <label>Selecione o Solicitante</label>
-        <select id="emp-usuario"></select>
-        <label>Data de Devolução</label>
-        <input type="date" id="emp-data">
-        <button onclick="registrarEmprestimo()">Finalizar Empréstimo</button>
-      </div>
-    </div>
-
-    <!-- ABA 4: DEVOLUÇÕES -->
-    <div id="aba-devolucoes" class="tab-content hidden">
-      <div class="card">
-        <h3>Registrar Entrada</h3>
-        <label>Livro sendo devolvido</label>
-        <select id="dev-livro"></select>
-        <button onclick="registrarDevolucao()">Confirmar Devolução</button>
-      </div>
-    </div>
-
-    <!-- ABA 5: LISTA DE LIVROS -->
-    <div id="aba-inventario" class="tab-content hidden">
-      <div class="card">
-        <h3 id="inv-titulo-cabecalho">Lista Completa de Livros</h3>
-        <input type="text" id="inv-busca" placeholder="Filtrar por código, classificação, título, autor ou ISBN" oninput="renderInventario()">
-        <button onclick="exportarExcel()" style="width: auto; background: #21a366;">📥 Baixar Lista Completa (Excel)</button>
-        
-        <!-- Conteiner com altura ajustada e barras de rolagem visíveis de imediato -->
-        <div class="table-scroll-container">
-          <table id="table-inventario">
-            <thead>
-              <tr>
-                <th>Código Interno</th>
-                <th>Classificação</th>
-                <th>Título</th>
-                <th>Subtítulo</th>
-                <th>Autor/Org./Coordenador</th>
-                <th>Tradução</th>
-                <th>ISBN</th>
-                <th>Coleção</th>
-                <th>Edição</th>
-                <th>Vol.</th>
-                <th>Lugar de Publicação</th>
-                <th>Editora</th>
-                <th>Data</th>
-                <th>Numero de Páginas</th>
-                <th>Exemplar</th>
-                <th>Status</th>
-                <th>Usuário Atual</th>
-                <th>Data Retorno</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <script>
-    // Configurações do GitHub REST API
-    const GITHUB_TOKEN = "SEU_PERSONAL_ACCESS_TOKEN"; 
-    const GITHUB_OWNER = "SEU_USUARIO_GITHUB";
-    const GITHUB_REPO = "SEU_REPOSITORIO";
-    const GITHUB_PATH = "bibliotecapnsbd.xlsx";
-
-    const initialDB = {
-      livros: [],
-      usuarios: [{ id: 1, nome: "Administrador", login: "admin", senha: "biblioteca123", tipo: "Administrador" }],
-      emprestimos: []
-    };
-
-    let db = JSON.parse(localStorage.getItem('biblioteca_db')) || initialDB;
-    let usuarioLogado = null;
-    let tempExcelData = [];
-    let filtroStatusInventario = 'Disponível';
-
-    window.addEventListener('DOMContentLoaded', async () => {
-      try {
-        const response = await fetch('bibliotecapnsbd.xlsx');
-        if (response.ok) {
-          const arrayBuffer = await response.arrayBuffer();
-          const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-
-          const sheetLivros = workbook.Sheets['Livros'];
-          const sheetUsuarios = workbook.Sheets['Usuarios'];
-          const sheetEmprestimos = workbook.Sheets['Emprestimos'];
-
-          if (sheetLivros) db.livros = XLSX.utils.sheet_to_json(sheetLivros);
-          if (sheetUsuarios) db.usuarios = XLSX.utils.sheet_to_json(sheetUsuarios);
-          if (sheetEmprestimos) db.emprestimos = XLSX.utils.sheet_to_json(sheetEmprestimos);
-
-          localStorage.setItem('biblioteca_db', JSON.stringify(db));
-        }
-      } catch (err) {
-        console.warn('Arquivo bibliotecapnsbd.xlsx não encontrado localmente. Usando dados locais gravados.');
-      }
-    });
-
-    // Atualização com sincronização no GitHub API
-    async function saveDB() {
-      localStorage.setItem('biblioteca_db', JSON.stringify(db));
-
-      const wb = new ExcelJS.Workbook();
-      
-      const wsLivros = wb.addWorksheet('Livros');
-      wsLivros.columns = [
-        { header: 'id', key: 'id' },
-        { header: 'codigo', key: 'codigo' },
-        { header: 'classificacao', key: 'classificacao' },
-        { header: 'titulo', key: 'titulo' },
-        { header: 'subtitulo', key: 'subtitulo' },
-        { header: 'autor', key: 'autor' },
-        { header: 'traducao', key: 'traducao' },
-        { header: 'isbn', key: 'isbn' },
-        { header: 'colecao', key: 'colecao' },
-        { header: 'edicao', key: 'edicao' },
-        { header: 'volume', key: 'volume' },
-        { header: 'lugar', key: 'lugar' },
-        { header: 'editora', key: 'editora' },
-        { header: 'dataPub', key: 'dataPub' },
-        { header: 'paginas', key: 'paginas' },
-        { header: 'exemplar', key: 'exemplar' },
-        { header: 'status', key: 'status' }
-      ];
-      db.livros.forEach(item => wsLivros.addRow(item));
-
-      const wsUsuarios = wb.addWorksheet('Usuarios');
-      wsUsuarios.columns = [
-        { header: 'id', key: 'id' },
-        { header: 'nome', key: 'nome' },
-        { header: 'login', key: 'login' },
-        { header: 'senha', key: 'senha' },
-        { header: 'tipo', key: 'tipo' }
-      ];
-      db.usuarios.forEach(item => wsUsuarios.addRow(item));
-
-      const wsEmprestimos = wb.addWorksheet('Emprestimos');
-      wsEmprestimos.columns = [
-        { header: 'id_livro', key: 'id_livro' },
-        { header: 'usuario', key: 'usuario' },
-        { header: 'data_saida', key: 'data_saida' },
-        { header: 'data_retorno', key: 'data_retorno' }
-      ];
-      db.emprestimos.forEach(item => wsEmprestimos.addRow(item));
-
-      const buffer = await wb.xlsx.writeBuffer();
-      
-      // Envio automático para o repositório no GitHub via REST API
-      if (GITHUB_TOKEN !== "SEU_PERSONAL_ACCESS_TOKEN") {
-        await updateGithubFile(buffer);
-      }
-    }
-
-    async function updateGithubFile(arrayBuffer) {
-      try {
-        const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_PATH}`;
-        
-        let sha = "";
-        const getRes = await fetch(url, {
-          headers: { "Authorization": `token ${GITHUB_TOKEN}` }
-        });
-        if (getRes.ok) {
-          const getData = await getRes.json();
-          sha = getData.sha;
+            if (!localStorage.getItem(BOOKS_KEY)) {
+                const defaultBooks = [
+                    {
+                        codigo: "LIV-001",
+                        titulo: "O Senhor dos Anéis",
+                        subtitulo: "A Sociedade do Anel",
+                        autor: "J.R.R. Tolkien",
+                        isbn: "9788533613379",
+                        traducao: "Lenita Maria Rímoli Esteves",
+                        colecao: "Acessível",
+                        edicao: "1ª Edição",
+                        volume: "Vol. 1",
+                        classificacao: "Fantasia",
+                        local: "São Paulo",
+                        editora: "Martins Fontes",
+                        data: "2000-01-01",
+                        paginas: "576",
+                        exemplar: "Ex. 1"
+                    }
+                ];
+                localStorage.setItem(BOOKS_KEY, JSON.stringify(defaultBooks));
+            }
         }
 
-        const bytes = new Uint8Array(arrayBuffer);
-        let binary = '';
-        for (let i = 0; i < bytes.byteLength; i++) {
-          binary += String.fromCharCode(bytes[i]);
+        function getUsers() {
+            return JSON.parse(localStorage.getItem(DB_KEY)) || [];
         }
-        const base64Content = btoa(binary);
 
-        const bodyData = {
-          message: "Atualização automática da base de dados via sistema",
-          content: base64Content,
-          sha: sha
-        };
-
-        const putRes = await fetch(url, {
-          method: "PUT",
-          headers: {
-            "Authorization": `token ${GITHUB_TOKEN}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(bodyData)
-        });
-
-        if (putRes.ok) {
-          showAlert("Banco de dados sincronizado com o GitHub com sucesso!");
-        } else {
-          console.error("Erro na API do GitHub:", await putRes.text());
+        function saveUsers(users) {
+            localStorage.setItem(DB_KEY, JSON.stringify(users));
         }
-      } catch (err) {
-        console.error("Falha ao atualizar o arquivo no GitHub:", err);
-      }
-    }
 
-    function showAlert(msg, isSuccess = true) {
-      const container = document.getElementById('alert-container');
-      container.innerHTML = `<div class="alert ${isSuccess ? 'alert-success' : 'alert-error'}">${msg}</div>`;
-      setTimeout(() => container.innerHTML = '', 4000);
-    }
-
-    function showAuthMsg(msg, isSuccess = true) {
-      const container = document.getElementById('auth-msg');
-      container.innerHTML = `<div class="alert ${isSuccess ? 'alert-success' : 'alert-error'}">${msg}</div>`;
-      setTimeout(() => container.innerHTML = '', 4000);
-    }
-
-    function toggleAuthForm(mode) {
-      document.getElementById('auth-msg').innerHTML = '';
-      if (mode === 'register') {
-        document.getElementById('form-login').classList.add('hidden');
-        document.getElementById('form-register').classList.remove('hidden');
-      } else {
-        document.getElementById('form-register').classList.add('hidden');
-        document.getElementById('form-login').classList.remove('hidden');
-      }
-    }
-
-    function aplicarPermissoes() {
-      const adminElements = document.querySelectorAll('.admin-only');
-      if (usuarioLogado && (usuarioLogado.tipo === 'Usuario' || usuarioLogado.tipo === 'usuario')) {
-        adminElements.forEach(el => el.classList.add('hidden'));
-        toggleInventarioMenu();
-        switchInventarioSubtab('Disponível');
-      } else {
-        adminElements.forEach(el => el.classList.remove('hidden'));
-      }
-    }
-
-    function login() {
-      const u = document.getElementById('login-user').value.trim();
-      const p = document.getElementById('login-pass').value.trim();
-      
-      const userFound = db.usuarios.find(user => user.login === u && user.senha === p);
-
-      if (userFound) {
-        usuarioLogado = userFound;
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('login-user').value = '';
-        document.getElementById('login-pass').value = '';
-        aplicarPermissoes();
-        if (usuarioLogado.tipo !== 'Usuario' && usuarioLogado.tipo !== 'usuario') {
-          switchTab('aba-inicio', document.getElementById('btn-home'));
+        function getBooks() {
+            return JSON.parse(localStorage.getItem(BOOKS_KEY)) || [];
         }
-        renderAll();
-      } else {
-        showAuthMsg("Usuário ou senha incorretos.", false);
-      }
-    }
 
-    async function cadastrarNaTelaInicial() {
-      const nome = document.getElementById('reg-nome').value.trim();
-      const loginUser = document.getElementById('reg-user').value.trim();
-      const senhaUser = document.getElementById('reg-pass').value.trim();
-      const tipoUser = "Usuario";
-
-      if (!nome || !loginUser || !senhaUser) {
-        return showAuthMsg("Preencha todos os campos para cadastrar.", false);
-      }
-
-      if (db.usuarios.some(u => u.login === loginUser)) {
-        return showAuthMsg("Este nome de usuário já está em uso.", false);
-      }
-
-      const newId = db.usuarios.length ? Math.max(...db.usuarios.map(u => u.id)) + 1 : 1;
-      const novoUsuario = { id: newId, nome: nome, login: loginUser, senha: senhaUser, tipo: tipoUser };
-      db.usuarios.push(novoUsuario);
-      usuarioLogado = novoUsuario;
-      
-      await saveDB();
-
-      document.getElementById('reg-nome').value = '';
-      document.getElementById('reg-user').value = '';
-      document.getElementById('reg-pass').value = '';
-
-      document.getElementById('login-screen').classList.add('hidden');
-      aplicarPermissoes();
-      if (usuarioLogado.tipo !== 'Usuario' && usuarioLogado.tipo !== 'usuario') {
-        switchTab('aba-inicio', document.getElementById('btn-home'));
-      }
-      renderAll();
-      showAlert(`Bem-vindo, ${nome}! Sua conta foi criada com sucesso.`);
-    }
-
-    async function logout() {
-      await saveDB();
-      usuarioLogado = null;
-      toggleAuthForm('login');
-      document.getElementById('login-screen').classList.remove('hidden');
-    }
-
-    function switchTab(tabId, btn) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-      
-      document.getElementById(tabId).classList.remove('hidden');
-      if (btn) btn.classList.add('active');
-
-      if (tabId !== 'aba-cadastro') document.getElementById('submenu-cadastro').classList.add('hidden');
-      if (tabId !== 'aba-usuarios') document.getElementById('submenu-usuarios').classList.add('hidden');
-      if (tabId !== 'aba-inventario') document.getElementById('submenu-inventario').classList.add('hidden');
-
-      renderAll();
-    }
-
-    function toggleCadastroMenu() {
-      const submenu = document.getElementById('submenu-cadastro');
-      document.getElementById('submenu-usuarios').classList.add('hidden');
-      document.getElementById('submenu-inventario').classList.add('hidden');
-      submenu.classList.toggle('hidden');
-      switchTab('aba-cadastro', document.getElementById('btn-cad-main'));
-    }
-
-    function switchCadastroSubtab(type) {
-      switchTab('aba-cadastro', document.getElementById('btn-cad-main'));
-      document.getElementById('submenu-cadastro').classList.remove('hidden');
-
-      document.querySelectorAll('#submenu-cadastro .subnav-btn').forEach(el => el.classList.remove('active'));
-      document.getElementById('sub-cad-incluir').classList.add('hidden');
-      document.getElementById('sub-cad-alterar').classList.add('hidden');
-      document.getElementById('sub-cad-excluir').classList.add('hidden');
-      document.getElementById('sub-cad-importar').classList.add('hidden');
-      document.getElementById('sub-cad-exportar').classList.add('hidden');
-
-      if (type === 'incluir') {
-        document.getElementById('sub-cad-incluir').classList.remove('hidden');
-        document.getElementById('btn-sub-incluir').classList.add('active');
-      } else if (type === 'alterar') {
-        document.getElementById('sub-cad-alterar').classList.remove('hidden');
-        document.getElementById('btn-sub-alterar').classList.add('active');
-        renderAlterarLivrosTable();
-      } else if (type === 'excluir') {
-        document.getElementById('sub-cad-excluir').classList.remove('hidden');
-        document.getElementById('btn-sub-excluir').classList.add('active');
-        renderExcluirLivros();
-      } else if (type === 'importar') {
-        document.getElementById('sub-cad-importar').classList.remove('hidden');
-        document.getElementById('btn-sub-importar').classList.add('active');
-      } else if (type === 'exportar') {
-        document.getElementById('sub-cad-exportar').classList.remove('hidden');
-        document.getElementById('btn-sub-exportar').classList.add('active');
-      }
-    }
-
-    function toggleUsuariosMenu() {
-      const submenu = document.getElementById('submenu-usuarios');
-      document.getElementById('submenu-cadastro').classList.add('hidden');
-      document.getElementById('submenu-inventario').classList.add('hidden');
-      submenu.classList.toggle('hidden');
-      switchTab('aba-usuarios', document.getElementById('btn-usr-main'));
-    }
-
-    function switchUsuariosSubtab(type) {
-      switchTab('aba-usuarios', document.getElementById('btn-usr-main'));
-      document.getElementById('submenu-usuarios').classList.remove('hidden');
-
-      document.querySelectorAll('#submenu-usuarios .subnav-btn').forEach(el => el.classList.remove('active'));
-      document.getElementById('sub-usr-incluir').classList.add('hidden');
-      document.getElementById('sub-usr-modificar').classList.add('hidden');
-      document.getElementById('sub-usr-excluir').classList.add('hidden');
-      document.getElementById('sub-usr-listar').classList.add('hidden');
-      document.getElementById('sub-usr-exportar').classList.add('hidden');
-
-      if (type === 'incluir') {
-        document.getElementById('sub-usr-incluir').classList.remove('hidden');
-        document.getElementById('btn-sub-usr-incluir').classList.add('active');
-      } else if (type === 'modificar') {
-        document.getElementById('sub-usr-modificar').classList.remove('hidden');
-        document.getElementById('btn-sub-usr-modificar').classList.add('active');
-        renderModificarUsuariosTable();
-      } else if (type === 'excluir') {
-        document.getElementById('sub-usr-excluir').classList.remove('hidden');
-        document.getElementById('btn-sub-usr-excluir').classList.add('active');
-        renderExcluirUsuarios();
-      } else if (type === 'listar') {
-        document.getElementById('sub-usr-listar').classList.remove('hidden');
-        document.getElementById('btn-sub-usr-listar').classList.add('active');
-        renderUsuariosTable();
-      } else if (type === 'exportar') {
-        document.getElementById('sub-usr-exportar').classList.remove('hidden');
-        document.getElementById('btn-sub-usr-exportar').classList.add('active');
-      }
-    }
-
-    function toggleInventarioMenu() {
-      const submenu = document.getElementById('submenu-inventario');
-      document.getElementById('submenu-cadastro').classList.add('hidden');
-      document.getElementById('submenu-usuarios').classList.add('hidden');
-      submenu.classList.toggle('hidden');
-      switchTab('aba-inventario', document.getElementById('btn-inventario-main'));
-    }
-
-    function switchInventarioSubtab(status) {
-      switchTab('aba-inventario', document.getElementById('btn-inventario-main'));
-      document.getElementById('submenu-inventario').classList.remove('hidden');
-
-      document.querySelectorAll('#submenu-inventario .subnav-btn').forEach(el => el.classList.remove('active'));
-
-      filtroStatusInventario = status;
-
-      const tituloCabecalho = document.getElementById('inv-titulo-cabecalho');
-
-      if (status === 'Disponível') {
-        document.getElementById('btn-sub-inv-disponivel').classList.add('active');
-        tituloCabecalho.innerText = 'Livros Disponíveis';
-      } else if (status === 'Emprestado') {
-        document.getElementById('btn-sub-inv-indisponivel').classList.add('active');
-        tituloCabecalho.innerText = 'Livros Indisponíveis (Emprestados)';
-      } else {
-        document.getElementById('btn-sub-inv-todos').classList.add('active');
-        tituloCabecalho.innerText = 'Lista Completa de Livros';
-      }
-
-      renderInventario();
-    }
-
-    function renderAll() {
-      renderUsuariosTable();
-      renderModificarUsuariosTable();
-      renderExcluirUsuarios();
-      renderEmprestimosSelect();
-      renderDevolucoesSelect();
-      renderInventario();
-      renderExcluirLivros();
-      renderAlterarLivrosTable();
-    }
-
-    async function cadastrarUsuario() {
-      const nome = document.getElementById('usr-nome').value.trim();
-      const loginUser = document.getElementById('usr-login').value.trim();
-      const senhaUser = document.getElementById('usr-senha').value.trim();
-      const tipoUser = document.getElementById('usr-tipo').value;
-
-      if (!nome || !loginUser || !senhaUser) {
-        return showAlert("Preencha todos os campos do usuário.", false);
-      }
-
-      if (db.usuarios.some(u => u.login === loginUser)) {
-        return showAlert("Este nome de usuário (login) já existe.", false);
-      }
-
-      const newId = db.usuarios.length ? Math.max(...db.usuarios.map(u => u.id)) + 1 : 1;
-      db.usuarios.push({ id: newId, nome: nome, login: loginUser, senha: senhaUser, tipo: tipoUser });
-      
-      await saveDB();
-
-      document.getElementById('usr-nome').value = '';
-      document.getElementById('usr-login').value = '';
-      document.getElementById('usr-senha').value = '';
-      document.getElementById('usr-tipo').value = 'Administrador';
-
-      showAlert("Usuário cadastrado com sucesso!");
-      renderAll();
-    }
-
-    function renderModificarUsuariosTable() {
-      const buscaInput = document.getElementById('usr-alt-busca');
-      if (!buscaInput) return;
-      const busca = buscaInput.value.toLowerCase();
-      const tbody = document.querySelector('#table-modificar-usuarios-busca tbody');
-
-      const usuariosFiltrados = db.usuarios.filter(u => 
-        u.nome.toLowerCase().includes(busca) || 
-        u.login.toLowerCase().includes(busca)
-      );
-
-      if (usuariosFiltrados.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#808495;">Nenhum usuário encontrado.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = usuariosFiltrados.map(u => `
-        <tr>
-          <td>${u.id}</td>
-          <td>${u.nome}</td>
-          <td>${u.login}</td>
-          <td>${u.tipo || 'Usuario'}</td>
-          <td>
-            <button class="btn-warning" onclick="carregarUsuarioParaEdicao(${u.id})">✏️ Editar</button>
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    function carregarUsuarioParaEdicao(id) {
-      const usuario = db.usuarios.find(u => u.id === id);
-      if (!usuario) return;
-
-      document.getElementById('usr-alt-id').value = usuario.id;
-      document.getElementById('usr-alt-id-display').innerText = usuario.id;
-      document.getElementById('usr-alt-nome').value = usuario.nome || '';
-      document.getElementById('usr-alt-login').value = usuario.login || '';
-      document.getElementById('usr-alt-senha').value = '';
-      document.getElementById('usr-alt-tipo').value = usuario.tipo || 'Usuario';
-
-      document.getElementById('usr-alt-form-container').classList.remove('hidden');
-    }
-
-    function cancelarEdicaoUsuario() {
-      document.getElementById('usr-alt-form-container').classList.add('hidden');
-    }
-
-    async function salvarAlteracaoUsuario() {
-      const id = parseInt(document.getElementById('usr-alt-id').value);
-      const usuario = db.usuarios.find(u => u.id === id);
-
-      if (!usuario) return showAlert("Usuário não encontrado para atualização.", false);
-
-      const novoNome = document.getElementById('usr-alt-nome').value.trim();
-      const novoLogin = document.getElementById('usr-alt-login').value.trim();
-      const novaSenha = document.getElementById('usr-alt-senha').value.trim();
-      const novoTipo = document.getElementById('usr-alt-tipo').value;
-
-      if (!novoNome || !novoLogin) {
-        return showAlert("Nome e Login não podem ficar vazios.", false);
-      }
-
-      if (db.usuarios.some(u => u.login === novoLogin && u.id !== id)) {
-        return showAlert("Este nome de usuário (login) já está sendo utilizado por outro usuário.", false);
-      }
-
-      usuario.nome = novoNome;
-      usuario.login = novoLogin;
-      if (novaSenha) usuario.senha = novaSenha;
-      usuario.tipo = novoTipo;
-
-      await saveDB();
-      cancelarEdicaoUsuario();
-      renderAll();
-      showAlert("Dados do usuário alterados com sucesso!");
-    }
-
-    function renderUsuariosTable() {
-      const buscaInput = document.getElementById('usr-busca-listar');
-      const busca = buscaInput ? buscaInput.value.toLowerCase() : '';
-      const tbody = document.querySelector('#table-usuarios tbody');
-
-      const usuariosFiltrados = db.usuarios.filter(u => 
-        u.nome.toLowerCase().includes(busca) || 
-        u.login.toLowerCase().includes(busca)
-      );
-
-      if (usuariosFiltrados.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#808495;">Nenhum usuário encontrado.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = usuariosFiltrados.map(u => `
-        <tr>
-          <td>${u.id}</td>
-          <td>${u.nome}</td>
-          <td>${u.login}</td>
-          <td>${u.tipo || 'Usuario'}</td>
-        </tr>
-      `).join('');
-    }
-
-    function renderExcluirUsuarios() {
-      const buscaInput = document.getElementById('usr-busca-excluir');
-      const busca = buscaInput ? buscaInput.value.toLowerCase() : '';
-      const tbody = document.querySelector('#table-excluir-usuarios tbody');
-
-      const usuariosFiltrados = db.usuarios.filter(u => 
-        u.nome.toLowerCase().includes(busca) || 
-        u.login.toLowerCase().includes(busca)
-      );
-
-      if (usuariosFiltrados.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#808495;">Nenhum usuário encontrado.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = usuariosFiltrados.map(u => `
-        <tr>
-          <td>${u.id}</td>
-          <td>${u.nome}</td>
-          <td>${u.login}</td>
-          <td>${u.tipo || 'Usuario'}</td>
-          <td>
-            <button class="btn-danger" onclick="excluirUsuario(${u.id})">🗑️ Excluir</button>
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    async function excluirUsuario(id) {
-      const usuario = db.usuarios.find(u => u.id === id);
-      if (!usuario) return;
-
-      const temEmprestimo = db.emprestimos.some(e => e.usuario === usuario.nome);
-      if (temEmprestimo) {
-        return showAlert(`Não é possível excluir o usuário "${usuario.nome}" pois ele possui empréstimos pendentes.`, false);
-      }
-
-      if (confirm(`Tem certeza que deseja excluir o usuário "${usuario.nome}" (${usuario.login})?`)) {
-        db.usuarios = db.usuarios.filter(u => u.id !== id);
-        await saveDB();
-        showAlert(`Usuário "${usuario.nome}" excluído com sucesso!`);
-        renderAll();
-      }
-    }
-
-    async function exportarUsuariosExcel() {
-      if (db.usuarios.length === 0) {
-        return showAlert("Não há usuários cadastrados para exportar.", false);
-      }
-
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Usuarios');
-
-      worksheet.columns = [
-        { header: 'ID', key: 'id' },
-        { header: 'Nome Completo', key: 'nome' },
-        { header: 'Login', key: 'login' },
-        { header: 'Tipo de Usuário', key: 'tipo' }
-      ];
-
-      db.usuarios.forEach(u => {
-        worksheet.addRow({ id: u.id, nome: u.nome, login: u.login, tipo: u.tipo || 'Usuario' });
-      });
-
-      const buffer = await workbook.xlsx.writeBuffer();
-      const hoje = new Date().toISOString().split('T')[0];
-      saveAs(new Blob([buffer]), `relatorio_usuarios_${hoje}.xlsx`);
-    }
-
-    async function cadastrarManual() {
-      const codigo = document.getElementById('cad-codigo').value.trim();
-      const classificacao = document.getElementById('cad-classificacao').value.trim();
-      const titulo = document.getElementById('cad-titulo').value.trim();
-      const subtitulo = document.getElementById('cad-subtitulo').value.trim();
-      const autor = document.getElementById('cad-autor').value.trim();
-      const traducao = document.getElementById('cad-traducao').value.trim();
-      const isbn = document.getElementById('cad-isbn').value.trim();
-      const colecao = document.getElementById('cad-colecao').value.trim();
-      const edicao = document.getElementById('cad-edicao').value.trim();
-      const volume = document.getElementById('cad-volume').value.trim();
-      const lugar = document.getElementById('cad-lugar').value.trim();
-      const editora = document.getElementById('cad-editora').value.trim();
-      const dataPub = document.getElementById('cad-data-pub').value.trim();
-      const paginas = document.getElementById('cad-paginas').value.trim();
-      const exemplar = document.getElementById('cad-exemplar').value.trim();
-
-      if (!titulo) return showAlert("O título do livro é obrigatório.", false);
-
-      const newId = db.livros.length ? Math.max(...db.livros.map(l => l.id)) + 1 : 1;
-      db.livros.push({ 
-        id: newId, 
-        codigo: codigo || `COD-${newId}`,
-        classificacao: classificacao || '-',
-        titulo, 
-        subtitulo: subtitulo || '-',
-        autor: autor || '-',
-        traducao: traducao || '-',
-        isbn: isbn || '-',
-        colecao: colecao || '-',
-        edicao: edicao || '-',
-        volume: volume || '-',
-        lugar: lugar || '-',
-        editora: editora || '-', 
-        dataPub: dataPub || '-', 
-        paginas: paginas || '-',
-        exemplar: exemplar || '1', 
-        status: 'Disponível' 
-      });
-      
-      await saveDB();
-      
-      document.getElementById('cad-codigo').value = '';
-      document.getElementById('cad-classificacao').value = '';
-      document.getElementById('cad-titulo').value = '';
-      document.getElementById('cad-subtitulo').value = '';
-      document.getElementById('cad-autor').value = '';
-      document.getElementById('cad-traducao').value = '';
-      document.getElementById('cad-isbn').value = '';
-      document.getElementById('cad-colecao').value = '';
-      document.getElementById('cad-edicao').value = '';
-      document.getElementById('cad-volume').value = '';
-      document.getElementById('cad-lugar').value = '';
-      document.getElementById('cad-editora').value = '';
-      document.getElementById('cad-data-pub').value = '';
-      document.getElementById('cad-paginas').value = '';
-      document.getElementById('cad-exemplar').value = '';
-
-      showAlert("Livro cadastrado com sucesso!");
-    }
-
-    function renderAlterarLivrosTable() {
-      const buscaInput = document.getElementById('alt-busca');
-      if (!buscaInput) return;
-      const busca = buscaInput.value.toLowerCase();
-      const tbody = document.querySelector('#table-alterar-busca tbody');
-
-      const livrosFiltrados = db.livros.filter(l => 
-        l.titulo.toLowerCase().includes(busca) || 
-        (l.codigo && l.codigo.toLowerCase().includes(busca)) ||
-        (l.classificacao && l.classificacao.toLowerCase().includes(busca)) ||
-        l.autor.toLowerCase().includes(busca)
-      );
-
-      livrosFiltrados.sort((a, b) => (a.codigo || '').localeCompare(b.codigo || '', undefined, { numeric: true, sensitivity: 'base' }));
-
-      if (livrosFiltrados.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#808495;">Nenhum livro encontrado.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = livrosFiltrados.map(l => `
-        <tr>
-          <td><b>${l.codigo}</b></td>
-          <td>${l.classificacao || '-'}</td>
-          <td>${l.titulo}</td>
-          <td>${l.autor}</td>
-          <td>
-            <button class="btn-warning" onclick="carregarLivroParaEdicao(${l.id})">✏️ Editar</button>
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    function carregarLivroParaEdicao(id) {
-      const livro = db.livros.find(l => l.id === id);
-      if (!livro) return;
-
-      document.getElementById('alt-id').value = livro.id;
-      document.getElementById('alt-id-display').innerText = `[${livro.codigo}]`;
-
-      document.getElementById('alt-codigo').value = livro.codigo || '';
-      document.getElementById('alt-classificacao').value = livro.classificacao || '';
-      document.getElementById('alt-titulo').value = livro.titulo || '';
-      document.getElementById('alt-subtitulo').value = livro.subtitulo || '';
-      document.getElementById('alt-autor').value = livro.autor || '';
-      document.getElementById('alt-traducao').value = livro.traducao || '';
-      document.getElementById('alt-isbn').value = livro.isbn || '';
-      document.getElementById('alt-colecao').value = livro.colecao || '';
-      document.getElementById('alt-edicao').value = livro.edicao || '';
-      document.getElementById('alt-volume').value = livro.volume || '';
-      document.getElementById('alt-lugar').value = livro.lugar || '';
-      document.getElementById('alt-editora').value = livro.editora || '';
-      document.getElementById('alt-data-pub').value = livro.dataPub || '';
-      document.getElementById('alt-paginas').value = livro.paginas || '';
-      document.getElementById('alt-exemplar').value = livro.exemplar || '';
-
-      document.getElementById('alt-form-container').classList.remove('hidden');
-    }
-
-    function cancelarEdicaoLivro() {
-      document.getElementById('alt-form-container').classList.add('hidden');
-    }
-
-    async function salvarAlteracaoLivro() {
-      const id = parseInt(document.getElementById('alt-id').value);
-      const livro = db.livros.find(l => l.id === id);
-
-      if (!livro) return showAlert("Livro não encontrado para atualização.", false);
-
-      const novoTitulo = document.getElementById('alt-titulo').value.trim();
-      if (!novoTitulo) return showAlert("O título do livro não pode ficar vazio.", false);
-
-      livro.codigo = document.getElementById('alt-codigo').value.trim() || '-';
-      livro.classificacao = document.getElementById('alt-classificacao').value.trim() || '-';
-      livro.titulo = novoTitulo;
-      livro.subtitulo = document.getElementById('alt-subtitulo').value.trim() || '-';
-      livro.autor = document.getElementById('alt-autor').value.trim() || '-';
-      livro.traducao = document.getElementById('alt-traducao').value.trim() || '-';
-      livro.isbn = document.getElementById('alt-isbn').value.trim() || '-';
-      livro.colecao = document.getElementById('alt-colecao').value.trim() || '-';
-      livro.edicao = document.getElementById('alt-edicao').value.trim() || '-';
-      livro.volume = document.getElementById('alt-volume').value.trim() || '-';
-      livro.lugar = document.getElementById('alt-lugar').value.trim() || '-';
-      livro.editora = document.getElementById('alt-editora').value.trim() || '-';
-      livro.dataPub = document.getElementById('alt-data-pub').value.trim() || '-';
-      livro.paginas = document.getElementById('alt-paginas').value.trim() || '-';
-      livro.exemplar = document.getElementById('alt-exemplar').value.trim() || '1';
-
-      await saveDB();
-      cancelarEdicaoLivro();
-      renderAll();
-      showAlert("Dados do livro alterados com sucesso!");
-    }
-
-    function getVal(row, keyNames) {
-      for (const k of Object.keys(row)) {
-        const cleanKey = k.toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        for (const target of keyNames) {
-          if (cleanKey === target.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")) {
-            return row[k];
-          }
+        function saveBooks(books) {
+            localStorage.setItem(BOOKS_KEY, JSON.stringify(books));
         }
-      }
-      return '';
-    }
 
-    document.getElementById('cad-file').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
+        function switchTab(tab) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const tabs = document.querySelectorAll('.tab-btn');
+            
+            hideAlert();
 
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rawJson = XLSX.utils.sheet_to_json(firstSheet, { header: 0 });
-
-        if (rawJson.length > 0) {
-          tempExcelData = rawJson.map(r => ({
-            codigo: getVal(r, ['Código Interno', 'Codigo Interno', 'codigo', 'cod']),
-            classificacao: getVal(r, ['Classificação', 'Classificacao', 'classificacao']),
-            titulo: getVal(r, ['Título', 'Titulo', 'titulo']),
-            subtitulo: getVal(r, ['Subtítulo', 'Subtitulo', 'subtitulo']),
-            autor: getVal(r, ['Autor/Org./Coordenador', 'Autor', 'autor', 'coordenador', 'org']),
-            traducao: getVal(r, ['Tradução', 'Traducao', 'traducao']),
-            isbn: getVal(r, ['ISBN', 'isbn']),
-            colecao: getVal(r, ['Coleção', 'Colecao', 'colecao']),
-            edicao: getVal(r, ['Edição', 'Edicao', 'edicao']),
-            volume: getVal(r, ['Vol.', 'Volume', 'volume', 'vol']),
-            lugar: getVal(r, ['Lugar de Publicação', 'Lugar de Publicacao', 'Lugar', 'lugar']),
-            editora: getVal(r, ['Editora', 'editora']),
-            dataPub: getVal(r, ['Data', 'Data Publicação', 'Data Publicacao', 'data_pub', 'ano']),
-            paginas: getVal(r, ['Numero de Páginas', 'Numero de paginas', 'Número de páginas', 'paginas', 'páginas']),
-            exemplar: getVal(r, ['Exemplar', 'exemplar'])
-          }));
-
-          let html = '<tr><th>Código</th><th>Classificação</th><th>Título</th><th>Subtítulo</th><th>Autor</th><th>ISBN</th><th>Exemplar</th></tr>';
-          tempExcelData.slice(0, 5).forEach(r => {
-            html += `<tr>
-              <td>${r.codigo || '-'}</td>
-              <td>${r.classificacao || '-'}</td>
-              <td><b>${r.titulo || 'Sem Título'}</b></td>
-              <td>${r.subtitulo || '-'}</td>
-              <td>${r.autor || '-'}</td>
-              <td>${r.isbn || '-'}</td>
-              <td>${r.exemplar || '1'}</td>
-            </tr>`;
-          });
-
-          document.getElementById('table-preview').innerHTML = html;
-          document.getElementById('preview-area').classList.remove('hidden');
-        } else {
-          showAlert("Erro: Planilha vazia ou em formato inválido.", false);
+            if (tab === 'login') {
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+                tabs[0].classList.add('active');
+                tabs[1].classList.remove('active');
+            } else {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+                tabs[0].classList.remove('active');
+                tabs[1].classList.add('active');
+            }
         }
-      };
-      reader.readAsArrayBuffer(file);
-    });
 
-    async function confirmarImportacao() {
-      let currentId = db.livros.length ? Math.max(...db.livros.map(l => l.id)) + 1 : 1;
-      let importadosCount = 0;
+        function showAlert(msg, isSuccess = false, elementId = 'alertBox') {
+            const alertBox = document.getElementById(elementId);
+            if(alertBox) {
+                alertBox.textContent = msg;
+                alertBox.style.display = 'block';
+                alertBox.className = `alert-msg ${isSuccess ? 'alert-success' : 'alert-error'}`;
+            }
+        }
 
-      tempExcelData.forEach(row => {
-        db.livros.push({
-          id: currentId,
-          codigo: String(row.codigo || `COD-${currentId}`),
-          classificacao: String(row.classificacao || '-'),
-          titulo: String(row.titulo || 'Sem Título'),
-          subtitulo: String(row.subtitulo || '-'),
-          autor: String(row.autor || '-'),
-          traducao: String(row.traducao || '-'),
-          isbn: String(row.isbn || '-'),
-          colecao: String(row.colecao || '-'),
-          edicao: String(row.edicao || '-'),
-          volume: String(row.volume || '-'),
-          lugar: String(row.lugar || '-'),
-          editora: String(row.editora || '-'),
-          dataPub: String(row.dataPub || '-'),
-          paginas: String(row.paginas || '-'),
-          exemplar: String(row.exemplar || '1'),
-          status: 'Disponível'
-        });
-        currentId++;
-        importadosCount++;
-      });
+        function hideAlert(elementId = 'alertBox') {
+            const el = document.getElementById(elementId);
+            if(el) el.style.display = 'none';
+        }
 
-      await saveDB();
-      document.getElementById('preview-area').classList.add('hidden');
-      document.getElementById('cad-file').value = '';
-      showAlert(`${importadosCount} livros importados com sucesso!`);
-      renderAll();
-    }
+        function toggleSubmenu(e, menuId) {
+            e.preventDefault();
+            e.stopPropagation();
+            const menu = document.getElementById(menuId);
+            menu.classList.toggle('open');
+        }
 
-    function renderExcluirLivros() {
-      const buscaInput = document.getElementById('excluir-busca');
-      if (!buscaInput) return;
-      
-      const busca = buscaInput.value.toLowerCase();
-      const tbody = document.querySelector('#table-excluir-livros tbody');
-      
-      const livrosFiltrados = db.livros.filter(l => 
-        l.titulo.toLowerCase().includes(busca) || 
-        (l.codigo && l.codigo.toLowerCase().includes(busca)) ||
-        (l.classificacao && l.classificacao.toLowerCase().includes(busca)) ||
-        (l.isbn && l.isbn.toLowerCase().includes(busca)) ||
-        l.autor.toLowerCase().includes(busca)
-      );
+        function handleLogin(e) {
+            e.preventDefault();
+            const userIn = document.getElementById('loginUser').value.trim();
+            const passIn = document.getElementById('loginPass').value;
 
-      livrosFiltrados.sort((a, b) => (a.codigo || '').localeCompare(b.codigo || '', undefined, { numeric: true, sensitivity: 'base' }));
+            const users = getUsers();
+            const foundUser = users.find(u => u.username === userIn && u.pass === passIn);
 
-      if (livrosFiltrados.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="17" style="text-align:center; color:#808495;">Nenhum livro encontrado.</td></tr>`;
-        return;
-      }
+            if (foundUser) {
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('appScreen').style.display = 'flex';
+                
+                document.getElementById('currentUserName').textContent = foundUser.name;
+                document.getElementById('currentUserType').textContent = foundUser.type || 'Comum';
+                document.getElementById('avatarInitial').textContent = foundUser.name.charAt(0).toUpperCase();
+                
+                loadDashboardData();
+            } else {
+                showAlert('Usuário ou senha incorretos!');
+            }
+        }
 
-      tbody.innerHTML = livrosFiltrados.map(l => `
-        <tr>
-          <td><b>${l.codigo}</b></td>
-          <td>${l.classificacao || '-'}</td>
-          <td>${l.titulo}</td>
-          <td>${l.subtitulo}</td>
-          <td>${l.autor}</td>
-          <td>${l.traducao}</td>
-          <td>${l.isbn || '-'}</td>
-          <td>${l.colecao}</td>
-          <td>${l.edicao}</td>
-          <td>${l.volume}</td>
-          <td>${l.lugar}</td>
-          <td>${l.editora}</td>
-          <td>${l.dataPub}</td>
-          <td>${l.paginas}</td>
-          <td>${l.exemplar}</td>
-          <td>${l.status}</td>
-          <td>
-            <button class="btn-danger" onclick="excluirLivro(${l.id})">🗑️ Excluir</button>
-          </td>
-        </tr>
-      `).join('');
-    }
+        function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('regName').value.trim();
+            const username = document.getElementById('regUser').value.trim();
+            const pass = document.getElementById('regPass').value;
+            const type = document.getElementById('regType').value;
 
-    async function excluirLivro(id) {
-      const livro = db.livros.find(l => l.id === id);
-      if (!livro) return;
+            const users = getUsers();
+            if (users.some(u => u.username === username)) {
+                showAlert('Nome de usuário já existe!');
+                return;
+            }
 
-      if (livro.status === 'Emprestado') {
-        return showAlert(`Não é possível excluir "${livro.titulo}" pois ele está em um empréstimo ativo.`, false);
-      }
+            const newUser = {
+                name,
+                username,
+                pass,
+                type,
+                createdAt: new Date().toLocaleDateString('pt-BR')
+            };
 
-      if (confirm(`Tem certeza que deseja excluir permanentemente o livro "${livro.titulo}" (${livro.codigo})?`)) {
-        db.livros = db.livros.filter(l => l.id !== id);
-        db.emprestimos = db.emprestimos.filter(e => e.id_livro !== id);
-        
-        await saveDB();
-        showAlert(`Livro "${livro.titulo}" excluído com sucesso!`);
-        renderAll();
-      }
-    }
+            users.push(newUser);
+            saveUsers(users);
+            showAlert('Cadastro realizado com sucesso! Faça login.', true);
+            
+            setTimeout(() => {
+                switchTab('login');
+                document.getElementById('loginUser').value = username;
+                document.getElementById('loginPass').value = '';
+            }, 1500);
+        }
 
-    async function excluirTodosLivros() {
-      if (db.livros.length === 0) {
-        return showAlert("Não há livros cadastrados para excluir.", false);
-      }
+        function navigateTo(sectionId, element) {
+            document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
+            
+            if (element) {
+                element.classList.add('active');
+                const parentMenu = element.closest('.has-submenu');
+                if (parentMenu) parentMenu.classList.add('active');
+            }
 
-      const temEmprestimo = db.livros.some(l => l.status === 'Emprestado');
-      if (temEmprestimo) {
-        return showAlert("Não é possível excluir todos os livros pois existem empréstimos ativos em andamento.", false);
-      }
+            document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+            const targetSec = document.getElementById(`sec-${sectionId}`);
+            if(targetSec) targetSec.classList.add('active');
 
-      if (confirm("⚠️ ATENÇÃO! Tem certeza que deseja excluir TODOS os livros do sistema? Esta ação não poderá ser desfeita.")) {
-        db.livros = [];
-        db.emprestimos = [];
-        await saveDB();
-        showAlert("Todos os livros foram excluídos com sucesso!");
-        renderAll();
-      }
-    }
+            loadDashboardData();
+            if(sectionId === 'usuarios-modificar' || sectionId === 'usuarios-excluir') {
+                populateUserSelects();
+            }
+            if(sectionId === 'livros-modificar' || sectionId === 'livros-excluir') {
+                populateBookSelects();
+            }
+        }
 
-    function renderEmprestimosSelect() {
-      const selectLivro = document.getElementById('emp-livro');
-      const selectUsuario = document.getElementById('emp-usuario');
+        /* --- CRUD USUÁRIOS --- */
+        function handleAdminAddUser(e) {
+            e.preventDefault();
+            const name = document.getElementById('incName').value.trim();
+            const username = document.getElementById('incUser').value.trim();
+            const pass = document.getElementById('incPass').value;
+            const type = document.getElementById('incType').value;
 
-      const disp = db.livros.filter(l => l.status === 'Disponível');
-      
-      disp.sort((a, b) => (a.codigo || '').localeCompare(b.codigo || '', undefined, { numeric: true, sensitivity: 'base' }));
+            const users = getUsers();
+            if (users.some(u => u.username === username)) {
+                showAlert('O nome de usuário já existe!', false, 'inc-alert');
+                return;
+            }
 
-      selectLivro.innerHTML = disp.length 
-        ? disp.map(l => `<option value="${l.id}">[${l.codigo}] ${l.titulo} (Ex: ${l.exemplar})</option>`).join('')
-        : '<option value="">Nenhum livro disponível</option>';
+            users.push({
+                name,
+                username,
+                pass,
+                type,
+                createdAt: new Date().toLocaleDateString('pt-BR')
+            });
 
-      selectUsuario.innerHTML = db.usuarios.length
-        ? db.usuarios.map(u => `<option value="${u.nome}">${u.nome} (${u.login}) - ${u.tipo || 'Usuario'}</option>`).join('')
-        : '<option value="">Nenhum usuário cadastrado</option>';
-    }
+            saveUsers(users);
+            showAlert('Usuário incluído com sucesso!', true, 'inc-alert');
+            e.target.reset();
+            loadDashboardData();
+        }
 
-    async function registrarEmprestimo() {
-      const idLivro = parseInt(document.getElementById('emp-livro').value);
-      const user = document.getElementById('emp-usuario').value;
-      const dataRet = document.getElementById('emp-data').value;
+        function populateUserSelects() {
+            const users = getUsers();
+            const modSelect = document.getElementById('modUserSelect');
+            const delSelect = document.getElementById('delUserSelect');
 
-      if (!idLivro || !user || !dataRet) return showAlert("Preencha todos os campos.", false);
+            modSelect.innerHTML = '<option value="">-- Selecione um Usuário --</option>';
+            delSelect.innerHTML = '<option value="">-- Selecione um Usuário --</option>';
 
-      const livro = db.livros.find(l => l.id === idLivro);
-      livro.status = 'Emprestado';
+            users.forEach(u => {
+                const opt1 = document.createElement('option');
+                opt1.value = u.username;
+                opt1.textContent = `${u.name} (${u.username})`;
+                modSelect.appendChild(opt1);
 
-      const hoje = new Date().toISOString().split('T')[0];
-      db.emprestimos.push({ id_livro: idLivro, usuario: user, data_saida: hoje, data_retorno: dataRet });
+                const opt2 = document.createElement('option');
+                opt2.value = u.username;
+                opt2.textContent = `${u.name} (${u.username})`;
+                delSelect.appendChild(opt2);
+            });
+        }
 
-      await saveDB();
-      document.getElementById('emp-data').value = '';
-      showAlert("Empréstimo finalizado!");
-      renderAll();
-    }
+        function loadUserToEdit() {
+            const username = document.getElementById('modUserSelect').value;
+            const modForm = document.getElementById('modForm');
+            hideAlert('mod-alert');
 
-    function renderDevolucoesSelect() {
-      const select = document.getElementById('dev-livro');
-      select.innerHTML = db.emprestimos.length 
-        ? db.emprestimos.map(e => {
-            const l = db.livros.find(liv => liv.id === e.id_livro);
-            return `<option value="${e.id_livro}">${l ? `[${l.codigo}] ${l.titulo}` : 'Removido'} (com ${e.usuario})</option>`;
-          }).join('')
-        : '<option value="">Nenhum empréstimo ativo</option>';
-    }
+            if (!username) {
+                modForm.style.display = 'none';
+                return;
+            }
 
-    async function registrarDevolucao() {
-      const idLivro = parseInt(document.getElementById('dev-livro').value);
-      if (!idLivro) return;
+            const users = getUsers();
+            const user = users.find(u => u.username === username);
 
-      const livro = db.livros.find(l => l.id === idLivro);
-      if (livro) livro.status = 'Disponível';
+            if (user) {
+                document.getElementById('modOriginalUser').value = user.username;
+                document.getElementById('modName').value = user.name;
+                document.getElementById('modUser').value = user.username;
+                document.getElementById('modPass').value = '';
+                document.getElementById('modType').value = user.type || 'Comum';
+                modForm.style.display = 'block';
+            }
+        }
 
-      db.emprestimos = db.emprestimos.filter(e => e.id_livro !== idLivro);
+        function handleModifyUser(e) {
+            e.preventDefault();
+            const origUser = document.getElementById('modOriginalUser').value;
+            const newName = document.getElementById('modName').value.trim();
+            const newUser = document.getElementById('modUser').value.trim();
+            const newPass = document.getElementById('modPass').value;
+            const newType = document.getElementById('modType').value;
 
-      await saveDB();
-      showAlert("Devolução confirmada!");
-      renderAll();
-    }
+            let users = getUsers();
 
-    function getInventarioData() {
-      return db.livros.map(l => {
-        const emp = db.emprestimos.find(e => e.id_livro === l.id);
-        return {
-          codigo: l.codigo || '-',
-          classificacao: l.classificacao || '-',
-          titulo: l.titulo,
-          subtitulo: l.subtitulo || '-',
-          autor: l.autor || '-',
-          traducao: l.traducao || '-',
-          isbn: l.isbn || '-',
-          colecao: l.colecao || '-',
-          edicao: l.edicao || '-',
-          volume: l.volume || '-',
-          lugar: l.lugar || '-',
-          editora: l.editora || '-',
-          dataPub: l.dataPub || '-',
-          paginas: l.paginas || '-',
-          exemplar: l.exemplar || '1',
-          status: l.status,
-          usuario: emp ? emp.usuario : '',
-          data_retorno: emp ? emp.data_retorno : ''
-        };
-      });
-    }
+            if (origUser !== newUser && users.some(u => u.username === newUser)) {
+                showAlert('O novo nome de usuário já está em uso!', false, 'mod-alert');
+                return;
+            }
 
-    function renderInventario() {
-      const busca = document.getElementById('inv-busca').value.toLowerCase();
-      const hoje = new Date().toISOString().split('T')[0];
-      const tbody = document.querySelector('#table-inventario tbody');
-      
-      let dados = getInventarioData().filter(i => 
-        i.titulo.toLowerCase().includes(busca) || 
-        i.autor.toLowerCase().includes(busca) ||
-        i.codigo.toLowerCase().includes(busca) ||
-        i.classificacao.toLowerCase().includes(busca) ||
-        i.isbn.toLowerCase().includes(busca) ||
-        i.editora.toLowerCase().includes(busca) ||
-        i.subtitulo.toLowerCase().includes(busca)
-      );
+            users = users.map(u => {
+                if (u.username === origUser) {
+                    return {
+                        ...u,
+                        name: newName,
+                        username: newUser,
+                        pass: newPass ? newPass : u.pass,
+                        type: newType
+                    };
+                }
+                return u;
+            });
 
-      if (filtroStatusInventario !== 'Todos') {
-        dados = dados.filter(i => i.status === filtroStatusInventario);
-      }
+            saveUsers(users);
+            showAlert('Usuário alterado com sucesso!', true, 'mod-alert');
+            populateUserSelects();
+            document.getElementById('modForm').style.display = 'none';
+            loadDashboardData();
+        }
 
-      dados.sort((a, b) => a.codigo.localeCompare(b.codigo, undefined, { numeric: true, sensitivity: 'base' }));
+        function handleDeleteUser(e) {
+            e.preventDefault();
+            const username = document.getElementById('delUserSelect').value;
+            if (!username) return;
 
-      if (dados.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="18" style="text-align:center; color:#808495;">Nenhum livro encontrado nesta categoria.</td></tr>`;
-        return;
-      }
+            if (confirm(`Tem certeza que deseja excluir o usuário "${username}"?`)) {
+                let users = getUsers();
+                users = users.filter(u => u.username !== username);
+                saveUsers(users);
 
-      tbody.innerHTML = dados.map(item => {
-        const isAtrasado = item.status === 'Emprestado' && item.data_retorno < hoje;
-        return `
-          <tr class="${isAtrasado ? 'atrasado' : ''}">
-            <td><b>${item.codigo}</b></td>
-            <td>${item.classificacao}</td>
-            <td>${item.titulo}</td>
-            <td>${item.subtitulo}</td>
-            <td>${item.autor}</td>
-            <td>${item.traducao}</td>
-            <td>${item.isbn}</td>
-            <td>${item.colecao}</td>
-            <td>${item.edicao}</td>
-            <td>${item.volume}</td>
-            <td>${item.lugar}</td>
-            <td>${item.editora}</td>
-            <td>${item.dataPub}</td>
-            <td>${item.paginas}</td>
-            <td>${item.exemplar}</td>
-            <td>${item.status}</td>
-            <td>${item.usuario}</td>
-            <td>${item.data_retorno}</td>
-          </tr>
-        `;
-      }).join('');
-    }
+                showAlert('Usuário excluído com sucesso!', true, 'del-alert');
+                populateUserSelects();
+                loadDashboardData();
+            }
+        }
 
-    async function exportarExcel() {
-      if (db.livros.length === 0) {
-        return showAlert("Não há livros cadastrados para exportar.", false);
-      }
+        /* --- CRUD LIVROS --- */
+        function handleAddBook(e) {
+            e.preventDefault();
+            const codigo = document.getElementById('bookIncCodigo').value.trim();
+            
+            const books = getBooks();
+            if(books.some(b => b.codigo === codigo)) {
+                showAlert('Já existe um livro com este Código Interno!', false, 'book-inc-alert');
+                return;
+            }
 
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Lista_de_Livros');
+            const newBook = {
+                codigo: codigo,
+                titulo: document.getElementById('bookIncTitulo').value.trim(),
+                subtitulo: document.getElementById('bookIncSubtitulo').value.trim(),
+                autor: document.getElementById('bookIncAutor').value.trim(),
+                isbn: document.getElementById('bookIncIsbn').value.trim(),
+                traducao: document.getElementById('bookIncTraducao').value.trim(),
+                colecao: document.getElementById('bookIncColecao').value.trim(),
+                edicao: document.getElementById('bookIncEdicao').value.trim(),
+                volume: document.getElementById('bookIncVolume').value.trim(),
+                classificacao: document.getElementById('bookIncClassificacao').value.trim(),
+                local: document.getElementById('bookIncLocal').value.trim(),
+                editora: document.getElementById('bookIncEditora').value.trim(),
+                data: document.getElementById('bookIncData').value,
+                paginas: document.getElementById('bookIncPaginas').value,
+                exemplar: document.getElementById('bookIncExemplar').value.trim()
+            };
 
-      worksheet.columns = [
-        { header: 'Código Interno', key: 'codigo' },
-        { header: 'Classificação', key: 'classificacao' },
-        { header: 'Título', key: 'titulo' },
-        { header: 'Subtítulo', key: 'subtitulo' },
-        { header: 'Autor/Org./Coordenador', key: 'autor' },
-        { header: 'Tradução', key: 'traducao' },
-        { header: 'ISBN', key: 'isbn' },
-        { header: 'Coleção', key: 'colecao' },
-        { header: 'Edição', key: 'edicao' },
-        { header: 'Vol.', key: 'volume' },
-        { header: 'Lugar de Publicação', key: 'lugar' },
-        { header: 'Editora', key: 'editora' },
-        { header: 'Data', key: 'dataPub' },
-        { header: 'Numero de Páginas', key: 'paginas' },
-        { header: 'Exemplar', key: 'exemplar' },
-        { header: 'Status', key: 'status' },
-        { header: 'Usuário Atual', key: 'usuario' },
-        { header: 'Data Retorno', key: 'data_retorno' }
-      ];
+            books.push(newBook);
+            saveBooks(books);
+            showAlert('Livro cadastrado com sucesso!', true, 'book-inc-alert');
+            e.target.reset();
+            loadDashboardData();
+        }
 
-      getInventarioData().forEach(item => worksheet.addRow(item));
+        function populateBookSelects() {
+            const books = getBooks();
+            const modSelect = document.getElementById('modBookSelect');
+            const delSelect = document.getElementById('delBookSelect');
 
-      const buffer = await workbook.xlsx.writeBuffer();
-      const hoje = new Date().toISOString().split('T')[0];
-      saveAs(new Blob([buffer]), `lista_de_livros_${hoje}.xlsx`);
-    }
-  </script>
+            modSelect.innerHTML = '<option value="">-- Selecione um Livro --</option>';
+            delSelect.innerHTML = '<option value="">-- Selecione um Livro --</option>';
+
+            books.forEach(b => {
+                const opt1 = document.createElement('option');
+                opt1.value = b.codigo;
+                opt1.textContent = `[${b.codigo}] ${b.titulo}`;
+                modSelect.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = b.codigo;
+                opt2.textContent = `[${b.codigo}] ${b.titulo}`;
+                delSelect.appendChild(opt2);
+            });
+        }
+
+        function loadBookToEdit() {
+            const codigo = document.getElementById('modBookSelect').value;
+            const form = document.getElementById('modBookForm');
+            hideAlert('book-mod-alert');
+
+            if(!codigo) {
+                form.style.display = 'none';
+                return;
+            }
+
+            const books = getBooks();
+            const book = books.find(b => b.codigo === codigo);
+
+            if(book) {
+                document.getElementById('bookModOriginalCodigo').value = book.codigo;
+                document.getElementById('bookModCodigo').value = book.codigo;
+                document.getElementById('bookModTitulo').value = book.titulo || '';
+                document.getElementById('bookModSubtitulo').value = book.subtitulo || '';
+                document.getElementById('bookModAutor').value = book.autor || '';
+                document.getElementById('bookModIsbn').value = book.isbn || '';
+                document.getElementById('bookModTraducao').value = book.traducao || '';
+                document.getElementById('bookModColecao').value = book.colecao || '';
+                document.getElementById('bookModEdicao').value = book.edicao || '';
+                document.getElementById('bookModVolume').value = book.volume || '';
+                document.getElementById('bookModClassificacao').value = book.classificacao || '';
+                document.getElementById('bookModLocal').value = book.local || '';
+                document.getElementById('bookModEditora').value = book.editora || '';
+                document.getElementById('bookModData').value = book.data || '';
+                document.getElementById('bookModPaginas').value = book.paginas || '';
+                document.getElementById('bookModExemplar').value = book.exemplar || '';
+
+                form.style.display = 'block';
+            }
+        }
+
+        function handleModifyBook(e) {
+            e.preventDefault();
+            const origCodigo = document.getElementById('bookModOriginalCodigo').value;
+            const newCodigo = document.getElementById('bookModCodigo').value.trim();
+
+            let books = getBooks();
+
+            if (origCodigo !== newCodigo && books.some(b => b.codigo === newCodigo)) {
+                showAlert('O novo Código Interno já pertence a outro livro!', false, 'book-mod-alert');
+                return;
+            }
+
+            books = books.map(b => {
+                if (b.codigo === origCodigo) {
+                    return {
+                        codigo: newCodigo,
+                        titulo: document.getElementById('bookModTitulo').value.trim(),
+                        subtitulo: document.getElementById('bookModSubtitulo').value.trim(),
+                        autor: document.getElementById('bookModAutor').value.trim(),
+                        isbn: document.getElementById('bookModIsbn').value.trim(),
+                        traducao: document.getElementById('bookModTraducao').value.trim(),
+                        colecao: document.getElementById('bookModColecao').value.trim(),
+                        edicao: document.getElementById('bookModEdicao').value.trim(),
+                        volume: document.getElementById('bookModVolume').value.trim(),
+                        classificacao: document.getElementById('bookModClassificacao').value.trim(),
+                        local: document.getElementById('bookModLocal').value.trim(),
+                        editora: document.getElementById('bookModEditora').value.trim(),
+                        data: document.getElementById('bookModData').value,
+                        paginas: document.getElementById('bookModPaginas').value,
+                        exemplar: document.getElementById('bookModExemplar').value.trim()
+                    };
+                }
+                return b;
+            });
+
+            saveBooks(books);
+            showAlert('Dados do livro alterados com sucesso!', true, 'book-mod-alert');
+            populateBookSelects();
+            document.getElementById('modBookForm').style.display = 'none';
+            loadDashboardData();
+        }
+
+        function handleDeleteBook(e) {
+            e.preventDefault();
+            const codigo = document.getElementById('delBookSelect').value;
+            if (!codigo) return;
+
+            if (confirm(`Tem certeza que deseja excluir o livro [${codigo}]?`)) {
+                let books = getBooks();
+                books = books.filter(b => b.codigo !== codigo);
+                saveBooks(books);
+
+                showAlert('Livro excluído com sucesso!', true, 'book-del-alert');
+                populateBookSelects();
+                loadDashboardData();
+            }
+        }
+
+        /* --- IMPORTAR E EXPORTAR CSV --- */
+        function handleExportBooks() {
+            const books = getBooks();
+            if(books.length === 0) {
+                alert("Não há livros cadastrados para exportar.");
+                return;
+            }
+
+            const headers = [
+                "Código Interno", "Título", "Subtítulo", "Autor / Org. / Coordenador", 
+                "ISBN", "Tradução", "Coleção", "Edição", "Volume", 
+                "Classificação", "Local de Publicação", "Editora", "Data", "Número de Páginas", "Exemplar"
+            ];
+
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+            csvContent += headers.map(h => `"${h}"`).join(";") + "\n";
+
+            books.forEach(b => {
+                const row = [
+                    b.codigo || "", b.titulo || "", b.subtitulo || "", b.autor || "",
+                    b.isbn || "", b.traducao || "", b.colecao || "", b.edicao || "",
+                    b.volume || "", b.classificacao || "", b.local || "", b.editora || "",
+                    b.data || "", b.paginas || "", b.exemplar || ""
+                ];
+                csvContent += row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(";") + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `livros_biblioteca_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function handleImportBooks() {
+            const fileInput = document.getElementById('importCsvFile');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showAlert("Por favor, selecione um arquivo CSV.", false, 'book-imp-alert');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                
+                function parseCSVLine(line, delimiter) {
+                    const values = [];
+                    let current = '';
+                    let inQuotes = false;
+
+                    for (let i = 0; i < line.length; i++) {
+                        const char = line[i];
+                        if (char === '"') {
+                            if (inQuotes && line[i + 1] === '"') {
+                                current += '"';
+                                i++;
+                            } else {
+                                inQuotes = !inQuotes;
+                            }
+                        } else if (char === delimiter && !inQuotes) {
+                            values.push(current.trim());
+                            current = '';
+                        } else {
+                            current += char;
+                        }
+                    }
+                    values.push(current.trim());
+                    return values;
+                }
+
+                const lines = text.split(/\r\n|\n/).filter(line => line.trim() !== '');
+                if (lines.length < 2) {
+                    showAlert("O arquivo CSV precisa conter um cabeçalho e pelo menos uma linha de dados.", false, 'book-imp-alert');
+                    return;
+                }
+
+                const headerLine = lines[0];
+                let delimiter = ';';
+                if ((headerLine.match(/,/g) || []).length > (headerLine.match(/;/g) || []).length) {
+                    delimiter = ',';
+                } else if ((headerLine.match(/\t/g) || []).length > (headerLine.match(/;/g) || []).length) {
+                    delimiter = '\t';
+                }
+
+                const rawHeaders = parseCSVLine(headerLine, delimiter);
+                
+                function normalizeHeader(str) {
+                    return str.toLowerCase()
+                        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                        .replace(/[^a-z0-9]/g, "");
+                }
+
+                const headerMap = {};
+                rawHeaders.forEach((h, index) => {
+                    const norm = normalizeHeader(h);
+                    if (norm.includes("codigo")) headerMap.codigo = index;
+                    else if (norm.includes("subtitulo")) headerMap.subtitulo = index;
+                    else if (norm.includes("titulo")) headerMap.titulo = index;
+                    else if (norm.includes("autor") || norm.includes("org") || norm.includes("coordenador")) headerMap.autor = index;
+                    else if (norm.includes("isbn")) headerMap.isbn = index;
+                    else if (norm.includes("traducao") || norm.includes("tradutor")) headerMap.traducao = index;
+                    else if (norm.includes("colecao")) headerMap.colecao = index;
+                    else if (norm.includes("edicao")) headerMap.edicao = index;
+                    else if (norm.includes("volume") || norm.includes("vol")) headerMap.volume = index;
+                    else if (norm.includes("classificacao")) headerMap.classificacao = index;
+                    else if (norm.includes("local") || norm.includes("cidade")) headerMap.local = index;
+                    else if (norm.includes("editora")) headerMap.editora = index;
+                    else if (norm.includes("data") || norm.includes("ano")) headerMap.data = index;
+                    else if (norm.includes("pagina") || norm.includes("paginas") || norm.includes("pag")) headerMap.paginas = index;
+                    else if (norm.includes("exemplar")) headerMap.exemplar = index;
+                });
+
+                if (headerMap.codigo === undefined || headerMap.titulo === undefined) {
+                    showAlert("O arquivo precisa conter ao menos as colunas 'Código Interno' e 'Título'.", false, 'book-imp-alert');
+                    return;
+                }
+
+                let count = 0;
+                const books = getBooks();
+
+                for (let i = 1; i < lines.length; i++) {
+                    const cols = parseCSVLine(lines[i], delimiter);
+                    const codigo = cols[headerMap.codigo];
+
+                    if (codigo) {
+                        const book = {
+                            codigo: codigo,
+                            titulo: cols[headerMap.titulo] || '',
+                            subtitulo: headerMap.subtitulo !== undefined ? (cols[headerMap.subtitulo] || '') : '',
+                            autor: headerMap.autor !== undefined ? (cols[headerMap.autor] || '') : '',
+                            isbn: headerMap.isbn !== undefined ? (cols[headerMap.isbn] || '') : '',
+                            traducao: headerMap.traducao !== undefined ? (cols[headerMap.traducao] || '') : '',
+                            colecao: headerMap.colecao !== undefined ? (cols[headerMap.colecao] || '') : '',
+                            edicao: headerMap.edicao !== undefined ? (cols[headerMap.edicao] || '') : '',
+                            volume: headerMap.volume !== undefined ? (cols[headerMap.volume] || '') : '',
+                            classificacao: headerMap.classificacao !== undefined ? (cols[headerMap.classificacao] || '') : '',
+                            local: headerMap.local !== undefined ? (cols[headerMap.local] || '') : '',
+                            editora: headerMap.editora !== undefined ? (cols[headerMap.editora] || '') : '',
+                            data: headerMap.data !== undefined ? (cols[headerMap.data] || '') : '',
+                            paginas: headerMap.paginas !== undefined ? (cols[headerMap.paginas] || '') : '',
+                            exemplar: headerMap.exemplar !== undefined ? (cols[headerMap.exemplar] || '') : ''
+                        };
+
+                        const index = books.findIndex(b => b.codigo === book.codigo);
+                        if (index >= 0) {
+                            books[index] = book;
+                        } else {
+                            books.push(book);
+                        }
+                        count++;
+                    }
+                }
+
+                saveBooks(books);
+                showAlert(`${count} livros importados/atualizados com sucesso!`, true, 'book-imp-alert');
+                fileInput.value = '';
+                loadDashboardData();
+            };
+
+            reader.readAsText(file);
+        }
+
+        /* --- REDIMENSIONAMENTO DINÂMICO DAS COLUNAS DE LIVROS --- */
+        function applyDynamicColumnWidths() {
+            const table = document.getElementById('booksListTable');
+            if (!table) return;
+
+            const headers = table.querySelectorAll('thead th');
+            const rows = table.querySelectorAll('tbody tr');
+            const colCount = headers.length;
+
+            for (let i = 0; i < colCount; i++) {
+                let maxLen = headers[i].innerText.trim().length;
+
+                rows.forEach(row => {
+                    const cell = row.children[i];
+                    if (cell) {
+                        const len = cell.innerText.trim().length;
+                        if (len > maxLen) {
+                            maxLen = len;
+                        }
+                    }
+                });
+
+                // Garante uma largura proporcional usando a unidade 'ch' mais folga de padding
+                const widthInCh = Math.max(maxLen + 3, 10);
+                headers[i].style.minWidth = `${widthInCh}ch`;
+                headers[i].style.width = `${widthInCh}ch`;
+            }
+        }
+
+        /* --- CARREGAR TABELAS --- */
+        function loadDashboardData() {
+            // Tabela Usuários
+            const users = getUsers();
+            const userBody = document.getElementById('usersTableBody');
+            if (userBody) {
+                userBody.innerHTML = '';
+                users.forEach(u => {
+                    const badgeClass = u.type === 'Administrador' ? 'badge-admin' : 'badge-comum';
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${u.name}</td>
+                        <td>${u.username}</td>
+                        <td><span class="badge ${badgeClass}">${u.type || 'Comum'}</span></td>
+                        <td>${u.createdAt || 'N/A'}</td>
+                    `;
+                    userBody.appendChild(tr);
+                });
+            }
+
+            // Tabela Livros Dinâmica
+            const books = getBooks();
+            const bookHead = document.getElementById('booksTableHead');
+            const bookBody = document.getElementById('booksTableBody');
+
+            if (bookHead && bookBody) {
+                bookHead.innerHTML = '';
+                bookBody.innerHTML = '';
+
+                // Definição das colunas possíveis com suas chaves e rótulos
+                const columnsConfig = [
+                    { key: 'codigo', label: 'Código Interno' },
+                    { key: 'titulo', label: 'Título' },
+                    { key: 'subtitulo', label: 'Subtítulo' },
+                    { key: 'autor', label: 'Autor / Org. / Coordenador' },
+                    { key: 'isbn', label: 'ISBN' },
+                    { key: 'traducao', label: 'Tradução' },
+                    { key: 'colecao', label: 'Coleção' },
+                    { key: 'edicao', label: 'Edição' },
+                    { key: 'volume', label: 'Volume' },
+                    { key: 'classificacao', label: 'Classificação' },
+                    { key: 'local', label: 'Local de Publicação' },
+                    { key: 'editora', label: 'Editora' },
+                    { key: 'data', label: 'Data' },
+                    { key: 'paginas', label: 'Nº Páginas' },
+                    { key: 'exemplar', label: 'Exemplar' }
+                ];
+
+                // Identifica quais colunas possuem ao menos 1 valor preenchido em todo o acervo
+                const activeColumns = columnsConfig.filter(col => {
+                    return books.some(b => {
+                        const val = b[col.key];
+                        return val !== undefined && val !== null && String(val).trim() !== '' && String(val).trim() !== '-';
+                    });
+                });
+
+                // Se não houver livros ou colunas ativas, fallback para exibir Código e Título por padrão
+                const finalColumns = activeColumns.length > 0 ? activeColumns : columnsConfig.slice(0, 2);
+
+                // Monta o cabeçalho dinâmico
+                finalColumns.forEach(col => {
+                    const th = document.createElement('th');
+                    th.textContent = col.label;
+                    bookHead.appendChild(th);
+                });
+
+                // Monta as linhas de dados dinâmicas
+                books.forEach(b => {
+                    const tr = document.createElement('tr');
+                    finalColumns.forEach(col => {
+                        const td = document.createElement('td');
+                        const val = b[col.key];
+                        
+                        if (col.key === 'codigo') {
+                            td.innerHTML = `<strong>${val || ''}</strong>`;
+                        } else {
+                            td.textContent = (val && String(val).trim() !== '') ? val : '-';
+                        }
+                        tr.appendChild(td);
+                    });
+                    bookBody.appendChild(tr);
+                });
+
+                applyDynamicColumnWidths();
+            }
+        }
+
+        function logout() {
+            document.getElementById('appScreen').style.display = 'none';
+            document.getElementById('authScreen').style.display = 'flex';
+            document.getElementById('loginForm').reset();
+            document.getElementById('registerForm').reset();
+            hideAlert();
+        }
+
+        initDB();
+    </script>
 </body>
 </html>
