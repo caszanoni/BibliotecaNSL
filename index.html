@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão de Biblioteca</title>
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --bg-color: #f4f7f6;
+            --sidebar-width: 250px;
+            --card-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: #333;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- TELA DE LOGIN / BOAS-VINDAS --- */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        }
+
+        .auth-card {
+            background: #fff;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+        }
+
+        .login-logo {
+            max-width: 120px;
+            height: auto;
+            display: block;
+            margin: 0 auto 1.2rem auto;
+        }
+
+        .auth-card h1 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
+        }
+
+        .auth-card p {
+            color: #666;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.8rem;
+            background: none;
+            border: none;
+            font-weight: 600;
+            color: #777;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: var(--accent-color);
+            border-bottom: 2px solid var(--accent-color);
+            margin-bottom: -2px;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: #444;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            background-color: #fff;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 0.85rem;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 0.5rem;
+        }
+
+        .btn-submit:hover {
+            background: #2980b9;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .alert-msg {
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        /* --- PAINEL PRINCIPAL (SISTEMA) --- */
+        .app-container {
+            display: none;
+            height: 100vh;
+            flex-direction: row;
+        }
+
+        /* Menu Lateral (Esquerdo) */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--primary-color);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.2rem;
+            color: #ecf0f1;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            margin-top: 1rem;
+            flex: 1;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: #bdc3c7;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .sidebar-menu li a i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-menu li a:hover, .sidebar-menu li.active > a {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        /* Submenu */
+        .has-submenu {
+            position: relative;
+        }
+
+        .submenu-toggle {
+            justify-content: space-between !important;
+            cursor: pointer;
+        }
+
+        .submenu-icon {
+            font-size: 0.8rem;
+            transition: transform 0.3s;
+        }
+
+        .has-submenu.open .submenu-icon {
+            transform: rotate(180deg);
+        }
+
+        .submenu {
+            list-style: none;
+            background: rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+
+        .has-submenu.open .submenu {
+            display: block;
+        }
+
+        .submenu li a {
+            padding-left: 3rem;
+            font-size: 0.9rem;
+        }
+
+        .user-info {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .user-details {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .btn-logout {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        /* Área de Conteúdo */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .content-header {
+            margin-bottom: 2rem;
+        }
+
+        .content-header h1 {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+        }
+
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        .tab-content {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .tab-content img {
+            max-width: 150px;
+            height: auto;
+            display: block;
+            margin: 0 auto 1.5rem auto;
+        }
+
+        .card {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 1.5rem;
+            max-width: 1000px;
+        }
+
+        /* --- AJUSTE DAS BARRAS DE ROLAGEM NA TABELA --- */
+        .table-responsive {
+            width: 100%;
+            max-height: 68vh;
+            overflow: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+        }
+
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            white-space: nowrap;
+            table-layout: auto;
+        }
+
+        .custom-table th, .custom-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            box-sizing: border-box;
+        }
+
+        .custom-table th {
+            background: #f1f5f9;
+            color: #475569;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .badge {
+            padding: 0.25rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-admin {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .badge-comum {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. TELA DE LOGIN / BOAS-VINDAS -->
+    <div id="authScreen" class="auth-container">
+        <div class="auth-card">
+            <img src="brasao_site_1 pnsl.png" alt="Brasão Paróquia Nossa Senhora da Luz" class="login-logo">
+            <h1>Bem-vindo!</h1>
+            <p>Sistema de Gestão de Biblioteca</p>
+            <div id="auth-msg"></div>
+
+            <div class="auth-tabs">
+                <button class="tab-btn active" onclick="switchTab('login')">Entrar</button>
+                <button class="tab-btn" onclick="switchTab('register')">Novo Cadastro</button>
+            </div>
+
+            <div id="alertBox" class="alert-msg"></div>
+
+            <!-- Formulário de Login -->
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Nome de Usuário</label>
+                    <input type="text" id="loginUser" required placeholder="Digite seu usuário">
+                </div>
+                <div class="form-group">
+                    <label>Senha de Acesso</label>
+                    <input type="password" id="loginPass" required placeholder="Digite sua senha">
+                </div>
+                <button type="submit" class="btn-submit">Acessar Sistema</button>
+            </form>
+
+            <!-- Formulário de Cadastro -->
+            <form id="registerForm" onsubmit="handleRegister(event)" style="display: none;">
+                <div class="form-group">
+                    <label>Nome Completo</label>
+                    <input type="text" id="regName" required placeholder="Seu nome completo">
+                </div>
+                <div class="form-group">
+                    <label>Nome de Usuário</label>
+                    <input type="text" id="regUser" required placeholder="Nome de usuário">
+                </div>
+                <div class="form-group">
+                    <label>Senha de Acesso</label>
+                    <input type="password" id="regPass" required placeholder="Crie uma senha">
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Usuário</label>
+                    <select id="regType" required>
+                        <option value="Comum">Comum</option>
+                        <option value="Administrador">Administrador</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-submit">Criar Conta</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. PAINEL PRINCIPAL -->
+    <div id="appScreen" class="app-container">
+        
+        <!-- Menu Lateral (Esquerdo) -->
+        <aside class="sidebar">
+            <div>
+                <div class="sidebar-header">
+                    <h2>Biblioteca Nossa Senhora da Luz</h2>
+                </div>
+                <ul class="sidebar-menu">
+                    <li class="active" onclick="navigateTo('inicio', this)">
+                        <a href="#"><i class="fa-solid fa-house"></i> Início</a>
+                    </li>
+                    
+                    <!-- Menu Usuários com Submenu -->
+                    <li class="has-submenu" id="menu-usuarios">
+                        <a href="#" class="submenu-toggle" onclick="toggleSubmenu(event, 'menu-usuarios')">
+                            <span><i class="fa-solid fa-users"></i> Usuários</span>
+                            <i class="fa-solid fa-chevron-down submenu-icon"></i>
+                        </a>
+                        <ul class="submenu">
+                            <li onclick="navigateTo('usuarios-incluir', this)"><a href="#"><i class="fa-solid fa-user-plus"></i> Incluir</a></li>
+                            <li onclick="navigateTo('usuarios-modificar', this)"><a href="#"><i class="fa-solid fa-user-pen"></i> Modificar</a></li>
+                            <li onclick="navigateTo('usuarios-excluir', this)"><a href="#"><i class="fa-solid fa-user-minus"></i> Excluir</a></li>
+                            <li onclick="navigateTo('usuarios-listar', this)"><a href="#"><i class="fa-solid fa-list-ul"></i> Listar</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Menu Livros com Submenu -->
+                    <li class="has-submenu" id="menu-livros">
+                        <a href="#" class="submenu-toggle" onclick="toggleSubmenu(event, 'menu-livros')">
+                            <span><i class="fa-solid fa-book"></i> Livros</span>
+                            <i class="fa-solid fa-chevron-down submenu-icon"></i>
+                        </a>
+                        <ul class="submenu">
+                            <li onclick="navigateTo('livros-incluir', this)"><a href="#"><i class="fa-solid fa-plus"></i> Incluir</a></li>
+                            <li onclick="navigateTo('livros-modificar', this)"><a href="#"><i class="fa-solid fa-pen-to-square"></i> Modificar</a></li>
+                            <li onclick="navigateTo('livros-excluir', this)"><a href="#"><i class="fa-solid fa-trash"></i> Excluir</a></li>
+                            <li onclick="navigateTo('livros-importar', this)"><a href="#"><i class="fa-solid fa-file-import"></i> Importar</a></li>
+                            <li onclick="navigateTo('livros-exportar', this)"><a href="#"><i class="fa-solid fa-file-export"></i> Exportar</a></li>
+                        </ul>
+                    </li>
+
+                    <li onclick="navigateTo('emprestimos', this)">
+                        <a href="#"><i class="fa-solid fa-hand-holding-hand"></i> Empréstimos</a>
+                    </li>
+                    <li onclick="navigateTo('devolucoes', this)">
+                        <a href="#"><i class="fa-solid fa-rotate-left"></i> Devoluções</a>
+                    </li>
+                    <li onclick="navigateTo('lista-livros', this)">
+                        <a href="#"><i class="fa-solid fa-list"></i> Lista de Livros</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="user-info">
+                <div class="user-details">
+                    <div class="user-avatar" id="avatarInitial">U</div>
+                    <div>
+                        <div id="currentUserName" style="font-size: 0.9rem; font-weight: 600;">Usuário</div>
+                        <div id="currentUserType" style="font-size: 0.75rem; color: #aaa;">Comum</div>
+                    </div>
+                </div>
+                <button class="btn-logout" onclick="logout()" title="Sair">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Área de Conteúdo Principal -->
+        <main class="main-content">
+            
+            <!-- Início -->
+            <section id="sec-inicio" class="page-section active">
+                <div id="aba-inicio" class="tab-content">
+                    <img src="brasao_site_1 pnsl.png" alt="Brasão Paróquia Nossa Senhora da Luz">
+                    <h2>Bem-vindo ao Sistema Bibliotecário</h2>
+                    <p>Paróquia Nossa Senhora da Luz</p>
+                </div>
+            </section>
+
+            <!-- SUBOPÇÕES DE USUÁRIOS -->
+            <section id="sec-usuarios-incluir" class="page-section">
+                <div class="content-header">
+                    <h1>Incluir Novo Usuário</h1>
+                </div>
+                <div class="card">
+                    <div id="inc-alert" class="alert-msg"></div>
+                    <form onsubmit="handleAdminAddUser(event)">
+                        <div class="form-group">
+                            <label>Nome Completo</label>
+                            <input type="text" id="incName" required placeholder="Digite o nome completo">
+                        </div>
+                        <div class="form-group">
+                            <label>Nome de Usuário</label>
+                            <input type="text" id="incUser" required placeholder="Digite o usuário de acesso">
+                        </div>
+                        <div class="form-group">
+                            <label>Senha</label>
+                            <input type="password" id="incPass" required placeholder="Digite a senha">
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Usuário</label>
+                            <select id="incType" required>
+                                <option value="Comum">Comum</option>
+                                <option value="Administrador">Administrador</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-submit">Cadastrar Usuário</button>
+                    </form>
+                </div>
+            </section>
+
+            <section id="sec-usuarios-modificar" class="page-section">
+                <div class="content-header">
+                    <h1>Modificar Usuário</h1>
+                </div>
+                <div class="card">
+                    <div id="mod-alert" class="alert-msg"></div>
+                    <div class="form-group">
+                        <label>Selecione o Usuário para Modificar</label>
+                        <select id="modUserSelect" onchange="loadUserToEdit()">
+                            <option value="">-- Selecione um Usuário --</option>
+                        </select>
+                    </div>
+                    <form id="modForm" onsubmit="handleModifyUser(event)" style="display:none; margin-top: 1.5rem;">
+                        <input type="hidden" id="modOriginalUser">
+                        <div class="form-group">
+                            <label>Nome Completo</label>
+                            <input type="text" id="modName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Nome de Usuário</label>
+                            <input type="text" id="modUser" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Nova Senha (deixe em branco para manter a atual)</label>
+                            <input type="password" id="modPass" placeholder="Nova senha opcional">
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Usuário</label>
+                            <select id="modType" required>
+                                <option value="Comum">Comum</option>
+                                <option value="Administrador">Administrador</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-submit">Salvar Alterações</button>
+                    </form>
+                </div>
+            </section>
+
+            <section id="sec-usuarios-excluir" class="page-section">
+                <div class="content-header">
+                    <h1>Excluir Usuário</h1>
+                </div>
+                <div class="card">
+                    <div id="del-alert" class="alert-msg"></div>
+                    <form onsubmit="handleDeleteUser(event)">
+                        <div class="form-group">
+                            <label>Selecione o Usuário que deseja Excluir</label>
+                            <select id="delUserSelect" required>
+                                <option value="">-- Selecione um Usuário --</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-submit btn-danger">Excluir Usuário</button>
+                    </form>
+                </div>
+            </section>
+
+            <section id="sec-usuarios-listar" class="page-section">
+                <div class="content-header">
+                    <h1>Lista de Usuários</h1>
+                </div>
+                <div class="card" style="max-width: 100%;">
+                    <h3>Usuários Cadastrados (usuario.json)</h3>
+                    <div class="table-responsive">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Nome Completo</th>
+                                    <th>Nome de Usuário</th>
+                                    <th>Tipo de Usuário</th>
+                                    <th>Data Cadastro</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SUBOPÇÕES DE LIVROS -->
+            <!-- 1. Incluir Livro -->
+            <section id="sec-livros-incluir" class="page-section">
+                <div class="content-header">
+                    <h1>Incluir Novo Livro</h1>
+                </div>
+                <div class="card">
+                    <div id="book-inc-alert" class="alert-msg"></div>
+                    <form onsubmit="handleAddBook(event)">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Código Interno</label><input type="text" id="bookIncCodigo" required placeholder="Ex: LIV-001"></div>
+                            <div class="form-group"><label>Título</label><input type="text" id="bookIncTitulo" required placeholder="Título do livro"></div>
+                            <div class="form-group"><label>Subtítulo</label><input type="text" id="bookIncSubtitulo" placeholder="Subtítulo (opcional)"></div>
+                            <div class="form-group"><label>Autor / Org. / Coordenador</label><input type="text" id="bookIncAutor" required placeholder="Nome do autor/org"></div>
+                            <div class="form-group"><label>ISBN</label><input type="text" id="bookIncIsbn" placeholder="ISBN"></div>
+                            <div class="form-group"><label>Tradução</label><input type="text" id="bookIncTraducao" placeholder="Tradutor"></div>
+                            <div class="form-group"><label>Coleção</label><input type="text" id="bookIncColecao" placeholder="Nome da coleção"></div>
+                            <div class="form-group"><label>Edição</label><input type="text" id="bookIncEdicao" placeholder="Ex: 1ª Edição"></div>
+                            <div class="form-group"><label>Volume</label><input type="text" id="bookIncVolume" placeholder="Ex: Vol. 1"></div>
+                            <div class="form-group"><label>Classificação</label><input type="text" id="bookIncClassificacao" placeholder="Ex: Teologia, História"></div>
+                            <div class="form-group"><label>Local de Publicação</label><input type="text" id="bookIncLocal" placeholder="Cidade/UF"></div>
+                            <div class="form-group"><label>Editora</label><input type="text" id="bookIncEditora" placeholder="Editora"></div>
+                            <div class="form-group"><label>Data</label><input type="date" id="bookIncData"></div>
+                            <div class="form-group"><label>Número de Páginas</label><input type="number" id="bookIncPaginas" placeholder="Ex: 250"></div>
+                            <div class="form-group"><label>Exemplar</label><input type="text" id="bookIncExemplar" placeholder="Ex: Ex. 1"></div>
+                        </div>
+                        <button type="submit" class="btn-submit">Cadastrar Livro</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- 2. Modificar Livro -->
+            <section id="sec-livros-modificar" class="page-section">
+                <div class="content-header">
+                    <h1>Modificar Livro</h1>
+                </div>
+                <div class="card">
+                    <div id="book-mod-alert" class="alert-msg"></div>
+                    <div class="form-group">
+                        <label>Selecione o Livro para Modificar</label>
+                        <select id="modBookSelect" onchange="loadBookToEdit()">
+                            <option value="">-- Selecione um Livro --</option>
+                        </select>
+                    </div>
+                    <form id="modBookForm" onsubmit="handleModifyBook(event)" style="display:none; margin-top: 1.5rem;">
+                        <input type="hidden" id="bookModOriginalCodigo">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Código Interno</label><input type="text" id="bookModCodigo" required></div>
+                            <div class="form-group"><label>Título</label><input type="text" id="bookModTitulo" required></div>
+                            <div class="form-group"><label>Subtítulo</label><input type="text" id="bookModSubtitulo"></div>
+                            <div class="form-group"><label>Autor / Org. / Coordenador</label><input type="text" id="bookModAutor" required></div>
+                            <div class="form-group"><label>ISBN</label><input type="text" id="bookModIsbn"></div>
+                            <div class="form-group"><label>Tradução</label><input type="text" id="bookModTraducao"></div>
+                            <div class="form-group"><label>Coleção</label><input type="text" id="bookModColecao"></div>
+                            <div class="form-group"><label>Edição</label><input type="text" id="bookModEdicao"></div>
+                            <div class="form-group"><label>Volume</label><input type="text" id="bookModVolume"></div>
+                            <div class="form-group"><label>Classificação</label><input type="text" id="bookModClassificacao"></div>
+                            <div class="form-group"><label>Local de Publicação</label><input type="text" id="bookModLocal"></div>
+                            <div class="form-group"><label>Editora</label><input type="text" id="bookModEditora"></div>
+                            <div class="form-group"><label>Data</label><input type="date" id="bookModData"></div>
+                            <div class="form-group"><label>Número de Páginas</label><input type="number" id="bookModPaginas"></div>
+                            <div class="form-group"><label>Exemplar</label><input type="text" id="bookModExemplar"></div>
+                        </div>
+                        <button type="submit" class="btn-submit">Salvar Alterações</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- 3. Excluir Livro -->
+            <section id="sec-livros-excluir" class="page-section">
+                <div class="content-header">
+                    <h1>Excluir Livro</h1>
+                </div>
+                <div class="card">
+                    <div id="book-del-alert" class="alert-msg"></div>
+                    <form onsubmit="handleDeleteBook(event)">
+                        <div class="form-group">
+                            <label>Selecione o Livro que deseja Excluir</label>
+                            <select id="delBookSelect" required>
+                                <option value="">-- Selecione um Livro --</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-submit btn-danger">Excluir Livro</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- 4. Importar Livros -->
+            <section id="sec-livros-importar" class="page-section">
+                <div class="content-header">
+                    <h1>Importar Livros (CSV)</h1>
+                </div>
+                <div class="card">
+                    <div id="book-imp-alert" class="alert-msg"></div>
+                    <p style="margin-bottom: 1rem; font-size: 0.9rem; color: #666;">
+                        Selecione um arquivo CSV contendo os dados dos livros nas seguintes colunas organizadas: <br>
+                        <strong>Código Interno, Título, Subtítulo, Autor / Org. / Coordenador, ISBN, Tradução, Coleção, Edição, Volume, Classificação, Local de Publicação, Editora, Data, Número de Páginas, Exemplar</strong>
+                    </p>
+                    <div class="form-group">
+                        <label>Selecione o arquivo CSV</label>
+                        <input type="file" id="importCsvFile" accept=".csv">
+                    </div>
+                    <button type="button" onclick="handleImportBooks()" class="btn-submit">Importar Dados</button>
+                </div>
+            </section>
+
+            <!-- 5. Exportar Livros -->
+            <section id="sec-livros-exportar" class="page-section">
+                <div class="content-header">
+                    <h1>Exportar Livros (CSV)</h1>
+                </div>
+                <div class="card">
+                    <p style="margin-bottom: 1.5rem;">Clique no botão abaixo para baixar a lista completa de livros cadastrados em formato CSV.</p>
+                    <button type="button" onclick="handleExportBooks()" class="btn-submit"><i class="fa-solid fa-file-csv"></i> Baixar Relatório CSV</button>
+                </div>
+            </section>
+
+            <!-- Empréstimos -->
+            <section id="sec-emprestimos" class="page-section">
+                <div class="content-header">
+                    <h1>Controle de Empréstimos</h1>
+                </div>
+                <div class="card">
+                    <p>Módulo para registros de novos empréstimos.</p>
+                </div>
+            </section>
+
+            <!-- Devoluções -->
+            <section id="sec-devolucoes" class="page-section">
+                <div class="content-header">
+                    <h1>Gestão de Devoluções</h1>
+                </div>
+                <div class="card">
+                    <p>Módulo para registro e baixa de devoluções.</p>
+                </div>
+            </section>
+
+            <!-- Lista de Livros -->
+            <section id="sec-lista-livros" class="page-section">
+                <div class="content-header">
+                    <h1>Catálogo de Livros Cadastrados</h1>
+                </div>
+                <div class="card" style="max-width: 100%;">
+                    <div class="table-responsive">
+                        <table class="custom-table" id="booksListTable">
+                            <thead>
+                                <tr id="booksTableHead">
+                                </tr>
+                            </thead>
+                            <tbody id="booksTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // CONFIGURAÇÃO DO GITHUB REPOSITORY
+        const GITHUB_CONFIG = {
+            owner: 'SEU_USUARIO_GITHUB',     // Ex: 'paroquia-nsl'
+            repo: 'SEU_REPOSITORIO',        // Ex: 'biblioteca'
+            branch: 'main',                 // Ex: 'main' ou 'master'
+            token: 'SEU_GITHUB_TOKEN'       // Requer Personal Access Token (PAT) com permissão no repo
+        };
+
+        // Cache local de SHAs dos arquivos do GitHub (necessários para edição via API REST)
+        const fileSHAs = {
+            'usuario.json': null,
+            'livros.json': null
+        };
+
+        // Integração com a API REST do GitHub
+        async function fetchGitHubFile(filename) {
+            const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${filename}?ref=${GITHUB_CONFIG.branch}`;
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `token ${GITHUB_CONFIG.token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                if (!response.ok) {
+                    if (response.status === 404) return [];
+                    throw new Error(`Erro ao buscar ${filename}: ${response.statusText}`);
+                }
+                const data = await response.json();
+                fileSHAs[filename] = data.sha;
+                
+                // Decodifica o conteúdo codificado em Base64 enviado pelo GitHub
+                const content = decodeURIComponent(escape(atob(data.content)));
+                return JSON.parse(content);
+            } catch (err) {
+                console.error(err);
+                return [];
+            }
+        }
+
+        async function saveGitHubFile(filename, contentArray) {
+            const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${filename}`;
+            const jsonString = JSON.stringify(contentArray, null, 2);
+            const encodedContent = btoa(unescape(encodeURIComponent(jsonString)));
+
+            const bodyData = {
+                message: `Atualização de backup em ${filename} pelo sistema`,
+                content: encodedContent,
+                branch: GITHUB_CONFIG.branch
+            };
+
+            if (fileSHAs[filename]) {
+                bodyData.sha = fileSHAs[filename];
+            }
+
+            try {
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${GITHUB_CONFIG.token}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/vnd.github.v3+json'
+                    },
+                    body: JSON.stringify(bodyData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro ao salvar no GitHub (${filename}): ${response.statusText}`);
+                }
+
+                const resData = await response.json();
+                fileSHAs[filename] = resData.content.sha;
+                return true;
+            } catch (err) {
+                console.error(err);
+                alert(`Erro ao salvar no GitHub (${filename}). Verifique as configurações.`);
+                return false;
+            }
+        }
+
+        // Funções de leitura/escrita assíncronas atualizadas para consultar o GitHub diretamente
+        async function getUsers() {
+            return await fetchGitHubFile('usuario.json');
+        }
+
+        async function saveUsers(users) {
+            return await saveGitHubFile('usuario.json', users);
+        }
+
+        async function getBooks() {
+            return await fetchGitHubFile('livros.json');
+        }
+
+        async function saveBooks(books) {
+            return await saveGitHubFile('livros.json', books);
+        }
+
+        async function initDB() {
+            await getUsers();
+            await getBooks();
+        }
+
+        function switchTab(tab) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const tabs = document.querySelectorAll('.tab-btn');
+            
+            hideAlert();
+
+            if (tab === 'login') {
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+                tabs[0].classList.add('active');
+                tabs[1].classList.remove('active');
+            } else {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+                tabs[0].classList.remove('active');
+                tabs[1].classList.add('active');
+            }
+        }
+
+        function showAlert(msg, isSuccess = false, elementId = 'alertBox') {
+            const alertBox = document.getElementById(elementId);
+            if(alertBox) {
+                alertBox.textContent = msg;
+                alertBox.style.display = 'block';
+                alertBox.className = `alert-msg ${isSuccess ? 'alert-success' : 'alert-error'}`;
+            }
+        }
+
+        function hideAlert(elementId = 'alertBox') {
+            const el = document.getElementById(elementId);
+            if(el) el.style.display = 'none';
+        }
+
+        function toggleSubmenu(e, menuId) {
+            e.preventDefault();
+            e.stopPropagation();
+            const menu = document.getElementById(menuId);
+            menu.classList.toggle('open');
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const userIn = document.getElementById('loginUser').value.trim();
+            const passIn = document.getElementById('loginPass').value;
+
+            const users = await getUsers();
+            const foundUser = users.find(u => u.username === userIn && u.pass === passIn);
+
+            if (foundUser) {
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('appScreen').style.display = 'flex';
+                
+                document.getElementById('currentUserName').textContent = foundUser.name;
+                document.getElementById('currentUserType').textContent = foundUser.type || 'Comum';
+                document.getElementById('avatarInitial').textContent = foundUser.name.charAt(0).toUpperCase();
+                
+                await loadDashboardData();
+            } else {
+                showAlert('Usuário ou senha incorretos!');
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('regName').value.trim();
+            const username = document.getElementById('regUser').value.trim();
+            const pass = document.getElementById('regPass').value;
+            const type = document.getElementById('regType').value;
+
+            const users = await getUsers();
+            if (users.some(u => u.username === username)) {
+                showAlert('Nome de usuário já existe!');
+                return;
+            }
+
+            const newUser = {
+                name,
+                username,
+                pass,
+                type,
+                createdAt: new Date().toLocaleDateString('pt-BR')
+            };
+
+            users.push(newUser);
+            const saved = await saveUsers(users);
+            if (saved) {
+                showAlert('Cadastro realizado com sucesso! Faça login.', true);
+                
+                setTimeout(() => {
+                    switchTab('login');
+                    document.getElementById('loginUser').value = username;
+                    document.getElementById('loginPass').value = '';
+                }, 1500);
+            }
+        }
+
+        async function navigateTo(sectionId, element) {
+            document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
+            
+            if (element) {
+                element.classList.add('active');
+                const parentMenu = element.closest('.has-submenu');
+                if (parentMenu) parentMenu.classList.add('active');
+            }
+
+            document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+            const targetSec = document.getElementById(`sec-${sectionId}`);
+            if(targetSec) targetSec.classList.add('active');
+
+            await loadDashboardData();
+            if(sectionId === 'usuarios-modificar' || sectionId === 'usuarios-excluir') {
+                await populateUserSelects();
+            }
+            if(sectionId === 'livros-modificar' || sectionId === 'livros-excluir') {
+                await populateBookSelects();
+            }
+        }
+
+        /* --- CRUD USUÁRIOS --- */
+        async function handleAdminAddUser(e) {
+            e.preventDefault();
+            const name = document.getElementById('incName').value.trim();
+            const username = document.getElementById('incUser').value.trim();
+            const pass = document.getElementById('incPass').value;
+            const type = document.getElementById('incType').value;
+
+            const users = await getUsers();
+            if (users.some(u => u.username === username)) {
+                showAlert('O nome de usuário já existe!', false, 'inc-alert');
+                return;
+            }
+
+            users.push({
+                name,
+                username,
+                pass,
+                type,
+                createdAt: new Date().toLocaleDateString('pt-BR')
+            });
+
+            const saved = await saveUsers(users);
+            if (saved) {
+                showAlert('Usuário incluído com sucesso!', true, 'inc-alert');
+                e.target.reset();
+                await loadDashboardData();
+            }
+        }
+
+        async function populateUserSelects() {
+            const users = await getUsers();
+            const modSelect = document.getElementById('modUserSelect');
+            const delSelect = document.getElementById('delUserSelect');
+
+            modSelect.innerHTML = '<option value="">-- Selecione um Usuário --</option>';
+            delSelect.innerHTML = '<option value="">-- Selecione um Usuário --</option>';
+
+            users.forEach(u => {
+                const opt1 = document.createElement('option');
+                opt1.value = u.username;
+                opt1.textContent = `${u.name} (${u.username})`;
+                modSelect.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = u.username;
+                opt2.textContent = `${u.name} (${u.username})`;
+                delSelect.appendChild(opt2);
+            });
+        }
+
+        async function loadUserToEdit() {
+            const username = document.getElementById('modUserSelect').value;
+            const modForm = document.getElementById('modForm');
+            hideAlert('mod-alert');
+
+            if (!username) {
+                modForm.style.display = 'none';
+                return;
+            }
+
+            const users = await getUsers();
+            const user = users.find(u => u.username === username);
+
+            if (user) {
+                document.getElementById('modOriginalUser').value = user.username;
+                document.getElementById('modName').value = user.name;
+                document.getElementById('modUser').value = user.username;
+                document.getElementById('modPass').value = '';
+                document.getElementById('modType').value = user.type || 'Comum';
+                modForm.style.display = 'block';
+            }
+        }
+
+        async function handleModifyUser(e) {
+            e.preventDefault();
+            const origUser = document.getElementById('modOriginalUser').value;
+            const newName = document.getElementById('modName').value.trim();
+            const newUser = document.getElementById('modUser').value.trim();
+            const newPass = document.getElementById('modPass').value;
+            const newType = document.getElementById('modType').value;
+
+            let users = await getUsers();
+
+            if (origUser !== newUser && users.some(u => u.username === newUser)) {
+                showAlert('O novo nome de usuário já está em uso!', false, 'mod-alert');
+                return;
+            }
+
+            users = users.map(u => {
+                if (u.username === origUser) {
+                    return {
+                        ...u,
+                        name: newName,
+                        username: newUser,
+                        pass: newPass ? newPass : u.pass,
+                        type: newType
+                    };
+                }
+                return u;
+            });
+
+            const saved = await saveUsers(users);
+            if (saved) {
+                showAlert('Usuário alterado com sucesso!', true, 'mod-alert');
+                await populateUserSelects();
+                document.getElementById('modForm').style.display = 'none';
+                await loadDashboardData();
+            }
+        }
+
+        async function handleDeleteUser(e) {
+            e.preventDefault();
+            const username = document.getElementById('delUserSelect').value;
+            if (!username) return;
+
+            if (confirm(`Tem certeza que deseja excluir o usuário "${username}"?`)) {
+                let users = await getUsers();
+                users = users.filter(u => u.username !== username);
+                const saved = await saveUsers(users);
+
+                if (saved) {
+                    showAlert('Usuário excluído com sucesso!', true, 'del-alert');
+                    await populateUserSelects();
+                    await loadDashboardData();
+                }
+            }
+        }
+
+        /* --- CRUD LIVROS --- */
+        async function handleAddBook(e) {
+            e.preventDefault();
+            const codigo = document.getElementById('bookIncCodigo').value.trim();
+            
+            const books = await getBooks();
+            if(books.some(b => b.codigo === codigo)) {
+                showAlert('Já existe um livro com este Código Interno!', false, 'book-inc-alert');
+                return;
+            }
+
+            const newBook = {
+                codigo: codigo,
+                titulo: document.getElementById('bookIncTitulo').value.trim(),
+                subtitulo: document.getElementById('bookIncSubtitulo').value.trim(),
+                autor: document.getElementById('bookIncAutor').value.trim(),
+                isbn: document.getElementById('bookIncIsbn').value.trim(),
+                traducao: document.getElementById('bookIncTraducao').value.trim(),
+                colecao: document.getElementById('bookIncColecao').value.trim(),
+                edicao: document.getElementById('bookIncEdicao').value.trim(),
+                volume: document.getElementById('bookIncVolume').value.trim(),
+                classificacao: document.getElementById('bookIncClassificacao').value.trim(),
+                local: document.getElementById('bookIncLocal').value.trim(),
+                editora: document.getElementById('bookIncEditora').value.trim(),
+                data: document.getElementById('bookIncData').value,
+                paginas: document.getElementById('bookIncPaginas').value,
+                exemplar: document.getElementById('bookIncExemplar').value.trim()
+            };
+
+            books.push(newBook);
+            const saved = await saveBooks(books);
+            if (saved) {
+                showAlert('Livro cadastrado com sucesso!', true, 'book-inc-alert');
+                e.target.reset();
+                await loadDashboardData();
+            }
+        }
+
+        async function populateBookSelects() {
+            const books = await getBooks();
+            const modSelect = document.getElementById('modBookSelect');
+            const delSelect = document.getElementById('delBookSelect');
+
+            modSelect.innerHTML = '<option value="">-- Selecione um Livro --</option>';
+            delSelect.innerHTML = '<option value="">-- Selecione um Livro --</option>';
+
+            books.forEach(b => {
+                const opt1 = document.createElement('option');
+                opt1.value = b.codigo;
+                opt1.textContent = `[${b.codigo}] ${b.titulo}`;
+                modSelect.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = b.codigo;
+                opt2.textContent = `[${b.codigo}] ${b.titulo}`;
+                delSelect.appendChild(opt2);
+            });
+        }
+
+        async function loadBookToEdit() {
+            const codigo = document.getElementById('modBookSelect').value;
+            const form = document.getElementById('modBookForm');
+            hideAlert('book-mod-alert');
+
+            if(!codigo) {
+                form.style.display = 'none';
+                return;
+            }
+
+            const books = await getBooks();
+            const book = books.find(b => b.codigo === codigo);
+
+            if(book) {
+                document.getElementById('bookModOriginalCodigo').value = book.codigo;
+                document.getElementById('bookModCodigo').value = book.codigo;
+                document.getElementById('bookModTitulo').value = book.titulo || '';
+                document.getElementById('bookModSubtitulo').value = book.subtitulo || '';
+                document.getElementById('bookModAutor').value = book.autor || '';
+                document.getElementById('bookModIsbn').value = book.isbn || '';
+                document.getElementById('bookModTraducao').value = book.traducao || '';
+                document.getElementById('bookModColecao').value = book.colecao || '';
+                document.getElementById('bookModEdicao').value = book.edicao || '';
+                document.getElementById('bookModVolume').value = book.volume || '';
+                document.getElementById('bookModClassificacao').value = book.classificacao || '';
+                document.getElementById('bookModLocal').value = book.local || '';
+                document.getElementById('bookModEditora').value = book.editora || '';
+                document.getElementById('bookModData').value = book.data || '';
+                document.getElementById('bookModPaginas').value = book.paginas || '';
+                document.getElementById('bookModExemplar').value = book.exemplar || '';
+
+                form.style.display = 'block';
+            }
+        }
+
+        async function handleModifyBook(e) {
+            e.preventDefault();
+            const origCodigo = document.getElementById('bookModOriginalCodigo').value;
+            const newCodigo = document.getElementById('bookModCodigo').value.trim();
+
+            let books = await getBooks();
+
+            if (origCodigo !== newCodigo && books.some(b => b.codigo === newCodigo)) {
+                showAlert('O novo Código Interno já pertence a outro livro!', false, 'book-mod-alert');
+                return;
+            }
+
+            books = books.map(b => {
+                if (b.codigo === origCodigo) {
+                    return {
+                        codigo: newCodigo,
+                        titulo: document.getElementById('bookModTitulo').value.trim(),
+                        subtitulo: document.getElementById('bookModSubtitulo').value.trim(),
+                        autor: document.getElementById('bookModAutor').value.trim(),
+                        isbn: document.getElementById('bookModIsbn').value.trim(),
+                        traducao: document.getElementById('bookModTraducao').value.trim(),
+                        colecao: document.getElementById('bookModColecao').value.trim(),
+                        edicao: document.getElementById('bookModEdicao').value.trim(),
+                        volume: document.getElementById('bookModVolume').value.trim(),
+                        classificacao: document.getElementById('bookModClassificacao').value.trim(),
+                        local: document.getElementById('bookModLocal').value.trim(),
+                        editora: document.getElementById('bookModEditora').value.trim(),
+                        data: document.getElementById('bookModData').value,
+                        paginas: document.getElementById('bookModPaginas').value,
+                        exemplar: document.getElementById('bookModExemplar').value.trim()
+                    };
+                }
+                return b;
+            });
+
+            const saved = await saveBooks(books);
+            if (saved) {
+                showAlert('Dados do livro alterados com sucesso!', true, 'book-mod-alert');
+                await populateBookSelects();
+                document.getElementById('modBookForm').style.display = 'none';
+                await loadDashboardData();
+            }
+        }
+
+        async function handleDeleteBook(e) {
+            e.preventDefault();
+            const codigo = document.getElementById('delBookSelect').value;
+            if (!codigo) return;
+
+            if (confirm(`Tem certeza que deseja excluir o livro [${codigo}]?`)) {
+                let books = await getBooks();
+                books = books.filter(b => b.codigo !== codigo);
+                const saved = await saveBooks(books);
+
+                if (saved) {
+                    showAlert('Livro excluído com sucesso!', true, 'book-del-alert');
+                    await populateBookSelects();
+                    await loadDashboardData();
+                }
+            }
+        }
+
+        /* --- IMPORTAR E EXPORTAR CSV --- */
+        async function handleExportBooks() {
+            const books = await getBooks();
+            if(books.length === 0) {
+                alert("Não há livros cadastrados para exportar.");
+                return;
+            }
+
+            const headers = [
+                "Código Interno", "Título", "Subtítulo", "Autor / Org. / Coordenador", 
+                "ISBN", "Tradução", "Coleção", "Edição", "Volume", 
+                "Classificação", "Local de Publicação", "Editora", "Data", "Número de Páginas", "Exemplar"
+            ];
+
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+            csvContent += headers.map(h => `"${h}"`).join(";") + "\n";
+
+            books.forEach(b => {
+                const row = [
+                    b.codigo || "", b.titulo || "", b.subtitulo || "", b.autor || "",
+                    b.isbn || "", b.traducao || "", b.colecao || "", b.edicao || "",
+                    b.volume || "", b.classificacao || "", b.local || "", b.editora || "",
+                    b.data || "", b.paginas || "", b.exemplar || ""
+                ];
+                csvContent += row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(";") + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `livros_biblioteca_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function handleImportBooks() {
+            const fileInput = document.getElementById('importCsvFile');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showAlert("Por favor, selecione um arquivo CSV.", false, 'book-imp-alert');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const text = e.target.result;
+                
+                function parseCSVLine(line, delimiter) {
+                    const values = [];
+                    let current = '';
+                    let inQuotes = false;
+
+                    for (let i = 0; i < line.length; i++) {
+                        const char = line[i];
+                        if (char === '"') {
+                            if (inQuotes && line[i + 1] === '"') {
+                                current += '"';
+                                i++;
+                            } else {
+                                inQuotes = !inQuotes;
+                            }
+                        } else if (char === delimiter && !inQuotes) {
+                            values.push(current.trim());
+                            current = '';
+                        } else {
+                            current += char;
+                        }
+                    }
+                    values.push(current.trim());
+                    return values;
+                }
+
+                const lines = text.split(/\r\n|\n/).filter(line => line.trim() !== '');
+                if (lines.length < 2) {
+                    showAlert("O arquivo CSV precisa conter um cabeçalho e pelo menos uma linha de dados.", false, 'book-imp-alert');
+                    return;
+                }
+
+                const headerLine = lines[0];
+                let delimiter = ';';
+                if ((headerLine.match(/,/g) || []).length > (headerLine.match(/;/g) || []).length) {
+                    delimiter = ',';
+                } else if ((headerLine.match(/\t/g) || []).length > (headerLine.match(/;/g) || []).length) {
+                    delimiter = '\t';
+                }
+
+                const rawHeaders = parseCSVLine(headerLine, delimiter);
+                
+                function normalizeHeader(str) {
+                    return str.toLowerCase()
+                        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                        .replace(/[^a-z0-9]/g, "");
+                }
+
+                const headerMap = {};
+                rawHeaders.forEach((h, index) => {
+                    const norm = normalizeHeader(h);
+                    if (norm.includes("codigo")) headerMap.codigo = index;
+                    else if (norm.includes("subtitulo")) headerMap.subtitulo = index;
+                    else if (norm.includes("titulo")) headerMap.titulo = index;
+                    else if (norm.includes("autor") || norm.includes("org") || norm.includes("coordenador")) headerMap.autor = index;
+                    else if (norm.includes("isbn")) headerMap.isbn = index;
+                    else if (norm.includes("traducao") || norm.includes("tradutor")) headerMap.traducao = index;
+                    else if (norm.includes("colecao")) headerMap.colecao = index;
+                    else if (norm.includes("edicao")) headerMap.edicao = index;
+                    else if (norm.includes("volume") || norm.includes("vol")) headerMap.volume = index;
+                    else if (norm.includes("classificacao")) headerMap.classificacao = index;
+                    else if (norm.includes("local") || norm.includes("cidade")) headerMap.local = index;
+                    else if (norm.includes("editora")) headerMap.editora = index;
+                    else if (norm.includes("data") || norm.includes("ano")) headerMap.data = index;
+                    else if (norm.includes("pagina") || norm.includes("paginas") || norm.includes("pag")) headerMap.paginas = index;
+                    else if (norm.includes("exemplar")) headerMap.exemplar = index;
+                });
+
+                if (headerMap.codigo === undefined || headerMap.titulo === undefined) {
+                    showAlert("O arquivo precisa conter ao menos as colunas 'Código Interno' e 'Título'.", false, 'book-imp-alert');
+                    return;
+                }
+
+                let count = 0;
+                const books = await getBooks();
+
+                for (let i = 1; i < lines.length; i++) {
+                    const cols = parseCSVLine(lines[i], delimiter);
+                    const codigo = cols[headerMap.codigo];
+
+                    if (codigo) {
+                        const book = {
+                            codigo: codigo,
+                            titulo: cols[headerMap.titulo] || '',
+                            subtitulo: headerMap.subtitulo !== undefined ? (cols[headerMap.subtitulo] || '') : '',
+                            autor: headerMap.autor !== undefined ? (cols[headerMap.autor] || '') : '',
+                            isbn: headerMap.isbn !== undefined ? (cols[headerMap.isbn] || '') : '',
+                            traducao: headerMap.traducao !== undefined ? (cols[headerMap.traducao] || '') : '',
+                            colecao: headerMap.colecao !== undefined ? (cols[headerMap.colecao] || '') : '',
+                            edicao: headerMap.edicao !== undefined ? (cols[headerMap.edicao] || '') : '',
+                            volume: headerMap.volume !== undefined ? (cols[headerMap.volume] || '') : '',
+                            classificacao: headerMap.classificacao !== undefined ? (cols[headerMap.classificacao] || '') : '',
+                            local: headerMap.local !== undefined ? (cols[headerMap.local] || '') : '',
+                            editora: headerMap.editora !== undefined ? (cols[headerMap.editora] || '') : '',
+                            data: headerMap.data !== undefined ? (cols[headerMap.data] || '') : '',
+                            paginas: headerMap.paginas !== undefined ? (cols[headerMap.paginas] || '') : '',
+                            exemplar: headerMap.exemplar !== undefined ? (cols[headerMap.exemplar] || '') : ''
+                        };
+
+                        const index = books.findIndex(b => b.codigo === book.codigo);
+                        if (index >= 0) {
+                            books[index] = book;
+                        } else {
+                            books.push(book);
+                        }
+                        count++;
+                    }
+                }
+
+                const saved = await saveBooks(books);
+                if (saved) {
+                    showAlert(`${count} livros importados/atualizados com sucesso!`, true, 'book-imp-alert');
+                    fileInput.value = '';
+                    await loadDashboardData();
+                }
+            };
+
+            reader.readAsText(file);
+        }
+
+        /* --- CARREGAR TABELAS --- */
+        async function loadDashboardData() {
+            // Tabela Usuários
+            const users = await getUsers();
+            const userBody = document.getElementById('usersTableBody');
+            if (userBody) {
+                userBody.innerHTML = '';
+                users.forEach(u => {
+                    const badgeClass = u.type === 'Administrador' ? 'badge-admin' : 'badge-comum';
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${u.name}</td>
+                        <td>${u.username}</td>
+                        <td><span class="badge ${badgeClass}">${u.type || 'Comum'}</span></td>
+                        <td>${u.createdAt || 'N/A'}</td>
+                    `;
+                    userBody.appendChild(tr);
+                });
+            }
+
+            // Tabela Livros Dinâmica
+            const books = await getBooks();
+            const bookHead = document.getElementById('booksTableHead');
+            const bookBody = document.getElementById('booksTableBody');
+
+            if (bookHead && bookBody) {
+                bookHead.innerHTML = '';
+                bookBody.innerHTML = '';
+
+                // Definição das colunas possíveis com suas chaves e rótulos
+                const columnsConfig = [
+                    { key: 'codigo', label: 'Código Interno' },
+                    { key: 'titulo', label: 'Título' },
+                    { key: 'subtitulo', label: 'Subtítulo' },
+                    { key: 'autor', label: 'Autor / Org. / Coordenador' },
+                    { key: 'isbn', label: 'ISBN' },
+                    { key: 'traducao', label: 'Tradução' },
+                    { key: 'colecao', label: 'Coleção' },
+                    { key: 'edicao', label: 'Edição' },
+                    { key: 'volume', label: 'Volume' },
+                    { key: 'classificacao', label: 'Classificação' },
+                    { key: 'local', label: 'Local de Publicação' },
+                    { key: 'editora', label: 'Editora' },
+                    { key: 'data', label: 'Data' },
+                    { key: 'paginas', label: 'Nº Páginas' },
+                    { key: 'exemplar', label: 'Exemplar' }
+                ];
+
+                // Identifica quais colunas possuem ao menos 1 valor preenchido em todo o acervo
+                const activeColumns = columnsConfig.filter(col => {
+                    return books.some(b => {
+                        const val = b[col.key];
+                        return val !== undefined && val !== null && String(val).trim() !== '' && String(val).trim() !== '-';
+                    });
+                });
+
+                // Se não houver livros ou colunas ativas, fallback para exibir Código e Título por padrão
+                const finalColumns = activeColumns.length > 0 ? activeColumns : columnsConfig.slice(0, 2);
+
+                // Monta o cabeçalho dinâmico
+                finalColumns.forEach(col => {
+                    const th = document.createElement('th');
+                    th.textContent = col.label;
+                    bookHead.appendChild(th);
+                });
+
+                // Monta as linhas de dados dinâmicas
+                books.forEach(b => {
+                    const tr = document.createElement('tr');
+                    finalColumns.forEach(col => {
+                        const td = document.createElement('td');
+                        const val = b[col.key];
+                        
+                        if (col.key === 'codigo') {
+                            td.innerHTML = `<strong>${val || ''}</strong>`;
+                        } else {
+                            td.textContent = (val && String(val).trim() !== '') ? val : '-';
+                        }
+                        tr.appendChild(td);
+                    });
+                    bookBody.appendChild(tr);
+                });
+            }
+        }
+
+        function logout() {
+            document.getElementById('appScreen').style.display = 'none';
+            document.getElementById('authScreen').style.display = 'flex';
+            document.getElementById('loginForm').reset();
+            document.getElementById('registerForm').reset();
+            hideAlert();
+        }
+
+        initDB().then(() => {
+            loadDashboardData();
+        });
+    </script>
+</body>
+</html>
