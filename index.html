@@ -806,43 +806,7 @@
         const DB_KEY = 'usuariosdb';
         const BOOKS_KEY = 'livrosdb';
 
-        function initDB() {
-            if (!localStorage.getItem(DB_KEY)) {
-                const defaultUsers = [
-                    { 
-                        name: "Administrador", 
-                        username: "admin", 
-                        pass: "1234", 
-                        type: "Administrador", 
-                        createdAt: new Date().toLocaleDateString('pt-BR') 
-                    }
-                ];
-                localStorage.setItem(DB_KEY, JSON.stringify(defaultUsers));
-            }
-
-            if (!localStorage.getItem(BOOKS_KEY)) {
-                const defaultBooks = [
-                    {
-                        codigo: "LIV-001",
-                        titulo: "O Senhor dos Anéis",
-                        subtitulo: "A Sociedade do Anel",
-                        autor: "J.R.R. Tolkien",
-                        isbn: "9788533613379",
-                        traducao: "Lenita Maria Rímoli Esteves",
-                        colecao: "Acessível",
-                        edicao: "1ª Edição",
-                        volume: "Vol. 1",
-                        classificacao: "Fantasia",
-                        local: "São Paulo",
-                        editora: "Martins Fontes",
-                        data: "2000-01-01",
-                        paginas: "576",
-                        exemplar: "Ex. 1"
-                    }
-                ];
-                localStorage.setItem(BOOKS_KEY, JSON.stringify(defaultBooks));
-            }
-        }
+       initDB()
 
         function getUsers() {
             return JSON.parse(localStorage.getItem(DB_KEY)) || [];
@@ -1540,7 +1504,9 @@
             hideAlert();
         }
 
-        initDB();
+       initDB().then(() => {
+    loadDashboardData();
+});
     </script>
 </body>
 </html>
