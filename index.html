@@ -26,8 +26,18 @@
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       width: 320px;
       transition: all 0.3s ease;
+      text-align: center;
     }
     
+    .brasao-img {
+      max-width: 100px;
+      height: auto;
+      margin-bottom: 1rem;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
     .tabs {
       display: flex;
       margin-bottom: 1.5rem;
@@ -48,6 +58,7 @@
     form {
       display: flex;
       flex-direction: column;
+      text-align: left;
     }
     input {
       margin-bottom: 1rem;
@@ -73,25 +84,12 @@
       font-weight: bold;
     }
 
-    /* Modernização da Tela de Boas-Vindas */
+    /* Tela de Boas-Vindas / Dashboard */
     .dashboard-card {
       width: 100%;
       max-width: 500px;
       padding: 2.5rem;
       text-align: center;
-    }
-    
-    .avatar-icon {
-      width: 70px;
-      height: 70px;
-      background-color: #e6f0ff;
-      color: #007bff;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      margin: 0 auto 1rem auto;
     }
 
     .welcome-title {
@@ -161,6 +159,9 @@
 
   <!-- Tela de Login / Cadastro -->
   <div id="authCard" class="card">
+    <!-- Imagem do Brasão na tela de Login -->
+    <img src="brasao_site_1 pnsl.png" alt="Brasão PNSL" class="brasao-img">
+
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('login')">Login</button>
       <button class="tab-btn" onclick="switchTab('register')">Cadastrar</button>
@@ -168,7 +169,7 @@
 
     <!-- Formulário de Login -->
     <form id="loginForm">
-      <h3 style="margin-top:0">Entrar no Sistema</h3>
+      <h3 style="margin-top:0; text-align: center;">Entrar no Sistema</h3>
       <input type="email" id="loginEmail" placeholder="Email" required>
       <input type="password" id="loginSenha" placeholder="Senha" required>
       <button type="submit">Entrar</button>
@@ -176,7 +177,7 @@
 
     <!-- Formulário de Cadastro -->
     <form id="registerForm" class="hidden">
-      <h3 style="margin-top:0">Novo Cadastro</h3>
+      <h3 style="margin-top:0; text-align: center;">Novo Cadastro</h3>
       <input type="email" id="regEmail" placeholder="Email" required>
       <input type="password" id="regSenha" placeholder="Senha" required>
       <button type="submit">Cadastrar</button>
@@ -187,8 +188,11 @@
 
   <!-- Tela de Boas-Vindas / Dashboard -->
   <div id="welcomeScreen" class="card dashboard-card hidden">
-    <div class="avatar-icon">👤</div>
-    <h2 class="welcome-title">Seja Bem-vindo(a)! 🎉</h2>
+    <!-- Imagem do Brasão na tela de Boas-Vindas -->
+    <img src="brasao_site_1 pnsl.png" alt="Brasão PNSL" class="brasao-img" style="max-width: 120px;">
+
+    <!-- Título atualizado -->
+    <h2 class="welcome-title">Bem-vindo! Sistema de Gestão de Biblioteca</h2>
     <p style="color: #666; margin-top: 0;">Você se autenticou com sucesso.</p>
 
     <div class="user-badge" id="userEmail">usuario@email.com</div>
@@ -275,7 +279,7 @@
       });
     });
 
-    // Envio robusto de dados para o Web App do Apps Script
+    // Envio de dados para o Web App
     async function sendData(payload, emailLogged = '') {
       const msg = document.getElementById('mensagem');
       msg.innerText = 'Processando...';
