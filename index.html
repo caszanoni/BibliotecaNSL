@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Acesso / Cadastro</title>
+  <title>Acesso / Dashboard</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
       font-family: Arial, sans-serif;
       display: flex;
@@ -14,13 +17,17 @@
       margin: 0;
       background-color: #f4f4f9;
     }
+
+    /* Card de Login/Cadastro */
     .card {
       background: white;
       padding: 2rem;
       border-radius: 8px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      width: 300px;
+      width: 320px;
+      transition: all 0.3s ease;
     }
+    
     .tabs {
       display: flex;
       margin-bottom: 1.5rem;
@@ -32,6 +39,7 @@
       background: #eee;
       cursor: pointer;
       font-weight: bold;
+      border-radius: 4px;
     }
     .tab-btn.active {
       background: #007bff;
@@ -43,12 +51,12 @@
     }
     input {
       margin-bottom: 1rem;
-      padding: 0.5rem;
+      padding: 0.6rem;
       border: 1px solid #ccc;
       border-radius: 4px;
     }
     button {
-      padding: 0.5rem;
+      padding: 0.6rem;
       border: none;
       background-color: #28a745;
       color: white;
@@ -59,68 +67,150 @@
     button:hover {
       background-color: #218838;
     }
-    .btn-logout {
-      background-color: #dc3545;
-      width: 100%;
-      margin-top: 1rem;
-    }
-    .btn-logout:hover {
-      background-color: #c82333;
-    }
     #mensagem {
       margin-top: 1rem;
       text-align: center;
       font-weight: bold;
     }
-    .welcome-container {
+
+    /* Modernização da Tela de Boas-Vindas */
+    .dashboard-card {
+      width: 100%;
+      max-width: 500px;
+      padding: 2.5rem;
       text-align: center;
     }
+    
+    .avatar-icon {
+      width: 70px;
+      height: 70px;
+      background-color: #e6f0ff;
+      color: #007bff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin: 0 auto 1rem auto;
+    }
+
+    .welcome-title {
+      margin: 0 0 0.5rem 0;
+      color: #333;
+    }
+
+    .user-badge {
+      display: inline-block;
+      background-color: #eef2f5;
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: #007bff;
+      margin-bottom: 1.5rem;
+      word-break: break-all;
+    }
+
+    /* Cards de Informação no Dashboard */
+    .dash-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    .dash-box {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      padding: 1rem;
+      border-radius: 6px;
+      text-align: left;
+    }
+
+    .dash-box h4 {
+      margin: 0 0 0.3rem 0;
+      font-size: 0.85rem;
+      color: #6c757d;
+      text-transform: uppercase;
+    }
+
+    .dash-box p {
+      margin: 0;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .btn-logout {
+      background-color: #dc3545;
+      width: 100%;
+      padding: 0.7rem;
+      font-size: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .btn-logout:hover {
+      background-color: #c82333;
+    }
+
     .hidden {
-      display: none;
+      display: none !important;
     }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <!-- Container de Formulários (Login / Cadastro) -->
-    <div id="authContainer">
-      <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('login')">Login</button>
-        <button class="tab-btn" onclick="switchTab('register')">Cadastrar</button>
+  <!-- Tela de Login / Cadastro (Aparece no mesmo Card) -->
+  <div id="authCard" class="card">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+      <button class="tab-btn" onclick="switchTab('register')">Cadastrar</button>
+    </div>
+
+    <!-- Formulário de Login -->
+    <form id="loginForm">
+      <h3 style="margin-top:0">Entrar no Sistema</h3>
+      <input type="email" id="loginEmail" placeholder="Email" required>
+      <input type="password" id="loginSenha" placeholder="Senha" required>
+      <button type="submit">Entrar</button>
+    </form>
+
+    <!-- Formulário de Cadastro -->
+    <form id="registerForm" class="hidden">
+      <h3 style="margin-top:0">Novo Cadastro</h3>
+      <input type="email" id="regEmail" placeholder="Email" required>
+      <input type="password" id="regSenha" placeholder="Senha" required>
+      <button type="submit">Cadastrar</button>
+    </form>
+
+    <p id="mensagem"></p>
+  </div>
+
+  <!-- Nova Tela de Boas-Vindas / Dashboard (Inicia Oculta) -->
+  <div id="welcomeScreen" class="card dashboard-card hidden">
+    <div class="avatar-icon">👤</div>
+    <h2 class="welcome-title">Seja Bem-vindo(a)! 🎉</h2>
+    <p style="color: #666; margin-top: 0;">Você se autenticou com sucesso.</p>
+
+    <div class="user-badge" id="userEmail">usuario@email.com</div>
+
+    <!-- Grid com dados fictícios ou status -->
+    <div class="dash-grid">
+      <div class="dash-box">
+        <h4>Status</h4>
+        <p style="color: #28a745;">● Ativo</p>
       </div>
-
-      <!-- Formulário de Login -->
-      <form id="loginForm">
-        <h3 style="margin-top:0">Entrar no Sistema</h3>
-        <input type="email" id="loginEmail" placeholder="Email" required>
-        <input type="password" id="loginSenha" placeholder="Senha" required>
-        <button type="submit">Entrar</button>
-      </form>
-
-      <!-- Formulário de Cadastro -->
-      <form id="registerForm" class="hidden">
-        <h3 style="margin-top:0">Novo Cadastro</h3>
-        <input type="email" id="regEmail" placeholder="Email" required>
-        <input type="password" id="regSenha" placeholder="Senha" required>
-        <button type="submit">Cadastrar</button>
-      </form>
-
-      <p id="mensagem"></p>
+      <div class="dash-box">
+        <h4>Último Acesso</h4>
+        <p id="loginTime">Hoje</p>
+      </div>
     </div>
 
-    <!-- Tela de Boas-Vindas -->
-    <div id="welcomeScreen" class="welcome-container hidden">
-      <h2>Bem-vindo! 🎉</h2>
-      <p>Você está conectado como:</p>
-      <p id="userEmail" style="font-weight: bold; color: #007bff; word-break: break-all;"></p>
-      <button class="btn-logout" onclick="logout()">Sair</button>
-    </div>
+    <button class="btn-logout" onclick="logout()">Sair da Conta</button>
   </div>
 
   <script>
-    // Cole a URL obtida na implantação do seu Web App no Google Apps Script
-    const API_URL = 'https://script.google.com/macros/s/AKfycbzoYxzYC3fh6kf-VK3JE2gj6OR1Nn_RoQ348k5NPAyLm0Uh9rahbPy_HNk4UzFCeUcZ/exec;
+    // URL da API com aspas devidamente fechadas no final
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzoYxzYC3fh6kf-VK3JE2gj6OR1Nn_RoQ348k5NPAyLm0Uh9rahbPy_HNk4UzFCeUcZ/exec';
 
     // Alternar entre Login e Cadastro
     function switchTab(tab) {
@@ -145,14 +235,18 @@
 
     // Exibir Tela de Boas-Vindas
     function showWelcomeScreen(email) {
-      document.getElementById('authContainer').classList.add('hidden');
+      document.getElementById('authCard').classList.add('hidden');
       document.getElementById('welcomeScreen').classList.remove('hidden');
       document.getElementById('userEmail').innerText = email;
+      
+      // Registra a hora atual do login
+      const now = new Date();
+      document.getElementById('loginTime').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
     // Função para Sair (Logout)
     function logout() {
-      document.getElementById('authContainer').classList.remove('hidden');
+      document.getElementById('authCard').classList.remove('hidden');
       document.getElementById('welcomeScreen').classList.add('hidden');
       document.getElementById('loginEmail').value = '';
       document.getElementById('loginSenha').value = '';
@@ -190,11 +284,10 @@
       try {
         const response = await fetch(API_URL, {
           method: 'POST',
-          // 'text/plain' evita requisições Preflight (OPTIONS) do CORS que o Google bloqueia
           headers: {
             'Content-Type': 'text/plain;charset=utf-8',
           },
-          redirect: 'follow', // Opcional para o fetch em navegadores modernos
+          redirect: 'follow',
           body: JSON.stringify(payload)
         });
 
