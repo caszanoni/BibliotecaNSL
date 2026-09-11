@@ -109,7 +109,7 @@
       <p id="mensagem"></p>
     </div>
 
-    <!-- Tela de Boas-Vindas (Inicia oculta) -->
+    <!-- Tela de Boas-Vindas -->
     <div id="welcomeScreen" class="welcome-container hidden">
       <h2>Bem-vindo! 🎉</h2>
       <p>Você está conectado como:</p>
@@ -119,7 +119,8 @@
   </div>
 
   <script>
-    const API_URL = 'https://script.google.com/macros/library/d/1aVl7ozwPGWRIVo2oiMc8NIjfjBDtIIr6JDhNdBLlDXkO0iZ6TjqUa6vI/2';
+    // Cole a URL obtida na implantação do seu Web App no Google Apps Script
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzoYxzYC3fh6kf-VK3JE2gj6OR1Nn_RoQ348k5NPAyLm0Uh9rahbPy_HNk4UzFCeUcZ/exec;
 
     // Alternar entre Login e Cadastro
     function switchTab(tab) {
@@ -180,44 +181,48 @@
       });
     });
 
-    // Função genérica de envio de dados
+    // Função de envio de dados com tratamento de erro
     async function sendData(payload, emailLogged = '') {
-  const msg = document.getElementById('mensagem');
-  msg.innerText = 'Processando...';
-  msg.style.color = 'black';
+      const msg = document.getElementById('mensagem');
+      msg.innerText = 'Processando...';
+      msg.style.color = 'black';
 
-  try {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      // 'text/plain' evita requisições Preflight (OPTIONS) do CORS que o Google bloqueia
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8',
-      },
-      redirect: 'follow', // Força o fetch a seguir o redirecionamento HTTP do Google
-      body: JSON.stringify(payload)
-    });
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          // 'text/plain' evita requisições Preflight (OPTIONS) do CORS que o Google bloqueia
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+          },
+          redirect: 'follow', // Opcional para o fetch em navegadores modernos
+          body: JSON.stringify(payload)
+        });
 
-    const result = await response.json();
+        if (!response.ok) {
+          throw new Error(`Erro na requisição: ${response.statusText}`);
+        }
 
-    if (result.status === 'success') {
-      if (payload.action === 'login') {
-        showWelcomeScreen(emailLogged);
-      } else if (payload.action === 'register') {
-        msg.innerText = result.message;
-        msg.style.color = 'green';
-        document.getElementById('regEmail').value = '';
-        document.getElementById('regSenha').value = '';
+        const result = await response.json();
+
+        if (result.status === 'success') {
+          if (payload.action === 'login') {
+            showWelcomeScreen(emailLogged);
+          } else if (payload.action === 'register') {
+            msg.innerText = result.message;
+            msg.style.color = 'green';
+            document.getElementById('regEmail').value = '';
+            document.getElementById('regSenha').value = '';
+          }
+        } else {
+          msg.innerText = result.message || 'Erro no servidor.';
+          msg.style.color = 'red';
+        }
+      } catch (err) {
+        console.error("Erro detalhado:", err);
+        msg.innerText = 'Erro ao conectar com o servidor.';
+        msg.style.color = 'red';
       }
-    } else {
-      msg.innerText = result.message;
-      msg.style.color = 'red';
     }
-  } catch (err) {
-    console.error("Erro detalhado:", err);
-    msg.innerText = 'Erro ao conectar com o servidor.';
-    msg.style.color = 'red';
-  }
-}
   </script>
 </body>
 </html>
