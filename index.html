@@ -159,7 +159,7 @@
 </head>
 <body>
 
-  <!-- Tela de Login / Cadastro (Aparece no mesmo Card) -->
+  <!-- Tela de Login / Cadastro -->
   <div id="authCard" class="card">
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('login')">Login</button>
@@ -185,7 +185,7 @@
     <p id="mensagem"></p>
   </div>
 
-  <!-- Nova Tela de Boas-Vindas / Dashboard (Inicia Oculta) -->
+  <!-- Tela de Boas-Vindas / Dashboard -->
   <div id="welcomeScreen" class="card dashboard-card hidden">
     <div class="avatar-icon">👤</div>
     <h2 class="welcome-title">Seja Bem-vindo(a)! 🎉</h2>
@@ -193,7 +193,6 @@
 
     <div class="user-badge" id="userEmail">usuario@email.com</div>
 
-    <!-- Grid com dados fictícios ou status -->
     <div class="dash-grid">
       <div class="dash-box">
         <h4>Status</h4>
@@ -209,8 +208,8 @@
   </div>
 
   <script>
-    // URL da API com aspas devidamente fechadas no final
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwqO7_dJlJdc4mMkP2mj1x4XnN171hba5XuAgtJjq-UdP2TEkFVMzMy828IHLKFcWfl/exec';
+    // URL do Web App implantado no Google Apps Script
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzoYxzYC3fh6kf-VK3JE2gj6OR1Nn_RoQ348k5NPAyLm0Uh9rahbPy_HNk4UzFCeUcZ/exec';
 
     // Alternar entre Login e Cadastro
     function switchTab(tab) {
@@ -239,7 +238,6 @@
       document.getElementById('welcomeScreen').classList.remove('hidden');
       document.getElementById('userEmail').innerText = email;
       
-      // Registra a hora atual do login
       const now = new Date();
       document.getElementById('loginTime').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
@@ -258,10 +256,12 @@
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('loginEmail').value;
+      const senha = document.getElementById('loginSenha').value;
+
       sendData({
         action: 'login',
         email: email,
-        senha: document.getElementById('loginSenha').value
+        senha: senha
       }, email);
     });
 
@@ -275,7 +275,7 @@
       });
     });
 
-    // Função de envio de dados com tratamento de erro
+    // Envio robusto de dados para o Web App do Apps Script
     async function sendData(payload, emailLogged = '') {
       const msg = document.getElementById('mensagem');
       msg.innerText = 'Processando...';
@@ -285,15 +285,10 @@
         const response = await fetch(API_URL, {
           method: 'POST',
           headers: {
-            'Content-Type': 'text/plain;charset=utf-8',
+            'Content-Type': 'text/plain;charset=utf-8'
           },
-          redirect: 'follow',
           body: JSON.stringify(payload)
         });
-
-        if (!response.ok) {
-          throw new Error(`Erro na requisição: ${response.statusText}`);
-        }
 
         const result = await response.json();
 
@@ -301,13 +296,13 @@
           if (payload.action === 'login') {
             showWelcomeScreen(emailLogged);
           } else if (payload.action === 'register') {
-            msg.innerText = result.message;
+            msg.innerText = result.message || 'Cadastro realizado com sucesso!';
             msg.style.color = 'green';
             document.getElementById('regEmail').value = '';
             document.getElementById('regSenha').value = '';
           }
         } else {
-          msg.innerText = result.message || 'Erro no servidor.';
+          msg.innerText = result.message || 'Usuário ou senha inválidos.';
           msg.style.color = 'red';
         }
       } catch (err) {
