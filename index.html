@@ -2,41 +2,222 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acesso / Cadastro</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #f4f4f9;
+    }
+    .card {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      width: 300px;
+    }
+    .tabs {
+      display: flex;
+      margin-bottom: 1.5rem;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 0.5rem;
+      border: none;
+      background: #eee;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .tab-btn.active {
+      background: #007bff;
+      color: white;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+    input {
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      padding: 0.5rem;
+      border: none;
+      background-color: #28a745;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    .btn-logout {
+      background-color: #dc3545;
+      width: 100%;
+      margin-top: 1rem;
+    }
+    .btn-logout:hover {
+      background-color: #c82333;
+    }
+    #mensagem {
+      margin-top: 1rem;
+      text-align: center;
+      font-weight: bold;
+    }
+    .welcome-container {
+      text-align: center;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
 <body>
-  <h2>Login</h2>
-  <form id="loginForm">
-    <input type="email" id="email" placeholder="Email" required><br><br>
-    <input type="password" id="senha" placeholder="Senha" required><br><br>
-    <button type="submit">Entrar</button>
-  </form>
-  <p id="mensagem"></p>
+
+  <div class="card">
+    <!-- Container de Formulários (Login / Cadastro) -->
+    <div id="authContainer">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+        <button class="tab-btn" onclick="switchTab('register')">Cadastrar</button>
+      </div>
+
+      <!-- Formulário de Login -->
+      <form id="loginForm">
+        <h3 style="margin-top:0">Entrar no Sistema</h3>
+        <input type="email" id="loginEmail" placeholder="Email" required>
+        <input type="password" id="loginSenha" placeholder="Senha" required>
+        <button type="submit">Entrar</button>
+      </form>
+
+      <!-- Formulário de Cadastro -->
+      <form id="registerForm" class="hidden">
+        <h3 style="margin-top:0">Novo Cadastro</h3>
+        <input type="email" id="regEmail" placeholder="Email" required>
+        <input type="password" id="regSenha" placeholder="Senha" required>
+        <button type="submit">Cadastrar</button>
+      </form>
+
+      <p id="mensagem"></p>
+    </div>
+
+    <!-- Tela de Boas-Vindas (Inicia oculta) -->
+    <div id="welcomeScreen" class="welcome-container hidden">
+      <h2>Bem-vindo! 🎉</h2>
+      <p>Você está conectado como:</p>
+      <p id="userEmail" style="font-weight: bold; color: #007bff; word-break: break-all;"></p>
+      <button class="btn-logout" onclick="logout()">Sair</button>
+    </div>
+  </div>
 
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbzzKynkbAPZ-URzTdik9LYpumM2zjyLv4RnEY9Yh7xiwyCy2KJAQEqO4-CPNY-kp3dY/exec;
+    const API_URL = 'https://script.google.com/macros/library/d/1aVl7ozwPGWRIVo2oiMc8NIjfjBDtIIr6JDhNdBLlDXkO0iZ6TjqUa6vI/2';
 
+    // Alternar entre Login e Cadastro
+    function switchTab(tab) {
+      const loginForm = document.getElementById('loginForm');
+      const registerForm = document.getElementById('registerForm');
+      const buttons = document.querySelectorAll('.tab-btn');
+      const msg = document.getElementById('mensagem');
+      msg.innerText = '';
+
+      if (tab === 'login') {
+        loginForm.classList.remove('hidden');
+        registerForm.classList.add('hidden');
+        buttons[0].classList.add('active');
+        buttons[1].classList.remove('active');
+      } else {
+        loginForm.classList.add('hidden');
+        registerForm.classList.remove('hidden');
+        buttons[0].classList.remove('active');
+        buttons[1].classList.add('active');
+      }
+    }
+
+    // Exibir Tela de Boas-Vindas
+    function showWelcomeScreen(email) {
+      document.getElementById('authContainer').classList.add('hidden');
+      document.getElementById('welcomeScreen').classList.remove('hidden');
+      document.getElementById('userEmail').innerText = email;
+    }
+
+    // Função para Sair (Logout)
+    function logout() {
+      document.getElementById('authContainer').classList.remove('hidden');
+      document.getElementById('welcomeScreen').classList.add('hidden');
+      document.getElementById('loginEmail').value = '';
+      document.getElementById('loginSenha').value = '';
+      document.getElementById('mensagem').innerText = '';
+      switchTab('login');
+    }
+
+    // Submeter Login
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('email').value;
-      const senha = document.getElementById('senha').value;
-
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        body: JSON.stringify({ email, senha })
-      });
-
-      const result = await response.json();
-      const msg = document.getElementById('mensagem');
-      
-      if (result.status === 'success') {
-        msg.innerText = 'Login realizado com sucesso!';
-        msg.style.color = 'green';
-      } else {
-        msg.innerText = result.message;
-        msg.style.color = 'red';
-      }
+      const email = document.getElementById('loginEmail').value;
+      sendData({
+        action: 'login',
+        email: email,
+        senha: document.getElementById('loginSenha').value
+      }, email);
     });
+
+    // Submeter Cadastro
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      sendData({
+        action: 'register',
+        email: document.getElementById('regEmail').value,
+        senha: document.getElementById('regSenha').value
+      });
+    });
+
+    // Função genérica de envio de dados
+    async function sendData(payload, emailLogged = '') {
+  const msg = document.getElementById('mensagem');
+  msg.innerText = 'Processando...';
+  msg.style.color = 'black';
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      // 'text/plain' evita requisições Preflight (OPTIONS) do CORS que o Google bloqueia
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8',
+      },
+      redirect: 'follow', // Força o fetch a seguir o redirecionamento HTTP do Google
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+
+    if (result.status === 'success') {
+      if (payload.action === 'login') {
+        showWelcomeScreen(emailLogged);
+      } else if (payload.action === 'register') {
+        msg.innerText = result.message;
+        msg.style.color = 'green';
+        document.getElementById('regEmail').value = '';
+        document.getElementById('regSenha').value = '';
+      }
+    } else {
+      msg.innerText = result.message;
+      msg.style.color = 'red';
+    }
+  } catch (err) {
+    console.error("Erro detalhado:", err);
+    msg.innerText = 'Erro ao conectar com o servidor.';
+    msg.style.color = 'red';
+  }
+}
   </script>
 </body>
 </html>
