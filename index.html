@@ -477,31 +477,47 @@
     let modoAtualUsuario = '';
     let usuarioAtual = null;
 
-    function sendRequest(payload) {
-  return new Promise((resolve) => {
-    const callbackName = 'jsonp_cb_' + Math.round(100000 * Math.random());
-    
-    // Define a função temporária de callback no escopo global
-    window[callbackName] = function(data) {
-      delete window[callbackName];
-      document.body.removeChild(script);
-      resolve(data);
-    };
+    async function sendRequest(payload) {
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      mode: "cors",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8",
+      },
+      body: JSON.stringify(payload)
+    });
 
-    const script = document.createElement('script');
-    const encodedPayload = encodeURIComponent(JSON.stringify(payload));
-    
-    // Monta a URL com os parâmetros e o callback JSONP
-    script.src = `${API_URL}?payload=${encodedPayload}&callback=${callbackName}`;
-    
-    script.onerror = function() {
-      delete window[callbackName];
-      if (script.parentNode) document.body.removeChild(script);
-      resolve({ 
-        status: 'error', 
-        message: 'Erro ao conectar ao servidor. Verifique a URL do AppScript.' 
-      });
-    };
+    if (response.ok) {
+      return await response.json();
+    } else {
+      throw new Error("Resposta de rede não ok.");
+    }
+  } catch (err) {
+    // Fallback via JSONP caso o POST direto seja bloqueado pelo navegador
+    return new Promise((resolve) => {
+      const callbackName = 'jsonp_' + Math.random().toString(36).substr(2, 9);
+      
+      window[callbackName] = function(data) {
+        delete window[callbackName];
+        document.body.removeChild(script);
+        resolve(data);
+      };
+
+      const script = document.createElement('script');
+      const paramPayload = encodeURIComponent(JSON.stringify(payload));
+      script.src = `${API_URL}?payload=${paramPayload}&callback=${callbackName}`;
+      
+      script.onerror = function() {
+        delete window[callbackName];
+        if (script.parentNode) document.body.removeChild(script);
+        resolve({ status: 'error', message: 'Erro de conexão com o servidor.' });
+      };
+
+      document.body.appendChild(script);
+    });
+  }
+}
 
     document.body.appendChild(script);
   });
