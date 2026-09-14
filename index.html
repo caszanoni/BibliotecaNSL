@@ -481,19 +481,24 @@
   try {
     const response = await fetch(API_URL, {
       method: "POST",
-      mode: "cors",
+      redirect: "follow",
       headers: {
-        "Content-Type": "text/plain;charset=utf-8",
+        "Content-Type": "text/plain;charset=utf-8"
       },
       body: JSON.stringify(payload)
     });
 
-    if (response.ok) {
-      return await response.json();
-    } else {
-      throw new Error("Resposta de rede não ok.");
+    if (!response.ok) {
+      throw new Error("Erro na requisição da API.");
     }
+
+    const data = await response.json();
+    return data;
   } catch (err) {
+    console.error("Erro na comunicação:", err);
+    return { status: "error", message: "Erro ao conectar com a planilha do Google." };
+  }
+}
     // Fallback via JSONP caso o POST direto seja bloqueado pelo navegador
     return new Promise((resolve) => {
       const callbackName = 'jsonp_' + Math.random().toString(36).substr(2, 9);
