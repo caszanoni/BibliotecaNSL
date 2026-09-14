@@ -477,29 +477,34 @@
     let modoAtualUsuario = '';
     let usuarioAtual = null;
 
-    async function sendRequest(payload) {
-  try {
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      mode: 'cors',
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8'
-      },
-      body: JSON.stringify(payload)
-    });
+    function sendRequest(payload) {
+  return new Promise((resolve) => {
+    const callbackName = 'jsonp_cb_' + Math.round(100000 * Math.random());
     
-    if (!res.ok) {
-      throw new Error(`Erro na rede (Status: ${res.status})`);
-    }
-    
-    return await res.json();
-  } catch (err) {
-    console.error("Erro na requisição:", err);
-    return { 
-      status: 'error', 
-      message: 'Falha ao comunicar com a planilha. Verifique a URL do App da Web ou as permissões.' 
+    // Define a função temporária de callback no escopo global
+    window[callbackName] = function(data) {
+      delete window[callbackName];
+      document.body.removeChild(script);
+      resolve(data);
     };
-  }
+
+    const script = document.createElement('script');
+    const encodedPayload = encodeURIComponent(JSON.stringify(payload));
+    
+    // Monta a URL com os parâmetros e o callback JSONP
+    script.src = `${API_URL}?payload=${encodedPayload}&callback=${callbackName}`;
+    
+    script.onerror = function() {
+      delete window[callbackName];
+      if (script.parentNode) document.body.removeChild(script);
+      resolve({ 
+        status: 'error', 
+        message: 'Erro ao conectar ao servidor. Verifique a URL do AppScript.' 
+      });
+    };
+
+    document.body.appendChild(script);
+  });
 }
 
     function switchTab(tab) {
