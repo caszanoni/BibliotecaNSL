@@ -3,41 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Acesso / Dashboard</title>
+  <title>Sistema de Gestão de Biblioteca - PNSL</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body {
       font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+
+    .auth-container {
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      margin: 0;
-      background-color: #f4f4f9;
     }
-
-    /* Card de Login/Cadastro */
     .card {
       background: white;
       padding: 2rem;
       border-radius: 8px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      width: 320px;
-      transition: all 0.3s ease;
+      width: 380px;
       text-align: center;
     }
-    
     .brasao-img {
       max-width: 100px;
       height: auto;
-      margin-bottom: 1rem;
+      margin: 0 auto 1rem auto;
       display: block;
-      margin-left: auto;
-      margin-right: auto;
     }
-
+    .brasao-welcome {
+      max-width: 250px;
+      height: auto;
+      margin: 2rem auto;
+      display: block;
+      opacity: 0.9;
+    }
     .tabs {
       display: flex;
       margin-bottom: 1.5rem;
@@ -60,11 +63,20 @@
       flex-direction: column;
       text-align: left;
     }
-    input {
-      margin-bottom: 1rem;
+    label {
+      font-size: 0.85rem;
+      font-weight: bold;
+      margin-top: 0.5rem;
+      margin-bottom: 0.2rem;
+      color: #555;
+    }
+    input, select {
+      margin-bottom: 0.8rem;
       padding: 0.6rem;
       border: 1px solid #ccc;
       border-radius: 4px;
+      font-size: 0.9rem;
+      width: 100%;
     }
     button {
       padding: 0.6rem;
@@ -74,246 +86,914 @@
       border-radius: 4px;
       cursor: pointer;
       font-weight: bold;
+      font-size: 0.95rem;
     }
-    button:hover {
-      background-color: #218838;
-    }
+    button:hover { background-color: #218838; }
     #mensagem {
       margin-top: 1rem;
       text-align: center;
       font-weight: bold;
     }
 
-    /* Tela de Boas-Vindas / Dashboard */
-    .dashboard-card {
-      width: 100%;
-      max-width: 500px;
-      padding: 2.5rem;
-      text-align: center;
+    #appLayout {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
     }
-
-    .welcome-title {
-      margin: 0 0 0.5rem 0;
-      color: #333;
+    header {
+      background: #007bff;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
     }
-
-    .user-badge {
-      display: inline-block;
-      background-color: #eef2f5;
-      padding: 0.4rem 1rem;
-      border-radius: 20px;
+    header h1 {
+      margin: 0;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+    header img { height: 35px; width: auto; }
+    .user-info {
       font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .btn-logout-head {
+      background: #dc3545;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+    }
+    .btn-logout-head:hover { background: #c82333; }
+
+    .dashboard-body {
+      display: flex;
+      flex: 1;
+    }
+
+    aside.sidebar {
+      width: 250px;
+      background: #343a40;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding-top: 1rem;
+      min-height: calc(100vh - 67px);
+    }
+
+    .menu-group { margin-bottom: 0.5rem; }
+    .menu-title {
+      padding: 0.8rem 1.2rem;
+      background: #212529;
+      color: #fff;
+      font-size: 0.95rem;
       font-weight: bold;
-      color: #007bff;
-      margin-bottom: 1.5rem;
-      word-break: break-all;
+      display: block;
+    }
+    .menu-item-btn {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: none;
+      color: #ddd;
+      padding: 0.8rem 1.2rem;
+      font-weight: bold;
+      font-size: 0.95rem;
+      border-radius: 0;
+    }
+    .menu-item-btn:hover, .menu-item-btn.active-nav {
+      background: #007bff;
+      color: white;
     }
 
-    /* Cards de Informação no Dashboard */
-    .dash-grid {
+    .submenu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      background: #2c3034;
+    }
+    .submenu li button {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: none;
+      color: #bbb;
+      padding: 0.6rem 1.2rem 0.6rem 2.2rem;
+      font-size: 0.85rem;
+      font-weight: normal;
+      border-radius: 0;
+    }
+    .submenu li button:hover {
+      background: #495057;
+      color: #fff;
+    }
+
+    main {
+      flex: 1;
+      padding: 2rem;
+      overflow-x: hidden;
+    }
+
+    .welcome-container {
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+
+    .form-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
-      margin: 1.5rem 0;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+      background: white;
+      padding: 1.5rem;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      margin-bottom: 1.5rem;
     }
 
-    .dash-box {
-      background: #f8f9fa;
-      border: 1px solid #e9ecef;
-      padding: 1rem;
+    .selector-box {
+      background: white;
+      padding: 1.5rem;
       border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      margin-bottom: 1.5rem;
+      max-width: 600px;
+    }
+
+    .table-container {
+      width: 100%;
+      max-height: 500px;
+      overflow-x: scroll;
+      overflow-y: scroll;
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      scrollbar-width: thin;
+      scrollbar-color: #888 #f1f1f1;
+    }
+
+    .table-container::-webkit-scrollbar { width: 12px; height: 12px; }
+    .table-container::-webkit-scrollbar-track { background: #f1f1f1; }
+    .table-container::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+    .table-container::-webkit-scrollbar-thumb:hover { background: #555; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 2000px;
       text-align: left;
     }
-
-    .dash-box h4 {
-      margin: 0 0 0.3rem 0;
+    th, td {
+      padding: 0.75rem 1rem;
+      border: 1px solid #dee2e6;
       font-size: 0.85rem;
-      color: #6c757d;
-      text-transform: uppercase;
+      white-space: nowrap;
     }
+    th {
+      background-color: #f8f9fa;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    tr:hover { background-color: #f1f1f1; }
 
-    .dash-box p {
-      margin: 0;
-      font-weight: bold;
-      color: #333;
-    }
-
-    .btn-logout {
-      background-color: #dc3545;
-      width: 100%;
-      padding: 0.7rem;
-      font-size: 1rem;
-      margin-top: 0.5rem;
-    }
-
-    .btn-logout:hover {
-      background-color: #c82333;
-    }
-
-    .hidden {
-      display: none !important;
-    }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
-  <!-- Tela de Login / Cadastro -->
-  <div id="authCard" class="card">
-    <!-- Imagem do Brasão na tela de Login -->
-    <img src="brasao_site_1 pnsl.png" alt="Brasão PNSL" class="brasao-img">
+  <!-- AUTENTICAÇÃO -->
+  <div id="authScreen" class="auth-container">
+    <div class="card">
+      <img src="brasao_site_1 pnsl.png" alt="Brasão PNSL" class="brasao-img">
 
-    <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('login')">Login</button>
-      <button class="tab-btn" onclick="switchTab('register')">Cadastrar</button>
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+        <button class="tab-btn" onclick="switchTab('register')">Cadastrar</button>
+      </div>
+
+      <form id="loginForm">
+        <h3 style="margin: 0 0 1rem 0; text-align: center;">Entrar no Sistema</h3>
+        <label>Nome de Usuário ou E-mail</label>
+        <input type="text" id="loginUsername" required placeholder="Digite o usuário ou e-mail">
+
+        <label>Senha de Acesso</label>
+        <input type="password" id="loginSenha" required placeholder="Digite a senha">
+
+        <button type="submit">Entrar</button>
+      </form>
+
+      <form id="registerForm" class="hidden">
+        <h3 style="margin: 0 0 1rem 0; text-align: center;">Novo Cadastro</h3>
+
+        <label>E-mail</label>
+        <input type="email" id="regEmail" required placeholder="exemplo@email.com">
+
+        <label>Nome de Usuário</label>
+        <input type="text" id="regUsername" required placeholder="Nome de usuário">
+
+        <label>Senha de Acesso</label>
+        <input type="password" id="regSenha" required placeholder="Senha de Acesso">
+
+        <label>Tipo de Usuário</label>
+        <select id="regTipoUsuario" required>
+          <option value="Comum">Comum</option>
+          <option value="Administrador">Administrador</option>
+        </select>
+
+        <button type="submit">Cadastrar</button>
+      </form>
+
+      <p id="mensagem"></p>
     </div>
-
-    <!-- Formulário de Login -->
-    <form id="loginForm">
-      <h3 style="margin-top:0; text-align: center;">Entrar no Sistema</h3>
-      <input type="email" id="loginEmail" placeholder="Email" required>
-      <input type="password" id="loginSenha" placeholder="Senha" required>
-      <button type="submit">Entrar</button>
-    </form>
-
-    <!-- Formulário de Cadastro -->
-    <form id="registerForm" class="hidden">
-      <h3 style="margin-top:0; text-align: center;">Novo Cadastro</h3>
-      <input type="email" id="regEmail" placeholder="Email" required>
-      <input type="password" id="regSenha" placeholder="Senha" required>
-      <button type="submit">Cadastrar</button>
-    </form>
-
-    <p id="mensagem"></p>
   </div>
 
-  <!-- Tela de Boas-Vindas / Dashboard -->
-  <div id="welcomeScreen" class="card dashboard-card hidden">
-    <!-- Imagem do Brasão na tela de Boas-Vindas -->
-    <img src="brasao_site_1 pnsl.png" alt="Brasão PNSL" class="brasao-img" style="max-width: 120px;">
-
-    <!-- Título atualizado -->
-    <h2 class="welcome-title">Bem-vindo! Sistema de Gestão de Biblioteca</h2>
-    <p style="color: #666; margin-top: 0;">Você se autenticou com sucesso.</p>
-
-    <div class="user-badge" id="userEmail">usuario@email.com</div>
-
-    <div class="dash-grid">
-      <div class="dash-box">
-        <h4>Status</h4>
-        <p style="color: #28a745;">● Ativo</p>
+  <!-- DASHBOARD PRINCIPAL -->
+  <div id="appLayout" class="hidden">
+    <header>
+      <h1 onclick="navegarPara('sec-welcome')">
+        <img src="brasao_site_1 pnsl.png" alt="Brasão PNSL">
+        Biblioteca PNSL - Gestão
+      </h1>
+      <div class="user-info">
+        <span id="displayUser">Usuário</span>
+        <button class="btn-logout-head" onclick="logout()">Sair</button>
       </div>
-      <div class="dash-box">
-        <h4>Último Acesso</h4>
-        <p id="loginTime">Hoje</p>
-      </div>
+    </header>
+
+    <div class="dashboard-body">
+      <aside class="sidebar">
+        <div class="menu-group">
+          <div class="menu-title">Livros</div>
+          <ul class="submenu">
+            <li><button onclick="menuAcaoLivro('incluir')">Incluir</button></li>
+            <li><button onclick="menuAcaoLivro('modificar')">Modificar</button></li>
+            <li><button onclick="menuAcaoLivro('excluir')">Excluir</button></li>
+            <li><button onclick="triggerImport()">Importar</button></li>
+            <li><button onclick="exportarCSV()">Exportar</button></li>
+          </ul>
+        </div>
+
+        <div class="menu-group">
+          <button class="menu-item-btn" onclick="navegarPara('sec-lista-livros')">Lista de Livros</button>
+        </div>
+
+        <div class="menu-group">
+          <div class="menu-title">Usuários</div>
+          <ul class="submenu">
+            <li><button onclick="menuAcaoUsuario('incluir')">Incluir</button></li>
+            <li><button onclick="menuAcaoUsuario('modificar')">Modificar</button></li>
+            <li><button onclick="menuAcaoUsuario('excluir')">Excluir</button></li>
+          </ul>
+        </div>
+      </aside>
+
+      <main>
+        <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="importarCSV(event)">
+
+        <section id="sec-welcome" class="welcome-container">
+          <img src="brasao_site_1 pnsl.png" alt="Brasão PNSL" class="brasao-welcome">
+          <h2>Bem-vindo à Biblioteca PNSL</h2>
+          <p style="color: #666;">Selecione uma opção no menu lateral para gerenciar livros ou usuários.</p>
+        </section>
+
+        <section id="sec-livros" class="hidden">
+          <h2 id="tituloLivroForm">Gestão de Livros</h2>
+
+          <div id="containerSelectLivro" class="selector-box hidden">
+            <label id="labelSelectLivro">Selecione o Livro:</label>
+            <select id="selectLivro" onchange="aoSelecionarLivroDropdown()">
+              <option value="">-- Selecione um Livro --</option>
+            </select>
+            <button id="btnAcaoSelectLivro" class="hidden" style="margin-top: 10px;" onclick="confirmarExclusaoLivroDropdown()">Confirmar Exclusão</button>
+          </div>
+
+          <form id="formLivro" class="form-grid hidden">
+            <input type="hidden" id="bookEditIndex" value="-1">
+            
+            <div><label>Código Interno</label><input type="text" id="bCodigo" required></div>
+            <div><label>Título</label><input type="text" id="bTitulo" required></div>
+            <div><label>Subtítulo</label><input type="text" id="bSubtitulo"></div>
+            <div><label>Autor / Org. / Coordenador</label><input type="text" id="bAutor" required></div>
+            <div><label>ISBN</label><input type="text" id="bIsbn"></div>
+            <div><label>Tradução</label><input type="text" id="bTraducao"></div>
+            <div><label>Coleção</label><input type="text" id="bColecao"></div>
+            <div><label>Edição</label><input type="text" id="bEdicao"></div>
+            <div><label>Volume</label><input type="text" id="bVolume"></div>
+            <div><label>Classificação</label><input type="text" id="bClassificacao"></div>
+            <div><label>Local de Publicação</label><input type="text" id="bLocal"></div>
+            <div><label>Editora</label><input type="text" id="bEditora"></div>
+            <div><label>Data</label><input type="text" id="bData"></div>
+            <div><label>Número de Páginas</label><input type="text" id="bPaginas"></div>
+            <div><label>Exemplar</label><input type="text" id="bExemplar"></div>
+
+            <div style="grid-column: 1 / -1; display: flex; gap: 10px; margin-top: 10px;">
+              <button type="submit" id="btnSalvarLivro">Salvar Livro</button>
+              <button type="button" style="background:#6c757d;" onclick="resetLivroForm()">Limpar / Cancelar</button>
+            </div>
+          </form>
+        </section>
+
+        <section id="sec-lista-livros" class="hidden">
+          <h2>Lista de Livros</h2>
+          <div class="table-container">
+            <table id="tabelaLivros">
+              <thead>
+                <tr>
+                  <th>Código Interno</th>
+                  <th>Título</th>
+                  <th>Subtítulo</th>
+                  <th>Autor / Org. / Coordenador</th>
+                  <th>ISBN</th>
+                  <th>Tradução</th>
+                  <th>Coleção</th>
+                  <th>Edição</th>
+                  <th>Volume</th>
+                  <th>Classificação</th>
+                  <th>Local de Publicação</th>
+                  <th>Editora</th>
+                  <th>Data</th>
+                  <th>Número de Páginas</th>
+                  <th>Exemplar</th>
+                </tr>
+              </thead>
+              <tbody id="livrosTbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="sec-usuarios" class="hidden">
+          <h2 id="tituloUserForm">Gestão de Usuários</h2>
+
+          <div id="containerSelectUsuario" class="selector-box hidden">
+            <label id="labelSelectUsuario">Selecione o Usuário:</label>
+            <select id="selectUsuario" onchange="aoSelecionarUsuarioDropdown()">
+              <option value="">-- Selecione um Usuário --</option>
+            </select>
+            <button id="btnAcaoSelectUsuario" class="hidden" style="margin-top: 10px; background-color: #dc3545;" onclick="confirmarExclusaoUsuarioDropdown()">Excluir Usuário</button>
+          </div>
+          
+          <form id="formUsuarioGestao" class="form-grid hidden" style="max-width: 600px;">
+            <input type="hidden" id="userEditIndex" value="-1">
+            
+            <div style="grid-column: 1 / -1;"><label>E-mail</label><input type="email" id="uEmail" required placeholder="exemplo@email.com"></div>
+            <div style="grid-column: 1 / -1;"><label>Nome de Usuário</label><input type="text" id="uUsername" required placeholder="Nome do Usuário"></div>
+            <div style="grid-column: 1 / -1;"><label>Senha de Acesso</label><input type="password" id="uSenha" placeholder="Digite a nova senha"></div>
+            <div style="grid-column: 1 / -1;">
+              <label>Tipo de Usuário</label>
+              <select id="uTipoUsuario" required>
+                <option value="Comum">Comum</option>
+                <option value="Administrador">Administrador</option>
+              </select>
+            </div>
+
+            <div style="grid-column: 1 / -1; display: flex; gap: 10px; margin-top: 10px;">
+              <button type="submit" id="btnSalvarUsuario">Salvar Usuário</button>
+              <button type="button" style="background:#6c757d;" onclick="resetUsuarioForm()">Cancelar</button>
+            </div>
+          </form>
+        </section>
+      </main>
     </div>
-
-    <button class="btn-logout" onclick="logout()">Sair da Conta</button>
   </div>
 
   <script>
-    // URL do Web App implantado no Google Apps Script
-    const API_URL = 'https://script.google.com/macros/s/AKfycbzoYxzYC3fh6kf-VK3JE2gj6OR1Nn_RoQ348k5NPAyLm0Uh9rahbPy_HNk4UzFCeUcZ/exec';
+    // Cole aqui a URL de Implantação do Apps Script (Web App)
+    const API_URL = 'https://script.google.com/macros/s/AKfycbz7y8XfyfpBhDamkTmVW-FFETWjsrPbPdtpoVgEidE_SG87RYzpoGZlwD3ZI4EPxkL4/exec';
 
-    // Alternar entre Login e Cadastro
+    let livrosDB = [];
+    let usuariosDB = [];
+    let modoAtualLivro = '';
+    let modoAtualUsuario = '';
+    let usuarioAtual = null;
+
+    async function sendRequest(payload) {
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify(payload)
+    });
+    
+    if (!res.ok) {
+      throw new Error(`Erro na rede (Status: ${res.status})`);
+    }
+    
+    return await res.json();
+  } catch (err) {
+    console.error("Erro na requisição:", err);
+    return { 
+      status: 'error', 
+      message: 'Falha ao comunicar com a planilha. Verifique a URL do App da Web ou as permissões.' 
+    };
+  }
+}
+
     function switchTab(tab) {
+      showMsg('');
       const loginForm = document.getElementById('loginForm');
       const registerForm = document.getElementById('registerForm');
-      const buttons = document.querySelectorAll('.tab-btn');
-      const msg = document.getElementById('mensagem');
-      msg.innerText = '';
+      const tabs = document.querySelectorAll('.tab-btn');
 
       if (tab === 'login') {
         loginForm.classList.remove('hidden');
         registerForm.classList.add('hidden');
-        buttons[0].classList.add('active');
-        buttons[1].classList.remove('active');
+        tabs[0].classList.add('active');
+        tabs[1].classList.remove('active');
       } else {
         loginForm.classList.add('hidden');
         registerForm.classList.remove('hidden');
-        buttons[0].classList.remove('active');
-        buttons[1].classList.add('active');
+        tabs[0].classList.remove('active');
+        tabs[1].classList.add('active');
       }
     }
 
-    // Exibir Tela de Boas-Vindas
-    function showWelcomeScreen(email) {
-      document.getElementById('authCard').classList.add('hidden');
-      document.getElementById('welcomeScreen').classList.remove('hidden');
-      document.getElementById('userEmail').innerText = email;
-      
-      const now = new Date();
-      document.getElementById('loginTime').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    function navegarPara(sectionId) {
+      document.getElementById('sec-welcome').classList.add('hidden');
+      document.getElementById('sec-livros').classList.add('hidden');
+      document.getElementById('sec-lista-livros').classList.add('hidden');
+      document.getElementById('sec-usuarios').classList.add('hidden');
+
+      document.getElementById(sectionId).classList.remove('hidden');
+
+      if (sectionId === 'sec-lista-livros') {
+        carregarLivros();
+      }
     }
 
-    // Função para Sair (Logout)
+    async function menuAcaoLivro(acao) {
+      modoAtualLivro = acao;
+      navegarPara('sec-livros');
+
+      const containerSel = document.getElementById('containerSelectLivro');
+      const formLivro = document.getElementById('formLivro');
+      const btnAcao = document.getElementById('btnAcaoSelectLivro');
+
+      await carregarLivros();
+
+      if (acao === 'incluir') {
+        document.getElementById('tituloLivroForm').innerText = 'Incluir Novo Livro';
+        containerSel.classList.add('hidden');
+        formLivro.classList.remove('hidden');
+        resetLivroForm();
+      } else if (acao === 'modificar') {
+        document.getElementById('tituloLivroForm').innerText = 'Modificar Livro';
+        containerSel.classList.remove('hidden');
+        btnAcao.classList.add('hidden');
+        formLivro.classList.add('hidden');
+        popularDropdownLivros();
+      } else if (acao === 'excluir') {
+        document.getElementById('tituloLivroForm').innerText = 'Excluir Livro';
+        containerSel.classList.remove('hidden');
+        btnAcao.classList.remove('hidden');
+        btnAcao.style.backgroundColor = '#dc3545';
+        btnAcao.innerText = 'Excluir Livro Selecionado';
+        formLivro.classList.add('hidden');
+        popularDropdownLivros();
+      }
+    }
+
+    function popularDropdownLivros() {
+      const select = document.getElementById('selectLivro');
+      select.innerHTML = '<option value="">-- Selecione um Livro --</option>';
+
+      livrosDB.forEach((l, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = `${l.codigo ? '[' + l.codigo + '] ' : ''}${l.titulo || 'Sem título'}`;
+        select.appendChild(option);
+      });
+    }
+
+    function aoSelecionarLivroDropdown() {
+      const idx = document.getElementById('selectLivro').value;
+      if (idx === '') {
+        if (modoAtualLivro === 'modificar') document.getElementById('formLivro').classList.add('hidden');
+        return;
+      }
+
+      if (modoAtualLivro === 'modificar') {
+        editarLivro(parseInt(idx));
+        document.getElementById('formLivro').classList.remove('hidden');
+      }
+    }
+
+    async function confirmarExclusaoLivroDropdown() {
+      const idx = document.getElementById('selectLivro').value;
+      if (idx === '') return alert('Por favor, selecione um livro para excluir.');
+
+      if (confirm('Tem certeza de que deseja excluir o livro selecionado?')) {
+        await excluirLivro(parseInt(idx));
+        popularDropdownLivros();
+      }
+    }
+
+    async function menuAcaoUsuario(acao) {
+      modoAtualUsuario = acao;
+      navegarPara('sec-usuarios');
+
+      const containerSel = document.getElementById('containerSelectUsuario');
+      const formUser = document.getElementById('formUsuarioGestao');
+      const btnAcao = document.getElementById('btnAcaoSelectUsuario');
+
+      await carregarUsuarios();
+
+      if (acao === 'incluir') {
+        document.getElementById('tituloUserForm').innerText = 'Incluir Novo Usuário';
+        containerSel.classList.add('hidden');
+        formUser.classList.remove('hidden');
+        resetUsuarioForm();
+      } else if (acao === 'modificar') {
+        document.getElementById('tituloUserForm').innerText = 'Modificar Usuário';
+        containerSel.classList.remove('hidden');
+        btnAcao.classList.add('hidden');
+        formUser.classList.add('hidden');
+        popularDropdownUsuarios();
+      } else if (acao === 'excluir') {
+        document.getElementById('tituloUserForm').innerText = 'Excluir Usuário';
+        containerSel.classList.remove('hidden');
+        btnAcao.classList.remove('hidden');
+        formUser.classList.add('hidden');
+        popularDropdownUsuarios();
+      }
+    }
+
+    async function carregarUsuarios() {
+      const res = await sendRequest({ action: 'getUsuarios' });
+      if (res.status === 'success' && res.usuarios) {
+        usuariosDB = res.usuarios;
+      } else {
+        usuariosDB = [];
+      }
+    }
+
+    function popularDropdownUsuarios() {
+      const select = document.getElementById('selectUsuario');
+      select.innerHTML = '<option value="">-- Selecione um Usuário --</option>';
+
+      usuariosDB.forEach((u, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = `${u.username || u.email} (${u.tipo || 'Comum'})`;
+        select.appendChild(option);
+      });
+    }
+
+    function aoSelecionarUsuarioDropdown() {
+      const idx = document.getElementById('selectUsuario').value;
+      if (idx === '') {
+        if (modoAtualUsuario === 'modificar') document.getElementById('formUsuarioGestao').classList.add('hidden');
+        return;
+      }
+
+      if (modoAtualUsuario === 'modificar') {
+        const u = usuariosDB[parseInt(idx)];
+        document.getElementById('userEditIndex').value = idx;
+        document.getElementById('uEmail').value = u.email || '';
+        document.getElementById('uUsername').value = u.username || '';
+        document.getElementById('uSenha').value = '';
+        document.getElementById('uTipoUsuario').value = u.tipo || 'Comum';
+
+        document.getElementById('formUsuarioGestao').classList.remove('hidden');
+      }
+    }
+
+    async function confirmarExclusaoUsuarioDropdown() {
+      const idx = document.getElementById('selectUsuario').value;
+      if (idx === '') return alert('Por favor, selecione um usuário para excluir.');
+
+      const u = usuariosDB[parseInt(idx)];
+      if (confirm(`Tem certeza de que deseja excluir o usuário '${u.username || u.email}'?`)) {
+        const res = await sendRequest({ action: 'deleteUser', username: u.username || u.email });
+        if (res.status === 'success') {
+          alert('Usuário excluído com sucesso!');
+          await carregarUsuarios();
+          popularDropdownUsuarios();
+        } else {
+          alert(res.message || 'Erro ao excluir usuário.');
+        }
+      }
+    }
+
+    function resetUsuarioForm() {
+      document.getElementById('formUsuarioGestao').reset();
+      document.getElementById('userEditIndex').value = "-1";
+    }
+
+    document.getElementById('registerForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      showMsg('Cadastrando...');
+
+      const payload = {
+        action: 'register',
+        email: document.getElementById('regEmail').value,
+        username: document.getElementById('regUsername').value,
+        senha: document.getElementById('regSenha').value,
+        tipo: document.getElementById('regTipoUsuario').value
+      };
+
+      const res = await sendRequest(payload);
+      if (res.status === 'success') {
+        showMsg('Usuário cadastrado com sucesso!', 'green');
+        this.reset();
+        setTimeout(() => switchTab('login'), 1500);
+      } else {
+        showMsg(res.message || 'Erro ao cadastrar.', 'red');
+      }
+    });
+
+    document.getElementById('formUsuarioGestao').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const isEdit = document.getElementById('userEditIndex').value !== "-1";
+
+      const payload = {
+        action: isEdit ? 'updateUser' : 'register',
+        email: document.getElementById('uEmail').value,
+        username: document.getElementById('uUsername').value,
+        senha: document.getElementById('uSenha').value,
+        tipo: document.getElementById('uTipoUsuario').value
+      };
+
+      const res = await sendRequest(payload);
+      if (res.status === 'success') {
+        alert(isEdit ? 'Usuário atualizado com sucesso!' : 'Usuário cadastrado com sucesso!');
+        resetUsuarioForm();
+        if (isEdit) {
+          await carregarUsuarios();
+          popularDropdownUsuarios();
+        }
+      } else {
+        alert(res.message || 'Erro ao salvar usuário.');
+      }
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      showMsg('Autenticando...');
+
+      const username = document.getElementById('loginUsername').value;
+      const senha = document.getElementById('loginSenha').value;
+
+      const res = await sendRequest({ action: 'login', username, senha });
+
+      if (res.status === 'success') {
+        usuarioAtual = res.user || { username: username, tipo: 'Comum' };
+        document.getElementById('authScreen').classList.add('hidden');
+        document.getElementById('appLayout').classList.remove('hidden');
+        document.getElementById('displayUser').innerText = `${usuarioAtual.username} (${usuarioAtual.tipo})`;
+        navegarPara('sec-welcome');
+      } else {
+        showMsg(res.message || 'Usuário ou senha inválidos.', 'red');
+      }
+    });
+
     function logout() {
-      document.getElementById('authCard').classList.remove('hidden');
-      document.getElementById('welcomeScreen').classList.add('hidden');
-      document.getElementById('loginEmail').value = '';
-      document.getElementById('loginSenha').value = '';
-      document.getElementById('mensagem').innerText = '';
+      usuarioAtual = null;
+      document.getElementById('appLayout').classList.add('hidden');
+      document.getElementById('authScreen').classList.remove('hidden');
+      document.getElementById('loginForm').reset();
       switchTab('login');
     }
 
-    // Submeter Login
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('loginEmail').value;
-      const senha = document.getElementById('loginSenha').value;
-
-      sendData({
-        action: 'login',
-        email: email,
-        senha: senha
-      }, email);
-    });
-
-    // Submeter Cadastro
-    document.getElementById('registerForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      sendData({
-        action: 'register',
-        email: document.getElementById('regEmail').value,
-        senha: document.getElementById('regSenha').value
-      });
-    });
-
-    // Envio de dados para o Web App
-    async function sendData(payload, emailLogged = '') {
+    function showMsg(txt, color = 'black') {
       const msg = document.getElementById('mensagem');
-      msg.innerText = 'Processando...';
-      msg.style.color = 'black';
+      msg.innerText = txt;
+      msg.style.color = color;
+    }
 
-      try {
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'text/plain;charset=utf-8'
-          },
-          body: JSON.stringify(payload)
-        });
-
-        const result = await response.json();
-
-        if (result.status === 'success') {
-          if (payload.action === 'login') {
-            showWelcomeScreen(emailLogged);
-          } else if (payload.action === 'register') {
-            msg.innerText = result.message || 'Cadastro realizado com sucesso!';
-            msg.style.color = 'green';
-            document.getElementById('regEmail').value = '';
-            document.getElementById('regSenha').value = '';
-          }
-        } else {
-          msg.innerText = result.message || 'Usuário ou senha inválidos.';
-          msg.style.color = 'red';
-        }
-      } catch (err) {
-        console.error("Erro detalhado:", err);
-        msg.innerText = 'Erro ao conectar com o servidor.';
-        msg.style.color = 'red';
+    function resetLivroForm() {
+      document.getElementById('formLivro').reset();
+      document.getElementById('bookEditIndex').value = "-1";
+      if (modoAtualLivro === 'incluir') {
+        document.getElementById('tituloLivroForm').innerText = 'Incluir Novo Livro';
       }
+    }
+
+    async function carregarLivros() {
+      const res = await sendRequest({ action: 'getLivros' });
+      if (res.status === 'success' && res.livros) {
+        livrosDB = res.livros;
+      } else {
+        livrosDB = [];
+      }
+      renderTabelaLivros();
+    }
+
+    document.getElementById('formLivro').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const index = parseInt(document.getElementById('bookEditIndex').value);
+
+      const livroData = {
+        codigo: document.getElementById('bCodigo').value,
+        titulo: document.getElementById('bTitulo').value,
+        subtitulo: document.getElementById('bSubtitulo').value,
+        autor: document.getElementById('bAutor').value,
+        isbn: document.getElementById('bIsbn').value,
+        traducao: document.getElementById('bTraducao').value,
+        colecao: document.getElementById('bColecao').value,
+        edicao: document.getElementById('bEdicao').value,
+        volume: document.getElementById('bVolume').value,
+        classificacao: document.getElementById('bClassificacao').value,
+        local: document.getElementById('bLocal').value,
+        editora: document.getElementById('bEditora').value,
+        data: document.getElementById('bData').value,
+        paginas: document.getElementById('bPaginas').value,
+        exemplar: document.getElementById('bExemplar').value
+      };
+
+      const action = index >= 0 ? 'updateLivro' : 'addLivro';
+      const res = await sendRequest({ action, livro: livroData, index });
+
+      if (res.status === 'success') {
+        alert(index >= 0 ? 'Livro atualizado!' : 'Livro incluído!');
+        resetLivroForm();
+        await carregarLivros();
+        if (modoAtualLivro === 'modificar') {
+          popularDropdownLivros();
+        }
+      } else {
+        alert('Erro ao salvar na planilha.');
+      }
+    });
+
+    function renderTabelaLivros() {
+      const tbody = document.getElementById('livrosTbody');
+      tbody.innerHTML = '';
+
+      livrosDB.forEach((livro) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${livro.codigo || ''}</td>
+          <td>${livro.titulo || ''}</td>
+          <td>${livro.subtitulo || ''}</td>
+          <td>${livro.autor || ''}</td>
+          <td>${livro.isbn || ''}</td>
+          <td>${livro.traducao || ''}</td>
+          <td>${livro.colecao || ''}</td>
+          <td>${livro.edicao || ''}</td>
+          <td>${livro.volume || ''}</td>
+          <td>${livro.classificacao || ''}</td>
+          <td>${livro.local || ''}</td>
+          <td>${livro.editora || ''}</td>
+          <td>${livro.data || ''}</td>
+          <td>${livro.paginas || ''}</td>
+          <td>${livro.exemplar || ''}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function editarLivro(index) {
+      const b = livrosDB[index];
+      document.getElementById('bookEditIndex').value = index;
+      document.getElementById('bCodigo').value = b.codigo || '';
+      document.getElementById('bTitulo').value = b.titulo || '';
+      document.getElementById('bSubtitulo').value = b.subtitulo || '';
+      document.getElementById('bAutor').value = b.autor || '';
+      document.getElementById('bIsbn').value = b.isbn || '';
+      document.getElementById('bTraducao').value = b.traducao || '';
+      document.getElementById('bColecao').value = b.colecao || '';
+      document.getElementById('bEdicao').value = b.edicao || '';
+      document.getElementById('bVolume').value = b.volume || '';
+      document.getElementById('bClassificacao').value = b.classificacao || '';
+      document.getElementById('bLocal').value = b.local || '';
+      document.getElementById('bEditora').value = b.editora || '';
+      document.getElementById('bData').value = b.data || '';
+      document.getElementById('bPaginas').value = b.paginas || '';
+      document.getElementById('bExemplar').value = b.exemplar || '';
+    }
+
+    async function excluirLivro(index) {
+      const res = await sendRequest({ action: 'deleteLivro', index });
+      if (res.status === 'success') {
+        await carregarLivros();
+        alert('Livro excluído com sucesso.');
+      } else {
+        alert('Erro ao excluir.');
+      }
+    }
+
+    function triggerImport() { document.getElementById('csvFileInput').click(); }
+
+    function importarCSV(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const text = e.target.result;
+        const rows = parseCSV(text);
+        if (rows.length < 2) return alert('Arquivo CSV inválido.');
+
+        const headers = rows[0].map(h => h.trim().toLowerCase());
+        let novosLivros = [];
+
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          if (!row || row.every(c => c.trim() === '')) continue;
+
+          novosLivros.push({
+            codigo: getCSVValue(row, headers, ['código interno', 'codigo interno', 'codigo']),
+            titulo: getCSVValue(row, headers, ['título', 'titulo']),
+            subtitulo: getCSVValue(row, headers, ['subtítulo', 'subtitulo']),
+            autor: getCSVValue(row, headers, ['autor / org. / coordenador', 'autor', 'org']),
+            isbn: getCSVValue(row, headers, ['isbn']),
+            traducao: getCSVValue(row, headers, ['tradução', 'traducao']),
+            colecao: getCSVValue(row, headers, ['coleção', 'colecao']),
+            edicao: getCSVValue(row, headers, ['edição', 'edicao']),
+            volume: getCSVValue(row, headers, ['volume']),
+            classificacao: getCSVValue(row, headers, ['classificação', 'classificacao']),
+            local: getCSVValue(row, headers, ['local de publicação', 'local de publicacao', 'local']),
+            editora: getCSVValue(row, headers, ['editora']),
+            data: getCSVValue(row, headers, ['data', 'ano']),
+            paginas: getCSVValue(row, headers, ['número de páginas', 'numero de paginas', 'paginas']),
+            exemplar: getCSVValue(row, headers, ['exemplar'])
+          });
+        }
+
+        const res = await sendRequest({ action: 'importLivros', livros: novosLivros });
+        if (res.status === 'success') {
+          alert('Importação concluída e salva na planilha!');
+          carregarLivros();
+          navegarPara('sec-lista-livros');
+        } else {
+          alert('Erro ao salvar a importação.');
+        }
+        event.target.value = '';
+      };
+      reader.readAsText(file, 'UTF-8');
+    }
+
+    function getCSVValue(row, headers, aliases) {
+      for (let alias of aliases) {
+        const idx = headers.findIndex(h => h.includes(alias));
+        if (idx !== -1 && row[idx]) return row[idx].trim();
+      }
+      return '';
+    }
+
+    function parseCSV(text) {
+      const lines = text.split(/\r\n|\n/);
+      const result = [];
+      const delimiter = text.includes(';') ? ';' : ',';
+
+      for (let line of lines) {
+        if (!line.trim()) continue;
+        let cells = [], cur = '', inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+          let c = line[i];
+          if (c === '"') inQuotes = !inQuotes;
+          else if (c === delimiter && !inQuotes) {
+            cells.push(cur.replace(/^"|"$/g, ''));
+            cur = '';
+          } else cur += c;
+        }
+        cells.push(cur.replace(/^"|"$/g, ''));
+        result.push(cells);
+      }
+      return result;
+    }
+
+    function exportarCSV() {
+      if (livrosDB.length === 0) return alert('Sem livros para exportar.');
+
+      const headers = [
+        "Código Interno", "Título", "Subtítulo", "Autor / Org. / Coordenador", 
+        "ISBN", "Tradução", "Coleção", "Edição", "Volume", 
+        "Classificação", "Local de Publicação", "Editora", "Data", 
+        "Número de Páginas", "Exemplar"
+      ];
+
+      let csv = "\uFEFF" + headers.join(";") + "\n";
+      livrosDB.forEach(l => {
+        csv += [
+          l.codigo, l.titulo, l.subtitulo, l.autor,
+          l.isbn, l.traducao, l.colecao, l.edicao, l.volume,
+          l.classificacao, l.local, l.editora, l.data,
+          l.paginas, l.exemplar
+        ].map(v => `"${(v || '').toString().replace(/"/g, '""')}"`).join(";") + "\n";
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "livros_biblioteca_pnsl.csv";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   </script>
 </body>
