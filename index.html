@@ -3,1023 +3,1627 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Gestão de Biblioteca - PNSL</title>
+  <title>Sistema de Biblioteca Pro 📚 - Supabase</title>
+  
+  <!-- Fontes e Libs Externas -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+  <!-- SDK do Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f4f9;
-      color: #333;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body { background-color: #0e1117; color: #ffffff; display: flex; height: 100vh; overflow: hidden; }
+    
+    /* Login / Modal */
+    #login-screen { position: fixed; inset: 0; background: #0e1117; display: flex; justify-content: center; align-items: center; z-index: 999; }
+    .login-card { background: #262730; padding: 2rem; border-radius: 8px; width: 340px; border: 1px solid #363940; display: flex; flex-direction: column; align-items: center; }
+    .login-card h2 { margin-bottom: 1.5rem; text-align: center; }
+    .login-logo { width: 120px; height: auto; margin-bottom: 1rem; display: block; }
+    #form-login, #form-register { width: 100%; }
 
-    .auth-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-    .card {
-      background: white;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      width: 380px;
-      text-align: center;
-    }
-    .brasao-img {
-      max-width: 100px;
-      height: auto;
-      margin: 0 auto 1rem auto;
-      display: block;
-    }
-    .brasao-welcome {
-      max-width: 250px;
-      height: auto;
-      margin: 2rem auto;
-      display: block;
-      opacity: 0.9;
-    }
-    .tabs {
-      display: flex;
-      margin-bottom: 1.5rem;
-    }
-    .tab-btn {
-      flex: 1;
-      padding: 0.5rem;
-      border: none;
-      background: #eee;
-      cursor: pointer;
-      font-weight: bold;
-      border-radius: 4px;
-    }
-    .tab-btn.active {
-      background: #007bff;
-      color: white;
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-      text-align: left;
-    }
-    label {
-      font-size: 0.85rem;
-      font-weight: bold;
-      margin-top: 0.5rem;
-      margin-bottom: 0.2rem;
-      color: #555;
-    }
-    input, select {
-      margin-bottom: 0.8rem;
-      padding: 0.6rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 0.9rem;
-      width: 100%;
-    }
-    button {
-      padding: 0.6rem;
-      border: none;
-      background-color: #28a745;
-      color: white;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 0.95rem;
-    }
-    button:hover { background-color: #218838; }
-    #mensagem {
-      margin-top: 1rem;
-      text-align: center;
-      font-weight: bold;
-    }
-
-    #appLayout {
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-    header {
-      background: #007bff;
-      color: white;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 100;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 1.2rem;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-    }
-    header img { height: 35px; width: auto; }
-    .user-info {
-      font-size: 0.9rem;
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-    .btn-logout-head {
-      background: #dc3545;
-      padding: 0.4rem 0.8rem;
-      font-size: 0.85rem;
-    }
-    .btn-logout-head:hover { background: #c82333; }
-
-    .dashboard-body {
-      display: flex;
-      flex: 1;
-    }
-
-    aside.sidebar {
-      width: 250px;
-      background: #343a40;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      padding-top: 1rem;
-      min-height: calc(100vh - 67px);
-    }
-
-    .menu-group { margin-bottom: 0.5rem; }
-    .menu-title {
-      padding: 0.8rem 1.2rem;
-      background: #212529;
-      color: #fff;
-      font-size: 0.95rem;
-      font-weight: bold;
-      display: block;
-    }
-    .menu-item-btn {
-      width: 100%;
-      text-align: left;
-      background: transparent;
-      border: none;
-      color: #ddd;
-      padding: 0.8rem 1.2rem;
-      font-weight: bold;
-      font-size: 0.95rem;
-      border-radius: 0;
-    }
-    .menu-item-btn:hover, .menu-item-btn.active-nav {
-      background: #007bff;
-      color: white;
-    }
-
-    .submenu {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      background: #2c3034;
-    }
-    .submenu li button {
-      width: 100%;
-      text-align: left;
-      background: transparent;
-      border: none;
-      color: #bbb;
-      padding: 0.6rem 1.2rem 0.6rem 2.2rem;
-      font-size: 0.85rem;
-      font-weight: normal;
-      border-radius: 0;
-    }
-    .submenu li button:hover {
-      background: #495057;
-      color: #fff;
-    }
-
-    main {
-      flex: 1;
-      padding: 2rem;
-      overflow-x: hidden;
-    }
-
-    .welcome-container {
-      text-align: center;
-      padding: 3rem 1rem;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 10px;
-      background: white;
-      padding: 1.5rem;
-      border-radius: 6px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      margin-bottom: 1.5rem;
-    }
-
-    .selector-box {
-      background: white;
-      padding: 1.5rem;
-      border-radius: 6px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      margin-bottom: 1.5rem;
-      max-width: 600px;
-    }
-
-    .table-container {
-      width: 100%;
-      max-height: 500px;
-      overflow-x: scroll;
-      overflow-y: scroll;
-      background: white;
-      border: 1px solid #dee2e6;
-      border-radius: 6px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      scrollbar-width: thin;
-      scrollbar-color: #888 #f1f1f1;
-    }
-
-    .table-container::-webkit-scrollbar { width: 12px; height: 12px; }
-    .table-container::-webkit-scrollbar-track { background: #f1f1f1; }
-    .table-container::-webkit-scrollbar-thumb {
-      background: #888;
-      border-radius: 4px;
-    }
-    .table-container::-webkit-scrollbar-thumb:hover { background: #555; }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 2000px;
-      text-align: left;
-    }
-    th, td {
-      padding: 0.75rem 1rem;
-      border: 1px solid #dee2e6;
-      font-size: 0.85rem;
-      white-space: nowrap;
-    }
-    th {
-      background-color: #f8f9fa;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      box-shadow: 0 1px 1px rgba(0,0,0,0.1);
-    }
-    tr:nth-child(even) { background-color: #f9f9f9; }
-    tr:hover { background-color: #f1f1f1; }
-
+    /* Layout Principal & Sidebar */
+    aside { width: 260px; background: #161922; padding: 1.5rem 1rem; border-right: 1px solid #262730; display: flex; flex-direction: column; justify-content: space-between; }
+    aside h2 { font-size: 1.2rem; margin-bottom: 1.5rem; padding-left: 0.5rem; color: #ffffff; }
+    
+    main { flex: 1; padding: 2rem; overflow-y: auto; }
     .hidden { display: none !important; }
+
+    /* Tela Início / Welcome */
+    .home-welcome {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      min-height: 70vh;
+      background: #1a1c24;
+      border: 1px solid #262730;
+      border-radius: 12px;
+      padding: 3rem 2rem;
+    }
+    .home-welcome img {
+      width: 220px;
+      height: auto;
+      margin-bottom: 2rem;
+      filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.5));
+    }
+    .home-welcome h2 {
+      font-size: 2rem;
+      margin-bottom: 0.8rem;
+      color: #ffffff;
+    }
+    .home-welcome p {
+      color: #a0a5b5;
+      font-size: 1.1rem;
+      max-width: 500px;
+    }
+
+    /* Form & UI Elements */
+    input, select, button { width: 100%; padding: 0.6rem; margin-top: 0.4rem; margin-bottom: 1rem; border-radius: 4px; border: 1px solid #41444c; background: #262730; color: white; }
+    button { background: #ff4b4b; color: white; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    button:hover { background: #ff3333; }
+    
+    .btn-secondary { background: transparent; border: 1px solid #ff4b4b; color: #ff4b4b; }
+    .btn-secondary:hover { background: rgba(255, 75, 75, 0.1); }
+    
+    .btn-warning { background: #f59e0b; color: white; border: none; width: auto; padding: 0.4rem 0.8rem; margin: 0; font-size: 0.85rem; }
+    .btn-warning:hover { background: #d97706; }
+
+    .btn-danger { background: #d32f2f; color: white; border: none; width: auto; padding: 0.4rem 0.8rem; margin: 0; font-size: 0.85rem; }
+    .btn-danger:hover { background: #b71c1c; }
+
+    /* Menu Lateral (Sidebar Nav) */
+    .sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; }
+    
+    .nav-btn {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: none;
+      color: #808495;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      margin: 0;
+      transition: all 0.2s ease;
+    }
+    .nav-btn:hover { background: #262730; color: #ffffff; }
+    .nav-btn.active { background: #ff4b4b; color: #ffffff; font-weight: 600; }
+
+    /* Submenu Lateral */
+    .submenu {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      padding-left: 1rem;
+      margin-top: 0.2rem;
+      margin-bottom: 0.5rem;
+    }
+    .subnav-btn {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: none;
+      color: #808495;
+      padding: 0.5rem 0.8rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      margin: 0;
+      transition: all 0.2s ease;
+    }
+    .subnav-btn:hover { color: #ffffff; background: #1f232e; }
+    .subnav-btn.active { color: #ff4b4b; font-weight: 600; }
+    
+    /* Layout Grids */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+    .card { background: #1a1c24; padding: 1.5rem; border-radius: 8px; border: 1px solid #262730; margin-bottom: 1rem; }
+    
+    /* Tabela */
+    table { width: 100%; border-collapse: collapse; margin-top: 0; background: #1a1c24; }
+    th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #262730; white-space: nowrap; }
+    th { position: sticky; top: 0; background: #262730; font-size: 0.85rem; text-transform: uppercase; z-index: 10; }
+    .atrasado { background-color: #ffcccc !important; color: #000000; }
+    .alert { padding: 0.8rem; border-radius: 4px; margin-bottom: 1rem; font-size: 0.9rem; width: 100%; }
+    .alert-success { background: #0e2f18; color: #4ade80; border: 1px solid #166534; }
+    .alert-error { background: #3b1212; color: #f87171; border: 1px solid #991b1b; }
+
+    /* Estilização e fixação da barra de rolagem da Lista de Livros */
+    .table-scroll-container {
+      max-height: 65vh;
+      overflow: auto;
+      border: 1px solid #262730;
+      border-radius: 6px;
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
 
-  <!-- AUTENTICAÇÃO -->
-  <div id="authScreen" class="auth-container">
-    <div class="card">
-      <img src="brasao_site_1 pnsl.png" alt="Brasão PNSL" class="brasao-img">
+  <!-- TELA INICIAL (LOGIN E CADASTRO) -->
+  <div id="login-screen">
+    <div class="login-card">
+      <img src="brasao_site_1 pnsl.png" alt="Brasão Paróquia Nossa Senhora da Luz" class="login-logo">
+      <div id="auth-msg"></div>
 
-      <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('login')">Login</button>
-        <button class="tab-btn" onclick="switchTab('register')">Cadastrar</button>
+      <!-- FORMULÁRIO DE LOGIN -->
+      <div id="form-login">
+        <h2>🔒 Acesso Restrito</h2>
+        <label>Usuário</label>
+        <input type="text" id="login-user">
+        <label>Senha</label>
+        <input type="password" id="login-pass">
+        <button onclick="login()">Entrar</button>
+        <button class="btn-secondary" onclick="toggleAuthForm('register')">Criar Nova Conta</button>
       </div>
 
-      <form id="loginForm">
-        <h3 style="margin: 0 0 1rem 0; text-align: center;">Entrar no Sistema</h3>
-        <label>Nome de Usuário ou E-mail</label>
-        <input type="text" id="loginUsername" required placeholder="Digite o usuário ou e-mail">
+      <!-- FORMULÁRIO DE CADASTRO NA TELA INICIAL -->
+      <div id="form-register" class="hidden">
+        <h2>📝 Cadastrar Conta</h2>
+        <label>Nome Completo</label>
+        <input type="text" id="reg-nome">
+        <label>Nome de Usuário (Login)</label>
+        <input type="text" id="reg-user">
+        <label>Senha</label>
+        <input type="password" id="reg-pass">
+        <button onclick="cadastrarNaTelaInicial()">Cadastrar e Entrar</button>
+        <button class="btn-secondary" onclick="toggleAuthForm('login')">Voltar ao Login</button>
+      </div>
 
-        <label>Senha de Acesso</label>
-        <input type="password" id="loginSenha" required placeholder="Digite a senha">
-
-        <button type="submit">Entrar</button>
-      </form>
-
-      <form id="registerForm" class="hidden">
-        <h3 style="margin: 0 0 1rem 0; text-align: center;">Novo Cadastro</h3>
-
-        <label>E-mail</label>
-        <input type="email" id="regEmail" required placeholder="exemplo@email.com">
-
-        <label>Nome de Usuário</label>
-        <input type="text" id="regUsername" required placeholder="Nome de usuário">
-
-        <label>Senha de Acesso</label>
-        <input type="password" id="regSenha" required placeholder="Senha de Acesso">
-
-        <label>Tipo de Usuário</label>
-        <select id="regTipoUsuario" required>
-          <option value="Comum">Comum</option>
-          <option value="Administrador">Administrador</option>
-        </select>
-
-        <button type="submit">Cadastrar</button>
-      </form>
-
-      <p id="mensagem"></p>
     </div>
   </div>
 
-  <!-- DASHBOARD PRINCIPAL -->
-  <div id="appLayout" class="hidden">
-    <header>
-      <h1 onclick="navegarPara('sec-welcome')">
-        <img src="brasao_site_1 pnsl.png" alt="Brasão PNSL">
-        Biblioteca PNSL - Gestão
-      </h1>
-      <div class="user-info">
-        <span id="displayUser">Usuário</span>
-        <button class="btn-logout-head" onclick="logout()">Sair</button>
+  <!-- APLICAÇÃO PRINCIPAL: MENU LATERAL (SIDEBAR) -->
+  <aside>
+    <div>
+      <h2>Menu Principal</h2>
+      <nav class="sidebar-nav">
+        <!-- BOTAO HOME / INICIO -->
+        <button class="nav-btn active admin-only" id="btn-home" onclick="switchTab('aba-inicio', this)">🏠 Início</button>
+
+        <!-- CADASTRO DE LIVROS E SUBMENUS -->
+        <button class="nav-btn admin-only" id="btn-cad-main" onclick="toggleCadastroMenu()">📝 Cadastro de Livros ▾</button>
+        <div id="submenu-cadastro" class="submenu hidden admin-only">
+          <button class="subnav-btn active" id="btn-sub-incluir" onclick="switchCadastroSubtab('incluir')">➕ Inserir</button>
+          <button class="subnav-btn" id="btn-sub-alterar" onclick="switchCadastroSubtab('alterar')">✏️ Alterar</button>
+          <button class="subnav-btn" id="btn-sub-excluir" onclick="switchCadastroSubtab('excluir')">🗑️ Excluir</button>
+          <button class="subnav-btn" id="btn-sub-importar" onclick="switchCadastroSubtab('importar')">📥 Importar</button>
+          <button class="subnav-btn" id="btn-sub-exportar" onclick="switchCadastroSubtab('exportar')">📤 Exportar</button>
+        </div>
+
+        <!-- GERENCIAMENTO DE USUÁRIOS E SUBMENUS -->
+        <button class="nav-btn admin-only" id="btn-usr-main" onclick="toggleUsuariosMenu()">👤 Usuários ▾</button>
+        <div id="submenu-usuarios" class="submenu hidden admin-only">
+          <button class="subnav-btn active" id="btn-sub-usr-incluir" onclick="switchUsuariosSubtab('incluir')">➕ Inserir</button>
+          <button class="subnav-btn" id="btn-sub-usr-modificar" onclick="switchUsuariosSubtab('modificar')">✏️ Modificar</button>
+          <button class="subnav-btn" id="btn-sub-usr-excluir" onclick="switchUsuariosSubtab('excluir')">🗑️ Excluir</button>
+          <button class="subnav-btn" id="btn-sub-usr-listar" onclick="switchUsuariosSubtab('listar')">📋 Listar</button>
+          <button class="subnav-btn" id="btn-sub-usr-exportar" onclick="switchUsuariosSubtab('exportar')">📤 Exportar</button>
+        </div>
+
+        <button class="nav-btn admin-only" onclick="switchTab('aba-emprestimos', this)">📤 Empréstimos</button>
+        <button class="nav-btn admin-only" onclick="switchTab('aba-devolucoes', this)">📥 Devoluções</button>
+        
+        <!-- LISTA DE LIVROS E SUBMENUS -->
+        <button class="nav-btn" id="btn-inventario-main" onclick="toggleInventarioMenu()">📋 Lista de Livros ▾</button>
+        <div id="submenu-inventario" class="submenu hidden">
+          <button class="subnav-btn active" id="btn-sub-inv-disponivel" onclick="switchInventarioSubtab('Disponível')">✅ Disponível</button>
+          <button class="subnav-btn" id="btn-sub-inv-indisponivel" onclick="switchInventarioSubtab('Emprestado')">❌ Indisponível</button>
+          <button class="subnav-btn" id="btn-sub-inv-todos" onclick="switchInventarioSubtab('Todos')">📚 Todos</button>
+        </div>
+      </nav>
+    </div>
+
+    <button onclick="logout()" class="btn-secondary" style="margin-bottom: 0;">🚪 Sair / Logout</button>
+  </aside>
+
+  <main>
+    <div id="alert-container"></div>
+
+    <!-- ABA 0: TELA DE BOAS-VINDAS / LOGO APÓS LOGIN -->
+    <div id="aba-inicio" class="tab-content">
+      <div class="home-welcome">
+        <img src="brasao_site_1 pnsl.png" alt="Brasão Paróquia Nossa Senhora da Luz">
+        <h2>Bem-vindo ao Sistema Bibliotecário</h2>
+        <p>Paróquia Nossa Senhora da Luz</p>
       </div>
-    </header>
+    </div>
 
-    <div class="dashboard-body">
-      <aside class="sidebar">
-        <div class="menu-group">
-          <div class="menu-title">Livros</div>
-          <ul class="submenu">
-            <li><button onclick="menuAcaoLivro('incluir')">Incluir</button></li>
-            <li><button onclick="menuAcaoLivro('modificar')">Modificar</button></li>
-            <li><button onclick="menuAcaoLivro('excluir')">Excluir</button></li>
-            <li><button onclick="triggerImport()">Importar</button></li>
-            <li><button onclick="exportarCSV()">Exportar</button></li>
-          </ul>
-        </div>
-
-        <div class="menu-group">
-          <button class="menu-item-btn" onclick="navegarPara('sec-lista-livros')">Lista de Livros</button>
-        </div>
-
-        <div class="menu-group">
-          <div class="menu-title">Usuários</div>
-          <ul class="submenu">
-            <li><button onclick="menuAcaoUsuario('incluir')">Incluir</button></li>
-            <li><button onclick="menuAcaoUsuario('modificar')">Modificar</button></li>
-            <li><button onclick="menuAcaoUsuario('excluir')">Excluir</button></li>
-          </ul>
-        </div>
-      </aside>
-
-      <main>
-        <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="importarCSV(event)">
-
-        <section id="sec-welcome" class="welcome-container">
-          <img src="brasao_site_1 pnsl.png" alt="Brasão PNSL" class="brasao-welcome">
-          <h2>Bem-vindo à Biblioteca PNSL</h2>
-          <p style="color: #666;">Selecione uma opção no menu lateral para gerenciar livros ou usuários.</p>
-        </section>
-
-        <section id="sec-livros" class="hidden">
-          <h2 id="tituloLivroForm">Gestão de Livros</h2>
-
-          <div id="containerSelectLivro" class="selector-box hidden">
-            <label id="labelSelectLivro">Selecione o Livro:</label>
-            <select id="selectLivro" onchange="aoSelecionarLivroDropdown()">
-              <option value="">-- Selecione um Livro --</option>
-            </select>
-            <button id="btnAcaoSelectLivro" class="hidden" style="margin-top: 10px;" onclick="confirmarExclusaoLivroDropdown()">Confirmar Exclusão</button>
+    <!-- ABA 1: CADASTRO DE LIVROS -->
+    <div id="aba-cadastro" class="tab-content hidden">
+      <!-- SUBTAB 1: INSERIR -->
+      <div id="sub-cad-incluir" class="card" style="max-width: 700px;">
+        <h3>Inserir Novo Livro</h3>
+        
+        <div class="grid-inputs">
+          <div>
+            <label>1. Código Interno</label>
+            <input type="text" id="cad-codigo" placeholder="Ex: LIB-001">
           </div>
+          <div>
+            <label>2. Classificação</label>
+            <input type="text" id="cad-classificacao" placeholder="Ex: 821.111">
+          </div>
+        </div>
 
-          <form id="formLivro" class="form-grid hidden">
-            <input type="hidden" id="bookEditIndex" value="-1">
-            
-            <div><label>Código Interno</label><input type="text" id="bCodigo" required></div>
-            <div><label>Título</label><input type="text" id="bTitulo" required></div>
-            <div><label>Subtítulo</label><input type="text" id="bSubtitulo"></div>
-            <div><label>Autor / Org. / Coordenador</label><input type="text" id="bAutor" required></div>
-            <div><label>ISBN</label><input type="text" id="bIsbn"></div>
-            <div><label>Tradução</label><input type="text" id="bTraducao"></div>
-            <div><label>Coleção</label><input type="text" id="bColecao"></div>
-            <div><label>Edição</label><input type="text" id="bEdicao"></div>
-            <div><label>Volume</label><input type="text" id="bVolume"></div>
-            <div><label>Classificação</label><input type="text" id="bClassificacao"></div>
-            <div><label>Local de Publicação</label><input type="text" id="bLocal"></div>
-            <div><label>Editora</label><input type="text" id="bEditora"></div>
-            <div><label>Data</label><input type="text" id="bData"></div>
-            <div><label>Número de Páginas</label><input type="text" id="bPaginas"></div>
-            <div><label>Exemplar</label><input type="text" id="bExemplar"></div>
+        <label>3. Título</label>
+        <input type="text" id="cad-titulo">
 
-            <div style="grid-column: 1 / -1; display: flex; gap: 10px; margin-top: 10px;">
-              <button type="submit" id="btnSalvarLivro">Salvar Livro</button>
-              <button type="button" style="background:#6c757d;" onclick="resetLivroForm()">Limpar / Cancelar</button>
-            </div>
-          </form>
-        </section>
+        <label>4. Subtítulo</label>
+        <input type="text" id="cad-subtitulo">
 
-        <section id="sec-lista-livros" class="hidden">
-          <h2>Lista de Livros</h2>
-          <div class="table-container">
-            <table id="tabelaLivros">
+        <label>5. Autor / Org. / Coordenador</label>
+        <input type="text" id="cad-autor">
+
+        <div class="grid-inputs">
+          <div>
+            <label>6. Tradução</label>
+            <input type="text" id="cad-traducao" placeholder="Ex: Traduzido por João Silva">
+          </div>
+          <div>
+            <label>7. ISBN</label>
+            <input type="text" id="cad-isbn" placeholder="Ex: 978-3-16-148410-0">
+          </div>
+        </div>
+
+        <div class="grid-inputs">
+          <div>
+            <label>8. Coleção</label>
+            <input type="text" id="cad-colecao">
+          </div>
+          <div>
+            <label>9. Edição</label>
+            <input type="text" id="cad-edicao" placeholder="Ex: 1ª Edição">
+          </div>
+        </div>
+
+        <div class="grid-inputs">
+          <div>
+            <label>10. Vol.</label>
+            <input type="text" id="cad-volume" placeholder="Ex: Vol. 1">
+          </div>
+          <div>
+            <label>11. Lugar de Publicação</label>
+            <input type="text" id="cad-lugar" placeholder="Ex: São Paulo">
+          </div>
+        </div>
+
+        <div class="grid-inputs">
+          <div>
+            <label>12. Editora</label>
+            <input type="text" id="cad-editora">
+          </div>
+          <div>
+            <label>13. Data</label>
+            <input type="text" id="cad-data-pub" placeholder="Ex: 2024 ou 15/05/2024">
+          </div>
+        </div>
+
+        <div class="grid-inputs">
+          <div>
+            <label>14. Número de Páginas</label>
+            <input type="number" id="cad-paginas" placeholder="Ex: 320">
+          </div>
+          <div>
+            <label>15. Exemplar</label>
+            <input type="text" id="cad-exemplar" placeholder="Ex: Ex. 1">
+          </div>
+        </div>
+
+        <button onclick="cadastrarManual()" style="margin-top: 0.5rem;">Salvar Livro</button>
+      </div>
+
+      <!-- SUBTAB 2: ALTERAR LIVROS -->
+      <div id="sub-cad-alterar" class="card hidden">
+        <h3>✏️ Alterar Dados do Livro</h3>
+        
+        <div id="alt-selecao-container" style="max-width: 700px; margin-bottom: 1.5rem;">
+          <p style="font-size: 0.85rem; color: #808495; margin-bottom: 0.5rem;">Pesquise pelo código ou título e clique em <b>Editar</b> para carregar os dados.</p>
+          <input type="text" id="alt-busca" placeholder="Filtrar livro para edição..." oninput="renderAlterarLivrosTable()">
+          <div style="overflow-x: auto; max-height: 250px;">
+            <table id="table-alterar-busca">
               <thead>
                 <tr>
-                  <th>Código Interno</th>
-                  <th>Título</th>
-                  <th>Subtítulo</th>
-                  <th>Autor / Org. / Coordenador</th>
-                  <th>ISBN</th>
-                  <th>Tradução</th>
-                  <th>Coleção</th>
-                  <th>Edição</th>
-                  <th>Volume</th>
+                  <th>Código</th>
                   <th>Classificação</th>
-                  <th>Local de Publicação</th>
-                  <th>Editora</th>
-                  <th>Data</th>
-                  <th>Número de Páginas</th>
-                  <th>Exemplar</th>
+                  <th>Título</th>
+                  <th>Autor</th>
+                  <th>Ação</th>
                 </tr>
               </thead>
-              <tbody id="livrosTbody"></tbody>
+              <tbody></tbody>
             </table>
           </div>
-        </section>
+        </div>
 
-        <section id="sec-usuarios" class="hidden">
-          <h2 id="tituloUserForm">Gestão de Usuários</h2>
+        <div id="alt-form-container" class="card hidden" style="max-width: 700px; background: #212431; border: 1px solid #363940;">
+          <h4 style="margin-bottom: 1rem; color: #f59e0b;">Editando Livro <span id="alt-id-display"></span></h4>
+          <input type="hidden" id="alt-id">
 
-          <div id="containerSelectUsuario" class="selector-box hidden">
-            <label id="labelSelectUsuario">Selecione o Usuário:</label>
-            <select id="selectUsuario" onchange="aoSelecionarUsuarioDropdown()">
-              <option value="">-- Selecione um Usuário --</option>
-            </select>
-            <button id="btnAcaoSelectUsuario" class="hidden" style="margin-top: 10px; background-color: #dc3545;" onclick="confirmarExclusaoUsuarioDropdown()">Excluir Usuário</button>
+          <div class="grid-inputs">
+            <div>
+              <label>1. Código Interno</label>
+              <input type="text" id="alt-codigo">
+            </div>
+            <div>
+              <label>2. Classificação</label>
+              <input type="text" id="alt-classificacao">
+            </div>
           </div>
-          
-          <form id="formUsuarioGestao" class="form-grid hidden" style="max-width: 600px;">
-            <input type="hidden" id="userEditIndex" value="-1">
-            
-            <div style="grid-column: 1 / -1;"><label>E-mail</label><input type="email" id="uEmail" required placeholder="exemplo@email.com"></div>
-            <div style="grid-column: 1 / -1;"><label>Nome de Usuário</label><input type="text" id="uUsername" required placeholder="Nome do Usuário"></div>
-            <div style="grid-column: 1 / -1;"><label>Senha de Acesso</label><input type="password" id="uSenha" placeholder="Digite a nova senha"></div>
-            <div style="grid-column: 1 / -1;">
-              <label>Tipo de Usuário</label>
-              <select id="uTipoUsuario" required>
-                <option value="Comum">Comum</option>
-                <option value="Administrador">Administrador</option>
-              </select>
-            </div>
 
-            <div style="grid-column: 1 / -1; display: flex; gap: 10px; margin-top: 10px;">
-              <button type="submit" id="btnSalvarUsuario">Salvar Usuário</button>
-              <button type="button" style="background:#6c757d;" onclick="resetUsuarioForm()">Cancelar</button>
+          <label>3. Título</label>
+          <input type="text" id="alt-titulo">
+
+          <label>4. Subtítulo</label>
+          <input type="text" id="alt-subtitulo">
+
+          <label>5. Autor / Org. / Coordenador</label>
+          <input type="text" id="alt-autor">
+
+          <div class="grid-inputs">
+            <div>
+              <label>6. Tradução</label>
+              <input type="text" id="alt-traducao">
             </div>
-          </form>
-        </section>
-      </main>
+            <div>
+              <label>7. ISBN</label>
+              <input type="text" id="alt-isbn">
+            </div>
+          </div>
+
+          <div class="grid-inputs">
+            <div>
+              <label>8. Coleção</label>
+              <input type="text" id="alt-colecao">
+            </div>
+            <div>
+              <label>9. Edição</label>
+              <input type="text" id="alt-edicao">
+            </div>
+          </div>
+
+          <div class="grid-inputs">
+            <div>
+              <label>10. Vol.</label>
+              <input type="text" id="alt-volume">
+            </div>
+            <div>
+              <label>11. Lugar de Publicação</label>
+              <input type="text" id="alt-lugar">
+            </div>
+          </div>
+
+          <div class="grid-inputs">
+            <div>
+              <label>12. Editora</label>
+              <input type="text" id="alt-editora">
+            </div>
+            <div>
+              <label>13. Data</label>
+              <input type="text" id="alt-data-pub">
+            </div>
+          </div>
+
+          <div class="grid-inputs">
+            <div>
+              <label>14. Número de Páginas</label>
+              <input type="number" id="alt-paginas">
+            </div>
+            <div>
+              <label>15. Exemplar</label>
+              <input type="text" id="alt-exemplar">
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <button onclick="salvarAlteracaoLivro()" style="background: #f59e0b;">💾 Salvar Alterações</button>
+            <button onclick="cancelarEdicaoLivro()" class="btn-secondary">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBTAB 3: EXCLUIR LIVROS -->
+      <div id="sub-cad-excluir" class="card hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3>🗑️ Exclusão de Livros</h3>
+          <button class="btn-danger" onclick="excluirTodosLivros()" style="width: auto;">⚠️ Excluir Todos os Livros</button>
+        </div>
+        <p style="font-size: 0.85rem; color: #808495; margin-bottom: 1rem;">Pesquise pelo código ou título para excluir livros cadastrados acidentalmente ou que saíram do acervo.</p>
+        
+        <input type="text" id="excluir-busca" placeholder="Filtrar por código ou título do livro..." oninput="renderExcluirLivros()">
+
+        <div style="overflow-x: auto;">
+          <table id="table-excluir-livros">
+            <thead>
+              <tr>
+                <th>Código Interno</th>
+                <th>Classificação</th>
+                <th>Título</th>
+                <th>Subtítulo</th>
+                <th>Autor/Org./Coordenador</th>
+                <th>Tradução</th>
+                <th>ISBN</th>
+                <th>Coleção</th>
+                <th>Edição</th>
+                <th>Vol.</th>
+                <th>Lugar de Publicação</th>
+                <th>Editora</th>
+                <th>Data</th>
+                <th>Numero de Páginas</th>
+                <th>Exemplar</th>
+                <th>Status</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SUBTAB 4: IMPORTAR -->
+      <div id="sub-cad-importar" class="card hidden" style="max-width: 700px;">
+        <h3>Importar</h3>
+        <input type="file" id="cad-file" accept=".xlsx">
+        <div id="preview-area" class="hidden">
+          <p><b>Prévia dos dados identificados:</b></p>
+          <div style="max-height: 250px; overflow-x: auto;">
+            <table id="table-preview"></table>
+          </div>
+          <button onclick="confirmarImportacao()" style="margin-top: 1rem;">Confirmar Importação em Massa</button>
+        </div>
+      </div>
+
+      <!-- SUBTAB 5: EXPORTAR -->
+      <div id="sub-cad-exportar" class="card hidden" style="max-width: 600px;">
+        <h3>📤 Exportar Relatório de Livros (Excel)</h3>
+        <button onclick="exportarExcel()" style="background: #21a366; font-size: 1rem; padding: 0.8rem;">📊 Baixar Planilha Excel Agora</button>
+      </div>
     </div>
-  </div>
+
+    <!-- ABA 2: GERENCIAMENTO DE USUÁRIOS -->
+    <div id="aba-usuarios" class="tab-content hidden">
+      <div id="sub-usr-incluir" class="card" style="max-width: 500px;">
+        <h3>➕ Cadastrar Novo Usuário</h3>
+        <label>Nome Completo / Leitor</label>
+        <input type="text" id="usr-nome">
+        <label>Nome de Usuário (Login)</label>
+        <input type="text" id="usr-login">
+        <label>Senha de Acesso</label>
+        <input type="password" id="usr-senha">
+        <label>Tipo de Usuário</label>
+        <select id="usr-tipo">
+          <option value="Administrador">Administrador</option>
+          <option value="Usuario">Usuário</option>
+        </select>
+        <button onclick="cadastrarUsuario()">Salvar Usuário</button>
+      </div>
+
+      <!-- SUBTAB USUÁRIOS: MODIFICAR -->
+      <div id="sub-usr-modificar" class="card hidden">
+        <h3>✏️ Modificar Usuário</h3>
+        
+        <div id="usr-alt-selecao-container" style="max-width: 700px; margin-bottom: 1.5rem;">
+          <p style="font-size: 0.85rem; color: #808495; margin-bottom: 0.5rem;">Pesquise pelo nome ou login e clique em <b>Editar</b> para carregar os dados.</p>
+          <input type="text" id="usr-alt-busca" placeholder="Filtrar usuário para edição..." oninput="renderModificarUsuariosTable()">
+          <div style="overflow-x: auto; max-height: 250px;">
+            <table id="table-modificar-usuarios-busca">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nome Completo</th>
+                  <th>Login</th>
+                  <th>Tipo</th>
+                  <th>Ação</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="usr-alt-form-container" class="card hidden" style="max-width: 500px; background: #212431; border: 1px solid #363940;">
+          <h4 style="margin-bottom: 1rem; color: #f59e0b;">Editando Usuário ID <span id="usr-alt-id-display"></span></h4>
+          <input type="hidden" id="usr-alt-id">
+
+          <label>Nome Completo / Leitor</label>
+          <input type="text" id="usr-alt-nome">
+
+          <label>Nome de Usuário (Login)</label>
+          <input type="text" id="usr-alt-login">
+
+          <label>Nova Senha (deixe em branco se não quiser alterar)</label>
+          <input type="password" id="usr-alt-senha" placeholder="Opcional">
+
+          <label>Tipo de Usuário</label>
+          <select id="usr-alt-tipo">
+            <option value="Administrador">Administrador</option>
+            <option value="Usuario">Usuário</option>
+          </select>
+
+          <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <button onclick="salvarAlteracaoUsuario()" style="background: #f59e0b;">💾 Salvar Alterações</button>
+            <button onclick="cancelarEdicaoUsuario()" class="btn-secondary">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="sub-usr-excluir" class="card hidden">
+        <h3>🗑️ Excluir Usuários</h3>
+        <p style="font-size: 0.85rem; color: #808495; margin-bottom: 1rem;">Selecione o usuário que deseja remover do sistema.</p>
+        <input type="text" id="usr-busca-excluir" placeholder="Filtrar usuário por nome ou login..." oninput="renderExcluirUsuarios()">
+        <div style="overflow-x: auto;">
+          <table id="table-excluir-usuarios">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nome Completo</th>
+                <th>Login</th>
+                <th>Tipo</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="sub-usr-listar" class="card hidden">
+        <h3>📋 Lista de Usuários Cadastrados</h3>
+        <input type="text" id="usr-busca-listar" placeholder="Filtrar usuário..." oninput="renderUsuariosTable()">
+        <div style="overflow-x: auto;">
+          <table id="table-usuarios">
+            <thead>
+              <tr>
+                <th>ID</th><th>Nome</th><th>Login</th><th>Tipo</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SUBTAB USUÁRIOS: EXPORTAR -->
+      <div id="sub-usr-exportar" class="card hidden" style="max-width: 600px;">
+        <h3>📤 Exportar Relatório de Usuários (Excel)</h3>
+        <button onclick="exportarUsuariosExcel()" style="background: #21a366; font-size: 1rem; padding: 0.8rem;">📊 Baixar Planilha de Usuários (Excel)</button>
+      </div>
+    </div>
+
+    <!-- ABA 3: EMPRÉSTIMOS -->
+    <div id="aba-emprestimos" class="tab-content hidden">
+      <div class="card">
+        <h3>Registrar Saída</h3>
+        <label>Selecione o Livro</label>
+        <select id="emp-livro"></select>
+        <label>Selecione o Solicitante</label>
+        <select id="emp-usuario"></select>
+        <label>Data de Devolução</label>
+        <input type="date" id="emp-data">
+        <button onclick="registrarEmprestimo()">Finalizar Empréstimo</button>
+      </div>
+    </div>
+
+    <!-- ABA 4: DEVOLUÇÕES -->
+    <div id="aba-devolucoes" class="tab-content hidden">
+      <div class="card">
+        <h3>Registrar Entrada</h3>
+        <label>Livro sendo devolvido</label>
+        <select id="dev-livro"></select>
+        <button onclick="registrarDevolucao()">Confirmar Devolução</button>
+      </div>
+    </div>
+
+    <!-- ABA 5: LISTA DE LIVROS -->
+    <div id="aba-inventario" class="tab-content hidden">
+      <div class="card">
+        <h3 id="inv-titulo-cabecalho">Lista Completa de Livros</h3>
+        <input type="text" id="inv-busca" placeholder="Filtrar por código, classificação, título, autor ou ISBN" oninput="renderInventario()">
+        <button onclick="exportarExcel()" style="width: auto; background: #21a366;">📥 Baixar Lista Completa (Excel)</button>
+        
+        <!-- Conteiner com altura ajustada e barras de rolagem visíveis de imediato -->
+        <div class="table-scroll-container">
+          <table id="table-inventario">
+            <thead>
+              <tr>
+                <th>Código Interno</th>
+                <th>Título</th>
+                <th>Subtítulo</th>
+                <th>Autor/Org./Coordenador</th>
+                <th>Editora</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
 
   <script>
-    // Cole aqui a URL de Implantação do Apps Script (Web App)
-    const API_URL = 'https://script.google.com/macros/s/AKfycbz7y8XfyfpBhDamkTmVW-FFETWjsrPbPdtpoVgEidE_SG87RYzpoGZlwD3ZI4EPxkL4/exec';
+    // CONFIGURAÇÃO DO SUPABASE (PROJETO caszanoni PNSL)
+    const SUPABASE_URL = "https://SUO_PROJETO_SUPABASE.supabase.co"; 
+    const SUPABASE_KEY = "SUA_ANON_KEY_PUBLIC";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let livrosDB = [];
-    let usuariosDB = [];
-    let modoAtualLivro = '';
-    let modoAtualUsuario = '';
-    let usuarioAtual = null;
+    let db = {
+      livros: [],
+      usuarios: [],
+      emprestimos: []
+    };
 
-    async function sendRequest(payload) {
-  try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      redirect: "follow",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-      body: JSON.stringify(payload)
+    let usuarioLogado = null;
+    let tempExcelData = [];
+    let filtroStatusInventario = 'Disponível';
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadDB();
     });
 
-    if (!response.ok) {
-      throw new Error("Erro na requisição da API.");
+    async function loadDB() {
+      try {
+        const { data: livrosData } = await supabase.from('livros').select('*');
+        const { data: usuariosData } = await supabase.from('usuarios').select('*');
+        const { data: emprestimosData } = await supabase.from('emprestimos').select('*');
+
+        db.livros = livrosData || [];
+        db.usuarios = usuariosData || [];
+        db.emprestimos = emprestimosData || [];
+      } catch (err) {
+        console.error("Erro ao carregar dados do Supabase:", err);
+      }
     }
 
-    const data = await response.json();
-    return data;
-  } catch (err) {
-    console.error("Erro na comunicação:", err);
-    return { status: "error", message: "Erro ao conectar com a planilha do Google." };
-  }
-}
-    // Fallback via JSONP caso o POST direto seja bloqueado pelo navegador
-    return new Promise((resolve) => {
-      const callbackName = 'jsonp_' + Math.random().toString(36).substr(2, 9);
-      
-      window[callbackName] = function(data) {
-        delete window[callbackName];
-        document.body.removeChild(script);
-        resolve(data);
-      };
+    function showAlert(msg, isSuccess = true) {
+      const container = document.getElementById('alert-container');
+      container.innerHTML = `<div class="alert ${isSuccess ? 'alert-success' : 'alert-error'}">${msg}</div>`;
+      setTimeout(() => container.innerHTML = '', 4000);
+    }
 
-      const script = document.createElement('script');
-      const paramPayload = encodeURIComponent(JSON.stringify(payload));
-      script.src = `${API_URL}?payload=${paramPayload}&callback=${callbackName}`;
-      
-      script.onerror = function() {
-        delete window[callbackName];
-        if (script.parentNode) document.body.removeChild(script);
-        resolve({ status: 'error', message: 'Erro de conexão com o servidor.' });
-      };
+    function showAuthMsg(msg, isSuccess = true) {
+      const container = document.getElementById('auth-msg');
+      container.innerHTML = `<div class="alert ${isSuccess ? 'alert-success' : 'alert-error'}">${msg}</div>`;
+      setTimeout(() => container.innerHTML = '', 4000);
+    }
 
-      document.body.appendChild(script);
-    });
-  }
-}
-
-    document.body.appendChild(script);
-  });
-}
-
-    function switchTab(tab) {
-      showMsg('');
-      const loginForm = document.getElementById('loginForm');
-      const registerForm = document.getElementById('registerForm');
-      const tabs = document.querySelectorAll('.tab-btn');
-
-      if (tab === 'login') {
-        loginForm.classList.remove('hidden');
-        registerForm.classList.add('hidden');
-        tabs[0].classList.add('active');
-        tabs[1].classList.remove('active');
+    function toggleAuthForm(mode) {
+      document.getElementById('auth-msg').innerHTML = '';
+      if (mode === 'register') {
+        document.getElementById('form-login').classList.add('hidden');
+        document.getElementById('form-register').classList.remove('hidden');
       } else {
-        loginForm.classList.add('hidden');
-        registerForm.classList.remove('hidden');
-        tabs[0].classList.remove('active');
-        tabs[1].classList.add('active');
+        document.getElementById('form-register').classList.add('hidden');
+        document.getElementById('form-login').classList.remove('hidden');
       }
     }
 
-    function navegarPara(sectionId) {
-      document.getElementById('sec-welcome').classList.add('hidden');
-      document.getElementById('sec-livros').classList.add('hidden');
-      document.getElementById('sec-lista-livros').classList.add('hidden');
-      document.getElementById('sec-usuarios').classList.add('hidden');
-
-      document.getElementById(sectionId).classList.remove('hidden');
-
-      if (sectionId === 'sec-lista-livros') {
-        carregarLivros();
+    function aplicarPermissoes() {
+      const adminElements = document.querySelectorAll('.admin-only');
+      if (usuarioLogado && (usuarioLogado.tipo === 'Usuario' || usuarioLogado.tipo === 'usuario')) {
+        adminElements.forEach(el => el.classList.add('hidden'));
+        toggleInventarioMenu();
+        switchInventarioSubtab('Disponível');
+      } else {
+        adminElements.forEach(el => el.classList.remove('hidden'));
       }
     }
 
-    async function menuAcaoLivro(acao) {
-      modoAtualLivro = acao;
-      navegarPara('sec-livros');
+    async function login() {
+      const u = document.getElementById('login-user').value.trim();
+      const p = document.getElementById('login-pass').value.trim();
 
-      const containerSel = document.getElementById('containerSelectLivro');
-      const formLivro = document.getElementById('formLivro');
-      const btnAcao = document.getElementById('btnAcaoSelectLivro');
+      const { data, error } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('login', u)
+        .eq('senha', p)
+        .single();
 
-      await carregarLivros();
-
-      if (acao === 'incluir') {
-        document.getElementById('tituloLivroForm').innerText = 'Incluir Novo Livro';
-        containerSel.classList.add('hidden');
-        formLivro.classList.remove('hidden');
-        resetLivroForm();
-      } else if (acao === 'modificar') {
-        document.getElementById('tituloLivroForm').innerText = 'Modificar Livro';
-        containerSel.classList.remove('hidden');
-        btnAcao.classList.add('hidden');
-        formLivro.classList.add('hidden');
-        popularDropdownLivros();
-      } else if (acao === 'excluir') {
-        document.getElementById('tituloLivroForm').innerText = 'Excluir Livro';
-        containerSel.classList.remove('hidden');
-        btnAcao.classList.remove('hidden');
-        btnAcao.style.backgroundColor = '#dc3545';
-        btnAcao.innerText = 'Excluir Livro Selecionado';
-        formLivro.classList.add('hidden');
-        popularDropdownLivros();
+      if (data && !error) {
+        usuarioLogado = data;
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('login-user').value = '';
+        document.getElementById('login-pass').value = '';
+        aplicarPermissoes();
+        if (usuarioLogado.tipo !== 'Usuario' && usuarioLogado.tipo !== 'usuario') {
+          switchTab('aba-inicio', document.getElementById('btn-home'));
+        }
+        await renderAll();
+      } else {
+        showAuthMsg("Usuário ou senha incorretos.", false);
       }
     }
 
-    function popularDropdownLivros() {
-      const select = document.getElementById('selectLivro');
-      select.innerHTML = '<option value="">-- Selecione um Livro --</option>';
+    async function cadastrarNaTelaInicial() {
+      const nome = document.getElementById('reg-nome').value.trim();
+      const loginUser = document.getElementById('reg-user').value.trim();
+      const senhaUser = document.getElementById('reg-pass').value.trim();
+      const tipoUser = "Usuario";
 
-      livrosDB.forEach((l, index) => {
-        const option = document.createElement('option');
-        option.value = index;
-        option.textContent = `${l.codigo ? '[' + l.codigo + '] ' : ''}${l.titulo || 'Sem título'}`;
-        select.appendChild(option);
-      });
+      if (!nome || !loginUser || !senhaUser) {
+        return showAuthMsg("Preencha todos os campos para cadastrar.", false);
+      }
+
+      const { data: existing } = await supabase.from('usuarios').select('login').eq('login', loginUser);
+      if (existing && existing.length > 0) {
+        return showAuthMsg("Este nome de usuário já está em uso.", false);
+      }
+
+      const { data, error } = await supabase.from('usuarios').insert([
+        { nome, login: loginUser, senha: senhaUser, tipo: tipoUser }
+      ]).select();
+
+      if (error) {
+        return showAuthMsg("Erro ao salvar no banco de dados.", false);
+      }
+
+      usuarioLogado = data[0];
+
+      document.getElementById('reg-nome').value = '';
+      document.getElementById('reg-user').value = '';
+      document.getElementById('reg-pass').value = '';
+
+      document.getElementById('login-screen').classList.add('hidden');
+      aplicarPermissoes();
+      if (usuarioLogado.tipo !== 'Usuario' && usuarioLogado.tipo !== 'usuario') {
+        switchTab('aba-inicio', document.getElementById('btn-home'));
+      }
+      await renderAll();
+      showAlert(`Bem-vindo, ${nome}! Sua conta foi criada com sucesso.`);
     }
 
-    function aoSelecionarLivroDropdown() {
-      const idx = document.getElementById('selectLivro').value;
-      if (idx === '') {
-        if (modoAtualLivro === 'modificar') document.getElementById('formLivro').classList.add('hidden');
+    async function logout() {
+      usuarioLogado = null;
+      toggleAuthForm('login');
+      document.getElementById('login-screen').classList.remove('hidden');
+    }
+
+    async function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById(tabId).classList.remove('hidden');
+      if (btn) btn.classList.add('active');
+
+      if (tabId !== 'aba-cadastro') document.getElementById('submenu-cadastro').classList.add('hidden');
+      if (tabId !== 'aba-usuarios') document.getElementById('submenu-usuarios').classList.add('hidden');
+      if (tabId !== 'aba-inventario') document.getElementById('submenu-inventario').classList.add('hidden');
+
+      await renderAll();
+    }
+
+    function toggleCadastroMenu() {
+      const submenu = document.getElementById('submenu-cadastro');
+      document.getElementById('submenu-usuarios').classList.add('hidden');
+      document.getElementById('submenu-inventario').classList.add('hidden');
+      submenu.classList.toggle('hidden');
+      switchTab('aba-cadastro', document.getElementById('btn-cad-main'));
+    }
+
+    function switchCadastroSubtab(type) {
+      switchTab('aba-cadastro', document.getElementById('btn-cad-main'));
+      document.getElementById('submenu-cadastro').classList.remove('hidden');
+
+      document.querySelectorAll('#submenu-cadastro .subnav-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById('sub-cad-incluir').classList.add('hidden');
+      document.getElementById('sub-cad-alterar').classList.add('hidden');
+      document.getElementById('sub-cad-excluir').classList.add('hidden');
+      document.getElementById('sub-cad-importar').classList.add('hidden');
+      document.getElementById('sub-cad-exportar').classList.add('hidden');
+
+      if (type === 'incluir') {
+        document.getElementById('sub-cad-incluir').classList.remove('hidden');
+        document.getElementById('btn-sub-incluir').classList.add('active');
+      } else if (type === 'alterar') {
+        document.getElementById('sub-cad-alterar').classList.remove('hidden');
+        document.getElementById('btn-sub-alterar').classList.add('active');
+        renderAlterarLivrosTable();
+      } else if (type === 'excluir') {
+        document.getElementById('sub-cad-excluir').classList.remove('hidden');
+        document.getElementById('btn-sub-excluir').classList.add('active');
+        renderExcluirLivros();
+      } else if (type === 'importar') {
+        document.getElementById('sub-cad-importar').classList.remove('hidden');
+        document.getElementById('btn-sub-importar').classList.add('active');
+      } else if (type === 'exportar') {
+        document.getElementById('sub-cad-exportar').classList.remove('hidden');
+        document.getElementById('btn-sub-exportar').classList.add('active');
+      }
+    }
+
+    function toggleUsuariosMenu() {
+      const submenu = document.getElementById('submenu-usuarios');
+      document.getElementById('submenu-cadastro').classList.add('hidden');
+      document.getElementById('submenu-inventario').classList.add('hidden');
+      submenu.classList.toggle('hidden');
+      switchTab('aba-usuarios', document.getElementById('btn-usr-main'));
+    }
+
+    function switchUsuariosSubtab(type) {
+      switchTab('aba-usuarios', document.getElementById('btn-usr-main'));
+      document.getElementById('submenu-usuarios').classList.remove('hidden');
+
+      document.querySelectorAll('#submenu-usuarios .subnav-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById('sub-usr-incluir').classList.add('hidden');
+      document.getElementById('sub-usr-modificar').classList.add('hidden');
+      document.getElementById('sub-usr-excluir').classList.add('hidden');
+      document.getElementById('sub-usr-listar').classList.add('hidden');
+      document.getElementById('sub-usr-exportar').classList.add('hidden');
+
+      if (type === 'incluir') {
+        document.getElementById('sub-usr-incluir').classList.remove('hidden');
+        document.getElementById('btn-sub-usr-incluir').classList.add('active');
+      } else if (type === 'modificar') {
+        document.getElementById('sub-usr-modificar').classList.remove('hidden');
+        document.getElementById('btn-sub-usr-modificar').classList.add('active');
+        renderModificarUsuariosTable();
+      } else if (type === 'excluir') {
+        document.getElementById('sub-usr-excluir').classList.remove('hidden');
+        document.getElementById('btn-sub-usr-excluir').classList.add('active');
+        renderExcluirUsuarios();
+      } else if (type === 'listar') {
+        document.getElementById('sub-usr-listar').classList.remove('hidden');
+        document.getElementById('btn-sub-usr-listar').classList.add('active');
+        renderUsuariosTable();
+      } else if (type === 'exportar') {
+        document.getElementById('sub-usr-exportar').classList.remove('hidden');
+        document.getElementById('btn-sub-usr-exportar').classList.add('active');
+      }
+    }
+
+    function toggleInventarioMenu() {
+      const submenu = document.getElementById('submenu-inventario');
+      document.getElementById('submenu-cadastro').classList.add('hidden');
+      document.getElementById('submenu-usuarios').classList.add('hidden');
+      submenu.classList.toggle('hidden');
+      switchTab('aba-inventario', document.getElementById('btn-inventario-main'));
+    }
+
+    function switchInventarioSubtab(status) {
+      switchTab('aba-inventario', document.getElementById('btn-inventario-main'));
+      document.getElementById('submenu-inventario').classList.remove('hidden');
+
+      document.querySelectorAll('#submenu-inventario .subnav-btn').forEach(el => el.classList.remove('active'));
+
+      filtroStatusInventario = status;
+
+      const tituloCabecalho = document.getElementById('inv-titulo-cabecalho');
+
+      if (status === 'Disponível') {
+        document.getElementById('btn-sub-inv-disponivel').classList.add('active');
+        tituloCabecalho.innerText = 'Livros Disponíveis';
+      } else if (status === 'Emprestado') {
+        document.getElementById('btn-sub-inv-indisponivel').classList.add('active');
+        tituloCabecalho.innerText = 'Livros Indisponíveis (Emprestados)';
+      } else {
+        document.getElementById('btn-sub-inv-todos').classList.add('active');
+        tituloCabecalho.innerText = 'Lista Completa de Livros';
+      }
+
+      renderInventario();
+    }
+
+    async function renderAll() {
+      await loadDB();
+      renderUsuariosTable();
+      renderModificarUsuariosTable();
+      renderExcluirUsuarios();
+      renderEmprestimosSelect();
+      renderDevolucoesSelect();
+      renderInventario();
+      renderExcluirLivros();
+      renderAlterarLivrosTable();
+    }
+
+    async function cadastrarUsuario() {
+      const nome = document.getElementById('usr-nome').value.trim();
+      const loginUser = document.getElementById('usr-login').value.trim();
+      const senhaUser = document.getElementById('usr-senha').value.trim();
+      const tipoUser = document.getElementById('usr-tipo').value;
+
+      if (!nome || !loginUser || !senhaUser) {
+        return showAlert("Preencha todos os campos do usuário.", false);
+      }
+
+      const { data: exists } = await supabase.from('usuarios').select('id').eq('login', loginUser);
+      if (exists && exists.length > 0) {
+        return showAlert("Este nome de usuário (login) já existe.", false);
+      }
+
+      const { error } = await supabase.from('usuarios').insert([
+        { nome, login: loginUser, senha: senhaUser, tipo: tipoUser }
+      ]);
+
+      if (error) {
+        return showAlert("Erro ao salvar usuário.", false);
+      }
+
+      document.getElementById('usr-nome').value = '';
+      document.getElementById('usr-login').value = '';
+      document.getElementById('usr-senha').value = '';
+      document.getElementById('usr-tipo').value = 'Administrador';
+
+      showAlert("Usuário cadastrado com sucesso!");
+      await renderAll();
+    }
+
+    function renderModificarUsuariosTable() {
+      const buscaInput = document.getElementById('usr-alt-busca');
+      if (!buscaInput) return;
+      const busca = buscaInput.value.toLowerCase();
+      const tbody = document.querySelector('#table-modificar-usuarios-busca tbody');
+
+      const usuariosFiltrados = db.usuarios.filter(u => 
+        u.nome.toLowerCase().includes(busca) || 
+        u.login.toLowerCase().includes(busca)
+      );
+
+      if (usuariosFiltrados.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#808495;">Nenhum usuário encontrado.</td></tr>`;
         return;
       }
 
-      if (modoAtualLivro === 'modificar') {
-        editarLivro(parseInt(idx));
-        document.getElementById('formLivro').classList.remove('hidden');
+      tbody.innerHTML = usuariosFiltrados.map(u => `
+        <tr>
+          <td>${u.id}</td>
+          <td>${u.nome}</td>
+          <td>${u.login}</td>
+          <td>${u.tipo || 'Usuario'}</td>
+          <td>
+            <button class="btn-warning" onclick="carregarUsuarioParaEdicao(${u.id})">✏️ Editar</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function carregarUsuarioParaEdicao(id) {
+      const usuario = db.usuarios.find(u => u.id === id);
+      if (!usuario) return;
+
+      document.getElementById('usr-alt-id').value = usuario.id;
+      document.getElementById('usr-alt-id-display').innerText = usuario.id;
+      document.getElementById('usr-alt-nome').value = usuario.nome || '';
+      document.getElementById('usr-alt-login').value = usuario.login || '';
+      document.getElementById('usr-alt-senha').value = '';
+      document.getElementById('usr-alt-tipo').value = usuario.tipo || 'Usuario';
+
+      document.getElementById('usr-alt-form-container').classList.remove('hidden');
+    }
+
+    function cancelarEdicaoUsuario() {
+      document.getElementById('usr-alt-form-container').classList.add('hidden');
+    }
+
+    async function salvarAlteracaoUsuario() {
+      const id = parseInt(document.getElementById('usr-alt-id').value);
+
+      const novoNome = document.getElementById('usr-alt-nome').value.trim();
+      const novoLogin = document.getElementById('usr-alt-login').value.trim();
+      const novaSenha = document.getElementById('usr-alt-senha').value.trim();
+      const novoTipo = document.getElementById('usr-alt-tipo').value;
+
+      if (!novoNome || !novoLogin) {
+        return showAlert("Nome e Login não podem ficar vazios.", false);
       }
-    }
 
-    async function confirmarExclusaoLivroDropdown() {
-      const idx = document.getElementById('selectLivro').value;
-      if (idx === '') return alert('Por favor, selecione um livro para excluir.');
+      const updateData = {
+        nome: novoNome,
+        login: novoLogin,
+        tipo: novoTipo
+      };
 
-      if (confirm('Tem certeza de que deseja excluir o livro selecionado?')) {
-        await excluirLivro(parseInt(idx));
-        popularDropdownLivros();
+      if (novaSenha) updateData.senha = novaSenha;
+
+      const { error } = await supabase.from('usuarios').update(updateData).eq('id', id);
+
+      if (error) {
+        return showAlert("Erro ao atualizar usuário.", false);
       }
+
+      cancelarEdicaoUsuario();
+      await renderAll();
+      showAlert("Dados do usuário alterados com sucesso!");
     }
 
-    async function menuAcaoUsuario(acao) {
-      modoAtualUsuario = acao;
-      navegarPara('sec-usuarios');
+    function renderUsuariosTable() {
+      const buscaInput = document.getElementById('usr-busca-listar');
+      const busca = buscaInput ? buscaInput.value.toLowerCase() : '';
+      const tbody = document.querySelector('#table-usuarios tbody');
 
-      const containerSel = document.getElementById('containerSelectUsuario');
-      const formUser = document.getElementById('formUsuarioGestao');
-      const btnAcao = document.getElementById('btnAcaoSelectUsuario');
+      const usuariosFiltrados = db.usuarios.filter(u => 
+        u.nome.toLowerCase().includes(busca) || 
+        u.login.toLowerCase().includes(busca)
+      );
 
-      await carregarUsuarios();
-
-      if (acao === 'incluir') {
-        document.getElementById('tituloUserForm').innerText = 'Incluir Novo Usuário';
-        containerSel.classList.add('hidden');
-        formUser.classList.remove('hidden');
-        resetUsuarioForm();
-      } else if (acao === 'modificar') {
-        document.getElementById('tituloUserForm').innerText = 'Modificar Usuário';
-        containerSel.classList.remove('hidden');
-        btnAcao.classList.add('hidden');
-        formUser.classList.add('hidden');
-        popularDropdownUsuarios();
-      } else if (acao === 'excluir') {
-        document.getElementById('tituloUserForm').innerText = 'Excluir Usuário';
-        containerSel.classList.remove('hidden');
-        btnAcao.classList.remove('hidden');
-        formUser.classList.add('hidden');
-        popularDropdownUsuarios();
-      }
-    }
-
-    async function carregarUsuarios() {
-      const res = await sendRequest({ action: 'getUsuarios' });
-      if (res.status === 'success' && res.usuarios) {
-        usuariosDB = res.usuarios;
-      } else {
-        usuariosDB = [];
-      }
-    }
-
-    function popularDropdownUsuarios() {
-      const select = document.getElementById('selectUsuario');
-      select.innerHTML = '<option value="">-- Selecione um Usuário --</option>';
-
-      usuariosDB.forEach((u, index) => {
-        const option = document.createElement('option');
-        option.value = index;
-        option.textContent = `${u.username || u.email} (${u.tipo || 'Comum'})`;
-        select.appendChild(option);
-      });
-    }
-
-    function aoSelecionarUsuarioDropdown() {
-      const idx = document.getElementById('selectUsuario').value;
-      if (idx === '') {
-        if (modoAtualUsuario === 'modificar') document.getElementById('formUsuarioGestao').classList.add('hidden');
+      if (usuariosFiltrados.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#808495;">Nenhum usuário encontrado.</td></tr>`;
         return;
       }
 
-      if (modoAtualUsuario === 'modificar') {
-        const u = usuariosDB[parseInt(idx)];
-        document.getElementById('userEditIndex').value = idx;
-        document.getElementById('uEmail').value = u.email || '';
-        document.getElementById('uUsername').value = u.username || '';
-        document.getElementById('uSenha').value = '';
-        document.getElementById('uTipoUsuario').value = u.tipo || 'Comum';
+      tbody.innerHTML = usuariosFiltrados.map(u => `
+        <tr>
+          <td>${u.id}</td>
+          <td>${u.nome}</td>
+          <td>${u.login}</td>
+          <td>${u.tipo || 'Usuario'}</td>
+        </tr>
+      `).join('');
+    }
 
-        document.getElementById('formUsuarioGestao').classList.remove('hidden');
+    function renderExcluirUsuarios() {
+      const buscaInput = document.getElementById('usr-busca-excluir');
+      const busca = buscaInput ? buscaInput.value.toLowerCase() : '';
+      const tbody = document.querySelector('#table-excluir-usuarios tbody');
+
+      const usuariosFiltrados = db.usuarios.filter(u => 
+        u.nome.toLowerCase().includes(busca) || 
+        u.login.toLowerCase().includes(busca)
+      );
+
+      if (usuariosFiltrados.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#808495;">Nenhum usuário encontrado.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = usuariosFiltrados.map(u => `
+        <tr>
+          <td>${u.id}</td>
+          <td>${u.nome}</td>
+          <td>${u.login}</td>
+          <td>${u.tipo || 'Usuario'}</td>
+          <td>
+            <button class="btn-danger" onclick="excluirUsuario(${u.id})">🗑️ Excluir</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function excluirUsuario(id) {
+      const usuario = db.usuarios.find(u => u.id === id);
+      if (!usuario) return;
+
+      const temEmprestimo = db.emprestimos.some(e => e.usuario === usuario.nome);
+      if (temEmprestimo) {
+        return showAlert(`Não é possível excluir o usuário "${usuario.nome}" pois ele possui empréstimos pendentes.`, false);
+      }
+
+      if (confirm(`Tem certeza que deseja excluir o usuário "${usuario.nome}" (${usuario.login})?`)) {
+        await supabase.from('usuarios').delete().eq('id', id);
+        showAlert(`Usuário "${usuario.nome}" excluído com sucesso!`);
+        await renderAll();
       }
     }
 
-    async function confirmarExclusaoUsuarioDropdown() {
-      const idx = document.getElementById('selectUsuario').value;
-      if (idx === '') return alert('Por favor, selecione um usuário para excluir.');
-
-      const u = usuariosDB[parseInt(idx)];
-      if (confirm(`Tem certeza de que deseja excluir o usuário '${u.username || u.email}'?`)) {
-        const res = await sendRequest({ action: 'deleteUser', username: u.username || u.email });
-        if (res.status === 'success') {
-          alert('Usuário excluído com sucesso!');
-          await carregarUsuarios();
-          popularDropdownUsuarios();
-        } else {
-          alert(res.message || 'Erro ao excluir usuário.');
-        }
+    async function exportarUsuariosExcel() {
+      if (db.usuarios.length === 0) {
+        return showAlert("Não há usuários cadastrados para exportar.", false);
       }
-    }
 
-    function resetUsuarioForm() {
-      document.getElementById('formUsuarioGestao').reset();
-      document.getElementById('userEditIndex').value = "-1";
-    }
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Usuarios');
 
-    document.getElementById('registerForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      showMsg('Cadastrando...');
+      worksheet.columns = [
+        { header: 'ID', key: 'id' },
+        { header: 'Nome Completo', key: 'nome' },
+        { header: 'Login', key: 'login' },
+        { header: 'Tipo de Usuário', key: 'tipo' }
+      ];
 
-      const payload = {
-        action: 'register',
-        email: document.getElementById('regEmail').value,
-        username: document.getElementById('regUsername').value,
-        senha: document.getElementById('regSenha').value,
-        tipo: document.getElementById('regTipoUsuario').value
-      };
-
-      const res = await sendRequest(payload);
-      if (res.status === 'success') {
-        showMsg('Usuário cadastrado com sucesso!', 'green');
-        this.reset();
-        setTimeout(() => switchTab('login'), 1500);
-      } else {
-        showMsg(res.message || 'Erro ao cadastrar.', 'red');
-      }
-    });
-
-    document.getElementById('formUsuarioGestao').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const isEdit = document.getElementById('userEditIndex').value !== "-1";
-
-      const payload = {
-        action: isEdit ? 'updateUser' : 'register',
-        email: document.getElementById('uEmail').value,
-        username: document.getElementById('uUsername').value,
-        senha: document.getElementById('uSenha').value,
-        tipo: document.getElementById('uTipoUsuario').value
-      };
-
-      const res = await sendRequest(payload);
-      if (res.status === 'success') {
-        alert(isEdit ? 'Usuário atualizado com sucesso!' : 'Usuário cadastrado com sucesso!');
-        resetUsuarioForm();
-        if (isEdit) {
-          await carregarUsuarios();
-          popularDropdownUsuarios();
-        }
-      } else {
-        alert(res.message || 'Erro ao salvar usuário.');
-      }
-    });
-
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      showMsg('Autenticando...');
-
-      const username = document.getElementById('loginUsername').value;
-      const senha = document.getElementById('loginSenha').value;
-
-      const res = await sendRequest({ action: 'login', username, senha });
-
-      if (res.status === 'success') {
-        usuarioAtual = res.user || { username: username, tipo: 'Comum' };
-        document.getElementById('authScreen').classList.add('hidden');
-        document.getElementById('appLayout').classList.remove('hidden');
-        document.getElementById('displayUser').innerText = `${usuarioAtual.username} (${usuarioAtual.tipo})`;
-        navegarPara('sec-welcome');
-      } else {
-        showMsg(res.message || 'Usuário ou senha inválidos.', 'red');
-      }
-    });
-
-    function logout() {
-      usuarioAtual = null;
-      document.getElementById('appLayout').classList.add('hidden');
-      document.getElementById('authScreen').classList.remove('hidden');
-      document.getElementById('loginForm').reset();
-      switchTab('login');
-    }
-
-    function showMsg(txt, color = 'black') {
-      const msg = document.getElementById('mensagem');
-      msg.innerText = txt;
-      msg.style.color = color;
-    }
-
-    function resetLivroForm() {
-      document.getElementById('formLivro').reset();
-      document.getElementById('bookEditIndex').value = "-1";
-      if (modoAtualLivro === 'incluir') {
-        document.getElementById('tituloLivroForm').innerText = 'Incluir Novo Livro';
-      }
-    }
-
-    async function carregarLivros() {
-      const res = await sendRequest({ action: 'getLivros' });
-      if (res.status === 'success' && res.livros) {
-        livrosDB = res.livros;
-      } else {
-        livrosDB = [];
-      }
-      renderTabelaLivros();
-    }
-
-    document.getElementById('formLivro').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const index = parseInt(document.getElementById('bookEditIndex').value);
-
-      const livroData = {
-        codigo: document.getElementById('bCodigo').value,
-        titulo: document.getElementById('bTitulo').value,
-        subtitulo: document.getElementById('bSubtitulo').value,
-        autor: document.getElementById('bAutor').value,
-        isbn: document.getElementById('bIsbn').value,
-        traducao: document.getElementById('bTraducao').value,
-        colecao: document.getElementById('bColecao').value,
-        edicao: document.getElementById('bEdicao').value,
-        volume: document.getElementById('bVolume').value,
-        classificacao: document.getElementById('bClassificacao').value,
-        local: document.getElementById('bLocal').value,
-        editora: document.getElementById('bEditora').value,
-        data: document.getElementById('bData').value,
-        paginas: document.getElementById('bPaginas').value,
-        exemplar: document.getElementById('bExemplar').value
-      };
-
-      const action = index >= 0 ? 'updateLivro' : 'addLivro';
-      const res = await sendRequest({ action, livro: livroData, index });
-
-      if (res.status === 'success') {
-        alert(index >= 0 ? 'Livro atualizado!' : 'Livro incluído!');
-        resetLivroForm();
-        await carregarLivros();
-        if (modoAtualLivro === 'modificar') {
-          popularDropdownLivros();
-        }
-      } else {
-        alert('Erro ao salvar na planilha.');
-      }
-    });
-
-    function renderTabelaLivros() {
-      const tbody = document.getElementById('livrosTbody');
-      tbody.innerHTML = '';
-
-      livrosDB.forEach((livro) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${livro.codigo || ''}</td>
-          <td>${livro.titulo || ''}</td>
-          <td>${livro.subtitulo || ''}</td>
-          <td>${livro.autor || ''}</td>
-          <td>${livro.isbn || ''}</td>
-          <td>${livro.traducao || ''}</td>
-          <td>${livro.colecao || ''}</td>
-          <td>${livro.edicao || ''}</td>
-          <td>${livro.volume || ''}</td>
-          <td>${livro.classificacao || ''}</td>
-          <td>${livro.local || ''}</td>
-          <td>${livro.editora || ''}</td>
-          <td>${livro.data || ''}</td>
-          <td>${livro.paginas || ''}</td>
-          <td>${livro.exemplar || ''}</td>
-        `;
-        tbody.appendChild(tr);
+      db.usuarios.forEach(u => {
+        worksheet.addRow({ id: u.id, nome: u.nome, login: u.login, tipo: u.tipo || 'Usuario' });
       });
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const hoje = new Date().toISOString().split('T')[0];
+      saveAs(new Blob([buffer]), `relatorio_usuarios_${hoje}.xlsx`);
     }
 
-    function editarLivro(index) {
-      const b = livrosDB[index];
-      document.getElementById('bookEditIndex').value = index;
-      document.getElementById('bCodigo').value = b.codigo || '';
-      document.getElementById('bTitulo').value = b.titulo || '';
-      document.getElementById('bSubtitulo').value = b.subtitulo || '';
-      document.getElementById('bAutor').value = b.autor || '';
-      document.getElementById('bIsbn').value = b.isbn || '';
-      document.getElementById('bTraducao').value = b.traducao || '';
-      document.getElementById('bColecao').value = b.colecao || '';
-      document.getElementById('bEdicao').value = b.edicao || '';
-      document.getElementById('bVolume').value = b.volume || '';
-      document.getElementById('bClassificacao').value = b.classificacao || '';
-      document.getElementById('bLocal').value = b.local || '';
-      document.getElementById('bEditora').value = b.editora || '';
-      document.getElementById('bData').value = b.data || '';
-      document.getElementById('bPaginas').value = b.paginas || '';
-      document.getElementById('bExemplar').value = b.exemplar || '';
-    }
+    async function cadastrarManual() {
+      const codigo = document.getElementById('cad-codigo').value.trim();
+      const classificacao = document.getElementById('cad-classificacao').value.trim();
+      const titulo = document.getElementById('cad-titulo').value.trim();
+      const subtitulo = document.getElementById('cad-subtitulo').value.trim();
+      const autor = document.getElementById('cad-autor').value.trim();
+      const traducao = document.getElementById('cad-traducao').value.trim();
+      const isbn = document.getElementById('cad-isbn').value.trim();
+      const colecao = document.getElementById('cad-colecao').value.trim();
+      const edicao = document.getElementById('cad-edicao').value.trim();
+      const volume = document.getElementById('cad-volume').value.trim();
+      const lugar = document.getElementById('cad-lugar').value.trim();
+      const editora = document.getElementById('cad-editora').value.trim();
+      const dataPub = document.getElementById('cad-data-pub').value.trim();
+      const paginas = document.getElementById('cad-paginas').value.trim();
+      const exemplar = document.getElementById('cad-exemplar').value.trim();
 
-    async function excluirLivro(index) {
-      const res = await sendRequest({ action: 'deleteLivro', index });
-      if (res.status === 'success') {
-        await carregarLivros();
-        alert('Livro excluído com sucesso.');
-      } else {
-        alert('Erro ao excluir.');
-      }
-    }
+      if (!titulo) return showAlert("O título do livro é obrigatório.", false);
 
-    function triggerImport() { document.getElementById('csvFileInput').click(); }
-
-    function importarCSV(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = async function(e) {
-        const text = e.target.result;
-        const rows = parseCSV(text);
-        if (rows.length < 2) return alert('Arquivo CSV inválido.');
-
-        const headers = rows[0].map(h => h.trim().toLowerCase());
-        let novosLivros = [];
-
-        for (let i = 1; i < rows.length; i++) {
-          const row = rows[i];
-          if (!row || row.every(c => c.trim() === '')) continue;
-
-          novosLivros.push({
-            codigo: getCSVValue(row, headers, ['código interno', 'codigo interno', 'codigo']),
-            titulo: getCSVValue(row, headers, ['título', 'titulo']),
-            subtitulo: getCSVValue(row, headers, ['subtítulo', 'subtitulo']),
-            autor: getCSVValue(row, headers, ['autor / org. / coordenador', 'autor', 'org']),
-            isbn: getCSVValue(row, headers, ['isbn']),
-            traducao: getCSVValue(row, headers, ['tradução', 'traducao']),
-            colecao: getCSVValue(row, headers, ['coleção', 'colecao']),
-            edicao: getCSVValue(row, headers, ['edição', 'edicao']),
-            volume: getCSVValue(row, headers, ['volume']),
-            classificacao: getCSVValue(row, headers, ['classificação', 'classificacao']),
-            local: getCSVValue(row, headers, ['local de publicação', 'local de publicacao', 'local']),
-            editora: getCSVValue(row, headers, ['editora']),
-            data: getCSVValue(row, headers, ['data', 'ano']),
-            paginas: getCSVValue(row, headers, ['número de páginas', 'numero de paginas', 'paginas']),
-            exemplar: getCSVValue(row, headers, ['exemplar'])
-          });
-        }
-
-        const res = await sendRequest({ action: 'importLivros', livros: novosLivros });
-        if (res.status === 'success') {
-          alert('Importação concluída e salva na planilha!');
-          carregarLivros();
-          navegarPara('sec-lista-livros');
-        } else {
-          alert('Erro ao salvar a importação.');
-        }
-        event.target.value = '';
+      const novoLivro = { 
+        codigo: codigo || 'N/A',
+        classificacao: classificacao || '-',
+        titulo, 
+        subtitulo: subtitulo || '-',
+        autor: autor || '-',
+        traducao: traducao || '-',
+        isbn: isbn || '-',
+        colecao: colecao || '-',
+        edicao: edicao || '-',
+        volume: volume || '-',
+        lugar: lugar || '-',
+        editora: editora || '-', 
+        dataPub: dataPub || '-', 
+        paginas: paginas || '-',
+        exemplar: exemplar || '1', 
+        status: 'Disponível' 
       };
-      reader.readAsText(file, 'UTF-8');
+
+      const { error } = await supabase.from('livros').insert([novoLivro]);
+
+      if (error) {
+        return showAlert("Erro ao cadastrar livro no Supabase.", false);
+      }
+      
+      document.getElementById('cad-codigo').value = '';
+      document.getElementById('cad-classificacao').value = '';
+      document.getElementById('cad-titulo').value = '';
+      document.getElementById('cad-subtitulo').value = '';
+      document.getElementById('cad-autor').value = '';
+      document.getElementById('cad-traducao').value = '';
+      document.getElementById('cad-isbn').value = '';
+      document.getElementById('cad-colecao').value = '';
+      document.getElementById('cad-edicao').value = '';
+      document.getElementById('cad-volume').value = '';
+      document.getElementById('cad-lugar').value = '';
+      document.getElementById('cad-editora').value = '';
+      document.getElementById('cad-data-pub').value = '';
+      document.getElementById('cad-paginas').value = '';
+      document.getElementById('cad-exemplar').value = '';
+
+      showAlert("Livro cadastrado com sucesso!");
+      await renderAll();
     }
 
-    function getCSVValue(row, headers, aliases) {
-      for (let alias of aliases) {
-        const idx = headers.findIndex(h => h.includes(alias));
-        if (idx !== -1 && row[idx]) return row[idx].trim();
+    function renderAlterarLivrosTable() {
+      const buscaInput = document.getElementById('alt-busca');
+      if (!buscaInput) return;
+      const busca = buscaInput.value.toLowerCase();
+      const tbody = document.querySelector('#table-alterar-busca tbody');
+
+      const livrosFiltrados = db.livros.filter(l => 
+        l.titulo.toLowerCase().includes(busca) || 
+        (l.codigo && l.codigo.toLowerCase().includes(busca)) ||
+        (l.classificacao && l.classificacao.toLowerCase().includes(busca)) ||
+        l.autor.toLowerCase().includes(busca)
+      );
+
+      livrosFiltrados.sort((a, b) => (a.codigo || '').localeCompare(b.codigo || '', undefined, { numeric: true, sensitivity: 'base' }));
+
+      if (livrosFiltrados.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#808495;">Nenhum livro encontrado.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = livrosFiltrados.map(l => `
+        <tr>
+          <td><b>${l.codigo}</b></td>
+          <td>${l.classificacao || '-'}</td>
+          <td>${l.titulo}</td>
+          <td>${l.autor}</td>
+          <td>
+            <button class="btn-warning" onclick="carregarLivroParaEdicao(${l.id})">✏️ Editar</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function carregarLivroParaEdicao(id) {
+      const livro = db.livros.find(l => l.id === id);
+      if (!livro) return;
+
+      document.getElementById('alt-id').value = livro.id;
+      document.getElementById('alt-id-display').innerText = `[${livro.codigo}]`;
+
+      document.getElementById('alt-codigo').value = livro.codigo || '';
+      document.getElementById('alt-classificacao').value = livro.classificacao || '';
+      document.getElementById('alt-titulo').value = livro.titulo || '';
+      document.getElementById('alt-subtitulo').value = livro.subtitulo || '';
+      document.getElementById('alt-autor').value = livro.autor || '';
+      document.getElementById('alt-traducao').value = livro.traducao || '';
+      document.getElementById('alt-isbn').value = livro.isbn || '';
+      document.getElementById('alt-colecao').value = livro.colecao || '';
+      document.getElementById('alt-edicao').value = livro.edicao || '';
+      document.getElementById('alt-volume').value = livro.volume || '';
+      document.getElementById('alt-lugar').value = livro.lugar || '';
+      document.getElementById('alt-editora').value = livro.editora || '';
+      document.getElementById('alt-data-pub').value = livro.dataPub || '';
+      document.getElementById('alt-paginas').value = livro.paginas || '';
+      document.getElementById('alt-exemplar').value = livro.exemplar || '';
+
+      document.getElementById('alt-form-container').classList.remove('hidden');
+    }
+
+    function cancelarEdicaoLivro() {
+      document.getElementById('alt-form-container').classList.add('hidden');
+    }
+
+    async function salvarAlteracaoLivro() {
+      const id = parseInt(document.getElementById('alt-id').value);
+      const novoTitulo = document.getElementById('alt-titulo').value.trim();
+      if (!novoTitulo) return showAlert("O título do livro não pode ficar vazio.", false);
+
+      const updateLivro = {
+        codigo: document.getElementById('alt-codigo').value.trim() || '-',
+        classificacao: document.getElementById('alt-classificacao').value.trim() || '-',
+        titulo: novoTitulo,
+        subtitulo: document.getElementById('alt-subtitulo').value.trim() || '-',
+        autor: document.getElementById('alt-autor').value.trim() || '-',
+        traducao: document.getElementById('alt-traducao').value.trim() || '-',
+        isbn: document.getElementById('alt-isbn').value.trim() || '-',
+        colecao: document.getElementById('alt-colecao').value.trim() || '-',
+        edicao: document.getElementById('alt-edicao').value.trim() || '-',
+        volume: document.getElementById('alt-volume').value.trim() || '-',
+        lugar: document.getElementById('alt-lugar').value.trim() || '-',
+        editora: document.getElementById('alt-editora').value.trim() || '-',
+        dataPub: document.getElementById('alt-data-pub').value.trim() || '-',
+        paginas: document.getElementById('alt-paginas').value.trim() || '-',
+        exemplar: document.getElementById('alt-exemplar').value.trim() || '1'
+      };
+
+      const { error } = await supabase.from('livros').update(updateLivro).eq('id', id);
+
+      if (error) {
+        return showAlert("Erro ao alterar livro.", false);
+      }
+
+      cancelarEdicaoLivro();
+      await renderAll();
+      showAlert("Dados do livro alterados com sucesso!");
+    }
+
+    function getVal(row, keyNames) {
+      for (const k of Object.keys(row)) {
+        const cleanKey = k.toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        for (const target of keyNames) {
+          if (cleanKey === target.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")) {
+            return row[k];
+          }
+        }
       }
       return '';
     }
 
-    function parseCSV(text) {
-      const lines = text.split(/\r\n|\n/);
-      const result = [];
-      const delimiter = text.includes(';') ? ';' : ',';
+    document.getElementById('cad-file').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
 
-      for (let line of lines) {
-        if (!line.trim()) continue;
-        let cells = [], cur = '', inQuotes = false;
-        for (let i = 0; i < line.length; i++) {
-          let c = line[i];
-          if (c === '"') inQuotes = !inQuotes;
-          else if (c === delimiter && !inQuotes) {
-            cells.push(cur.replace(/^"|"$/g, ''));
-            cur = '';
-          } else cur += c;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rawJson = XLSX.utils.sheet_to_json(firstSheet, { header: 0 });
+
+        if (rawJson.length > 0) {
+          tempExcelData = rawJson.map(r => ({
+            codigo: getVal(r, ['Código Interno', 'Codigo Interno', 'codigo', 'cod']),
+            classificacao: getVal(r, ['Classificação', 'Classificacao', 'classificacao']),
+            titulo: getVal(r, ['Título', 'Titulo', 'titulo']),
+            subtitulo: getVal(r, ['Subtítulo', 'Subtitulo', 'subtitulo']),
+            autor: getVal(r, ['Autor/Org./Coordenador', 'Autor', 'autor', 'coordenador', 'org']),
+            traducao: getVal(r, ['Tradução', 'Traducao', 'traducao']),
+            isbn: getVal(r, ['ISBN', 'isbn']),
+            colecao: getVal(r, ['Coleção', 'Colecao', 'colecao']),
+            edicao: getVal(r, ['Edição', 'Edicao', 'edicao']),
+            volume: getVal(r, ['Vol.', 'Volume', 'volume', 'vol']),
+            lugar: getVal(r, ['Lugar de Publicação', 'Lugar de Publicacao', 'Lugar', 'lugar']),
+            editora: getVal(r, ['Editora', 'editora']),
+            dataPub: getVal(r, ['Data', 'Data Publicação', 'Data Publicacao', 'data_pub', 'ano']),
+            paginas: getVal(r, ['Numero de Páginas', 'Numero de paginas', 'Número de páginas', 'paginas', 'páginas']),
+            exemplar: getVal(r, ['Exemplar', 'exemplar'])
+          }));
+
+          let html = '<tr><th>Código</th><th>Classificação</th><th>Título</th><th>Subtítulo</th><th>Autor</th><th>ISBN</th><th>Exemplar</th></tr>';
+          tempExcelData.slice(0, 5).forEach(r => {
+            html += `<tr>
+              <td>${r.codigo || '-'}</td>
+              <td>${r.classificacao || '-'}</td>
+              <td><b>${r.titulo || 'Sem Título'}</b></td>
+              <td>${r.subtitulo || '-'}</td>
+              <td>${r.autor || '-'}</td>
+              <td>${r.isbn || '-'}</td>
+              <td>${r.exemplar || '1'}</td>
+            </tr>`;
+          });
+
+          document.getElementById('table-preview').innerHTML = html;
+          document.getElementById('preview-area').classList.remove('hidden');
+        } else {
+          showAlert("Erro: Planilha vazia ou em formato inválido.", false);
         }
-        cells.push(cur.replace(/^"|"$/g, ''));
-        result.push(cells);
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    async function confirmarImportacao() {
+      let bulkData = tempExcelData.map(row => ({
+        codigo: String(row.codigo || '-'),
+        classificacao: String(row.classificacao || '-'),
+        titulo: String(row.titulo || 'Sem Título'),
+        subtitulo: String(row.subtitulo || '-'),
+        autor: String(row.autor || '-'),
+        traducao: String(row.traducao || '-'),
+        isbn: String(row.isbn || '-'),
+        colecao: String(row.colecao || '-'),
+        edicao: String(row.edicao || '-'),
+        volume: String(row.volume || '-'),
+        lugar: String(row.lugar || '-'),
+        editora: String(row.editora || '-'),
+        dataPub: String(row.dataPub || '-'),
+        paginas: String(row.paginas || '-'),
+        exemplar: String(row.exemplar || '1'),
+        status: 'Disponível'
+      }));
+
+      const { error } = await supabase.from('livros').insert(bulkData);
+
+      if (error) {
+        return showAlert("Falha ao importar dados em massa.", false);
       }
-      return result;
+
+      document.getElementById('preview-area').classList.add('hidden');
+      document.getElementById('cad-file').value = '';
+      showAlert(`${bulkData.length} livros importados com sucesso!`);
+      await renderAll();
     }
 
-    function exportarCSV() {
-      if (livrosDB.length === 0) return alert('Sem livros para exportar.');
+    function renderExcluirLivros() {
+      const buscaInput = document.getElementById('excluir-busca');
+      if (!buscaInput) return;
+      
+      const busca = buscaInput.value.toLowerCase();
+      const tbody = document.querySelector('#table-excluir-livros tbody');
+      
+      const livrosFiltrados = db.livros.filter(l => 
+        l.titulo.toLowerCase().includes(busca) || 
+        (l.codigo && l.codigo.toLowerCase().includes(busca)) ||
+        (l.classificacao && l.classificacao.toLowerCase().includes(busca)) ||
+        (l.isbn && l.isbn.toLowerCase().includes(busca)) ||
+        l.autor.toLowerCase().includes(busca)
+      );
 
-      const headers = [
-        "Código Interno", "Título", "Subtítulo", "Autor / Org. / Coordenador", 
-        "ISBN", "Tradução", "Coleção", "Edição", "Volume", 
-        "Classificação", "Local de Publicação", "Editora", "Data", 
-        "Número de Páginas", "Exemplar"
+      livrosFiltrados.sort((a, b) => (a.codigo || '').localeCompare(b.codigo || '', undefined, { numeric: true, sensitivity: 'base' }));
+
+      if (livrosFiltrados.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="17" style="text-align:center; color:#808495;">Nenhum livro encontrado.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = livrosFiltrados.map(l => `
+        <tr>
+          <td><b>${l.codigo}</b></td>
+          <td>${l.classificacao || '-'}</td>
+          <td>${l.titulo}</td>
+          <td>${l.subtitulo}</td>
+          <td>${l.autor}</td>
+          <td>${l.traducao}</td>
+          <td>${l.isbn || '-'}</td>
+          <td>${l.colecao}</td>
+          <td>${l.edicao}</td>
+          <td>${l.volume}</td>
+          <td>${l.lugar}</td>
+          <td>${l.editora}</td>
+          <td>${l.dataPub}</td>
+          <td>${l.paginas}</td>
+          <td>${l.exemplar}</td>
+          <td>${l.status}</td>
+          <td>
+            <button class="btn-danger" onclick="excluirLivro(${l.id})">🗑️ Excluir</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function excluirLivro(id) {
+      const livro = db.livros.find(l => l.id === id);
+      if (!livro) return;
+
+      if (livro.status === 'Emprestado') {
+        return showAlert(`Não é possível excluir "${livro.titulo}" pois ele está em um empréstimo ativo.`, false);
+      }
+
+      if (confirm(`Tem certeza que deseja excluir permanentemente o livro "${livro.titulo}" (${livro.codigo})?`)) {
+        await supabase.from('emprestimos').delete().eq('id_livro', id);
+        await supabase.from('livros').delete().eq('id', id);
+
+        showAlert(`Livro "${livro.titulo}" excluído com sucesso!`);
+        await renderAll();
+      }
+    }
+
+    async function excluirTodosLivros() {
+      if (db.livros.length === 0) {
+        return showAlert("Não há livros cadastrados para excluir.", false);
+      }
+
+      const temEmprestimo = db.livros.some(l => l.status === 'Emprestado');
+      if (temEmprestimo) {
+        return showAlert("Não é possível excluir todos os livros pois existem empréstimos ativos em andamento.", false);
+      }
+
+      if (confirm("⚠️ ATENÇÃO! Tem certeza que deseja excluir TODOS os livros do sistema? Esta ação não poderá ser desfeita.")) {
+        await supabase.from('emprestimos').delete().neq('id', 0);
+        await supabase.from('livros').delete().neq('id', 0);
+        
+        showAlert("Todos os livros foram excluídos com sucesso!");
+        await renderAll();
+      }
+    }
+
+    function renderEmprestimosSelect() {
+      const selectLivro = document.getElementById('emp-livro');
+      const selectUsuario = document.getElementById('emp-usuario');
+
+      const disp = db.livros.filter(l => l.status === 'Disponível');
+      
+      disp.sort((a, b) => (a.codigo || '').localeCompare(b.codigo || '', undefined, { numeric: true, sensitivity: 'base' }));
+
+      selectLivro.innerHTML = disp.length 
+        ? disp.map(l => `<option value="${l.id}">[${l.codigo}] ${l.titulo} (Ex: ${l.exemplar})</option>`).join('')
+        : '<option value="">Nenhum livro disponível</option>';
+
+      selectUsuario.innerHTML = db.usuarios.length
+        ? db.usuarios.map(u => `<option value="${u.nome}">${u.nome} (${u.login}) - ${u.tipo || 'Usuario'}</option>`).join('')
+        : '<option value="">Nenhum usuário cadastrado</option>';
+    }
+
+    async function registrarEmprestimo() {
+      const idLivro = parseInt(document.getElementById('emp-livro').value);
+      const user = document.getElementById('emp-usuario').value;
+      const dataRet = document.getElementById('emp-data').value;
+
+      if (!idLivro || !user || !dataRet) return showAlert("Preencha todos os campos.", false);
+
+      const hoje = new Date().toISOString().split('T')[0];
+
+      await supabase.from('livros').update({ status: 'Emprestado' }).eq('id', idLivro);
+      await supabase.from('emprestimos').insert([{
+        id_livro: idLivro,
+        usuario: user,
+        data_saida: hoje,
+        data_retorno: dataRet
+      }]);
+
+      document.getElementById('emp-data').value = '';
+      showAlert("Empréstimo finalizado!");
+      await renderAll();
+    }
+
+    function renderDevolucoesSelect() {
+      const select = document.getElementById('dev-livro');
+      select.innerHTML = db.emprestimos.length 
+        ? db.emprestimos.map(e => {
+            const l = db.livros.find(liv => liv.id === e.id_livro);
+            return `<option value="${e.id_livro}">${l ? `[${l.codigo}]${l.titulo}` : 'Removido'} (com ${e.usuario})</option>`;
+          }).join('')
+        : '<option value="">Nenhum empréstimo ativo</option>';
+    }
+
+    async function registrarDevolucao() {
+      const idLivro = parseInt(document.getElementById('dev-livro').value);
+      if (!idLivro) return;
+
+      await supabase.from('livros').update({ status: 'Disponível' }).eq('id', idLivro);
+      await supabase.from('emprestimos').delete().eq('id_livro', idLivro);
+
+      showAlert("Devolução confirmada!");
+      await renderAll();
+    }
+
+    function getInventarioData() {
+      return db.livros.map(l => {
+        const emp = db.emprestimos.find(e => e.id_livro === l.id);
+        return {
+          codigo: l.codigo || '-',
+          classificacao: l.classificacao || '-',
+          titulo: l.titulo,
+          subtitulo: l.subtitulo || '-',
+          autor: l.autor || '-',
+          traducao: l.traducao || '-',
+          isbn: l.isbn || '-',
+          colecao: l.colecao || '-',
+          edicao: l.edicao || '-',
+          volume: l.volume || '-',
+          lugar: l.lugar || '-',
+          editora: l.editora || '-',
+          dataPub: l.dataPub || '-',
+          paginas: l.paginas || '-',
+          exemplar: l.exemplar || '1',
+          status: l.status,
+          usuario: emp ? emp.usuario : '',
+          data_retorno: emp ? emp.data_retorno : ''
+        };
+      });
+    }
+
+    function renderInventario() {
+      const busca = document.getElementById('inv-busca').value.toLowerCase();
+      const hoje = new Date().toISOString().split('T')[0];
+      const tbody = document.querySelector('#table-inventario tbody');
+      
+      let dados = getInventarioData().filter(i => 
+        i.titulo.toLowerCase().includes(busca) || 
+        i.autor.toLowerCase().includes(busca) ||
+        i.codigo.toLowerCase().includes(busca) ||
+        i.classificacao.toLowerCase().includes(busca) ||
+        i.isbn.toLowerCase().includes(busca) ||
+        i.editora.toLowerCase().includes(busca) ||
+        i.subtitulo.toLowerCase().includes(busca)
+      );
+
+      if (filtroStatusInventario !== 'Todos') {
+        dados = dados.filter(i => i.status === filtroStatusInventario);
+      }
+
+      dados.sort((a, b) => a.codigo.localeCompare(b.codigo, undefined, { numeric: true, sensitivity: 'base' }));
+
+      if (dados.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#808495;">Nenhum livro encontrado nesta categoria.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = dados.map(item => {
+        const isAtrasado = item.status === 'Emprestado' && item.data_retorno < hoje;
+        return `
+          <tr class="${isAtrasado ? 'atrasado' : ''}">
+            <td><b>${item.codigo}</b></td>
+            <td>${item.titulo}</td>
+            <td>${item.subtitulo}</td>
+            <td>${item.autor}</td>
+            <td>${item.editora}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function exportarExcel() {
+      if (db.livros.length === 0) {
+        return showAlert("Não há livros cadastrados para exportar.", false);
+      }
+
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Lista_de_Livros');
+
+      worksheet.columns = [
+        { header: 'Código Interno', key: 'codigo' },
+        { header: 'Classificação', key: 'classificacao' },
+        { header: 'Título', key: 'titulo' },
+        { header: 'Subtítulo', key: 'subtitulo' },
+        { header: 'Autor/Org./Coordenador', key: 'autor' },
+        { header: 'Tradução', key: 'traducao' },
+        { header: 'ISBN', key: 'isbn' },
+        { header: 'Coleção', key: 'colecao' },
+        { header: 'Edição', key: 'edicao' },
+        { header: 'Vol.', key: 'volume' },
+        { header: 'Lugar de Publicação', key: 'lugar' },
+        { header: 'Editora', key: 'editora' },
+        { header: 'Data', key: 'dataPub' },
+        { header: 'Numero de Páginas', key: 'paginas' },
+        { header: 'Exemplar', key: 'exemplar' },
+        { header: 'Status', key: 'status' },
+        { header: 'Usuário Atual', key: 'usuario' },
+        { header: 'Data Retorno', key: 'data_retorno' }
       ];
 
-      let csv = "\uFEFF" + headers.join(";") + "\n";
-      livrosDB.forEach(l => {
-        csv += [
-          l.codigo, l.titulo, l.subtitulo, l.autor,
-          l.isbn, l.traducao, l.colecao, l.edicao, l.volume,
-          l.classificacao, l.local, l.editora, l.data,
-          l.paginas, l.exemplar
-        ].map(v => `"${(v || '').toString().replace(/"/g, '""')}"`).join(";") + "\n";
-      });
+      getInventarioData().forEach(item => worksheet.addRow(item));
 
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "livros_biblioteca_pnsl.csv";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const buffer = await workbook.xlsx.writeBuffer();
+      const hoje = new Date().toISOString().split('T')[0];
+      saveAs(new Blob([buffer]), `lista_de_livros_${hoje}.xlsx`);
     }
   </script>
 </body>
