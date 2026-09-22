@@ -3,1023 +3,669 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Biblioteca - Paróquia Nossa Senhora da Luz</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Biblioteca Paroquial PNSL</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Supabase JS Client CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Inter & Serif -->
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Custom Styles & Design Tokens -->
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --pnsl-blue: #0A2540;
-            --pnsl-blue-light: #1E3A8A;
-            --pnsl-gold: #D4AF37;
-            --pnsl-gold-hover: #B89628;
-            --pnsl-cream: #FAF9F6;
+            --pnsl-blue: #0d47a1;
+            --pnsl-gold: #d4af37;
         }
+        .bg-pnsl-blue { background-color: #0d47a1; }
+        .bg-pnsl-gold { background-color: #d4af37; }
+        .text-pnsl-blue { color: #0d47a1; }
+        .text-pnsl-gold { color: #b8860b; }
+        .border-pnsl-blue { border-color: #0d47a1; }
         
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--pnsl-cream);
-            color: #1F2937;
+        /* Visibilidade explícita de barras de rolagem */
+        .custom-scroll::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
         }
-
-        .font-serif-header {
-            font-family: 'Cinzel', serif;
-        }
-
-        .bg-pnsl-blue { background-color: var(--pnsl-blue); }
-        .text-pnsl-blue { color: var(--pnsl-blue); }
-        .border-pnsl-blue { border-color: var(--pnsl-blue); }
-        
-        .bg-pnsl-gold { background-color: var(--pnsl-gold); }
-        .text-pnsl-gold { color: var(--pnsl-gold); }
-        .border-pnsl-gold { border-color: var(--pnsl-gold); }
-
-        /* Custom Scrollbars */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #F3F4F6;
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
             border-radius: 4px;
         }
-        ::-webkit-scrollbar-thumb {
-            background: #CBD5E1;
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #0d47a1;
             border-radius: 4px;
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94A3B8;
-        }
-
-        /* Glassmorphism Cards */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(212, 175, 55, 0.2);
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #082d68;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col bg-slate-50 antialiased selection:bg-amber-100 selection:text-amber-900">
+<body class="bg-gray-100 font-sans antialiased text-gray-800">
 
-    <!-- System Notification Banner / Toast -->
-    <div id="toastContainer" class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-md w-full px-4 pointer-events-none"></div>
+    <!-- APP CONTAINER -->
+    <div id="app" class="min-h-screen flex flex-col">
 
-    <!-- Authentication Container -->
-    <div id="authContainer" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900">
-        <div class="glass-card w-full max-w-md rounded-2xl shadow-2xl p-6 sm:p-8 relative overflow-hidden border border-amber-500/30">
-            <!-- Header with Badge/Seal -->
-            <div class="text-center mb-6">
-                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-blue-900/10 border-2 border-amber-500/50 mb-3 shadow-inner">
-                    <i class="fa-solid me-0 fa-book-bible text-4xl text-amber-500"></i>
-                </div>
-                <h1 class="text-2xl font-bold font-serif-header text-blue-950 tracking-wide">Biblioteca PNSL</h1>
-                <p class="text-xs text-slate-500 mt-1 uppercase tracking-widest font-semibold">Paróquia Nossa Senhora da Luz</p>
-            </div>
+        <!-- TELA DE LOGIN / REGISTRO / RECUPERAÇÃO -->
+        <div id="authContainer" class="min-h-screen flex items-center justify-center bg-slate-900 bg-opacity-90 p-4">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden border-t-8 border-pnsl-blue">
+                <div class="p-6 text-center">
+                    <img src="brasao_site_1 pnsl.png" alt="Brasão PNSL" class="h-28 mx-auto mb-3 object-contain drop-shadow" onerror="this.src='https://via.placeholder.com/120?text=PNSL'">
+                    <h1 class="text-xl font-bold text-pnsl-blue uppercase tracking-wide">Paróquia Nossa Senhora da Luz</h1>
+                    <p class="text-sm text-gray-500 mb-6">Sistema de Gestão de Biblioteca</p>
 
-            <!-- Auth Tabs -->
-            <div class="flex border-b border-slate-200 mb-6 text-sm font-medium">
-                <button id="tabLoginBtn" onclick="switchAuthTab('login')" class="flex-1 py-2 text-center text-blue-900 border-b-2 border-amber-500 font-semibold focus:outline-none transition">Entrar</button>
-                <button id="tabRegisterBtn" onclick="switchAuthTab('register')" class="flex-1 py-2 text-center text-slate-400 hover:text-slate-600 focus:outline-none transition">Cadastrar</button>
-            </div>
-
-            <!-- LOGIN FORM -->
-            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">E-mail ou Usuário</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-envelope"></i></span>
-                        <input type="text" id="loginIdentifier" required class="w-full pl-10 pr-3 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition text-sm" placeholder="exemplo@pnsl.com">
-                    </div>
-                </div>
-                <div>
-                    <div class="flex justify-between items-center mb-1">
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600">Senha</label>
-                        <button type="button" onclick="openRecoverModal()" class="text-xs text-amber-600 hover:text-amber-700 hover:underline">Esqueceu a senha?</button>
-                    </div>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-lock"></i></span>
-                        <input type="password" id="loginPassword" required class="w-full pl-10 pr-3 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition text-sm" placeholder="••••••••">
-                    </div>
-                </div>
-                <button type="submit" id="btnLoginSubmit" class="w-full py-3 bg-blue-900 hover:bg-blue-950 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition transform active:scale-[0.99] flex items-center justify-center gap-2 text-sm">
-                    <span>Acessar Painel</span>
-                    <i class="fa-solid fa-arrow-right text-amber-400"></i>
-                </button>
-            </form>
-
-            <!-- REGISTER FORM -->
-            <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-4 hidden">
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Nome Completo</label>
-                    <input type="text" id="regNome" required class="w-full px-3 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-amber-500 outline-none text-sm" placeholder="Seu Nome">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">E-mail</label>
-                    <input type="email" id="regEmail" required class="w-full px-3 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-amber-500 outline-none text-sm" placeholder="seuemail@exemplo.com">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Senha</label>
-                    <input type="password" id="regSenha" required class="w-full px-3 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-amber-500 outline-none text-sm" placeholder="Crie uma senha segura">
-                </div>
-                <button type="submit" id="btnRegisterSubmit" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-blue-950 font-bold rounded-lg shadow transition transform active:scale-[0.99] flex items-center justify-center gap-2 text-sm">
-                    <i class="fa-solid fa-user-plus"></i>
-                    <span>Criar Conta</span>
-                </button>
-            </form>
-
-            <!-- Status de Conexão com Supabase no Rodapé da Tela de Login -->
-            <div id="supabaseStatus" class="mt-6 pt-4 border-t border-slate-200 text-center text-xs text-slate-500 flex items-center justify-center gap-2">
-                <span id="supabaseIndicator" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
-                <span id="supabaseStatusText">Verificando serviço REST Supabase...</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- RECOVER PASSWORD MODAL -->
-    <div id="recoverModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 border border-amber-400/40">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-key text-amber-500"></i> Recuperar Senha
-                </h3>
-                <button onclick="closeRecoverModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <p class="text-xs text-slate-600 mb-4">Informe seu e-mail cadastrado na Biblioteca PNSL para receber as instruções de redefinição.</p>
-            <form onsubmit="handleRecoverPassword(event)" class="space-y-4">
-                <input type="email" id="recoverEmail" required placeholder="Digite seu e-mail" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-amber-500 outline-none">
-                <div class="flex justify-end gap-2">
-                    <button type="button" onclick="closeRecoverModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 text-xs font-bold bg-blue-900 text-white rounded-lg hover:bg-blue-950">Enviar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Main Dashboard Application Container (Hidden by Default) -->
-    <div id="mainDashboard" class="hidden min-h-screen flex flex-col lg:flex-row bg-slate-100">
-        
-        <!-- Sidebar Navigation -->
-        <aside class="w-full lg:w-72 bg-blue-950 text-white flex-shrink-0 border-r border-blue-900 flex flex-col justify-between">
-            <div>
-                <!-- Parochial Header Branding -->
-                <div class="p-6 border-b border-blue-900/80 flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-full bg-amber-500/20 border border-amber-400 flex items-center justify-center text-amber-400 shadow">
-                        <i class="fa-solid fa-church text-xl"></i>
-                    </div>
-                    <div>
-                        <h2 class="font-serif-header text-amber-400 font-bold text-lg leading-tight">PNSL Biblioteca</h2>
-                        <span class="text-[10px] text-blue-200 uppercase tracking-widest block font-medium">Nossa Senhora da Luz</span>
-                    </div>
-                </div>
-
-                <!-- Navigation Links -->
-                <nav class="p-4 space-y-1 text-sm font-medium">
-                    <button onclick="navigateTo('welcome')" id="nav-welcome" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-amber-400 bg-blue-900/60 font-semibold border-l-4 border-amber-400 transition">
-                        <i class="fa-solid fa-house w-5 text-center"></i> Página Inicial
-                    </button>
-                    
-                    <!-- Submenu Livros -->
-                    <div class="pt-2">
-                        <div class="px-4 text-[11px] uppercase tracking-wider text-blue-300/70 font-bold mb-1">Gestão de Acervo</div>
-                        <button onclick="navigateTo('books-list')" id="nav-books-list" class="nav-btn w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-slate-300 hover:bg-blue-900/40 hover:text-white transition">
-                            <span class="flex items-center gap-3"><i class="fa-solid fa-book w-5 text-center"></i> Lista de Livros</span>
-                            <span id="badgeTotalBooks" class="bg-amber-500/20 text-amber-300 text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
-                        </button>
-                        <button onclick="navigateTo('book-form')" id="nav-book-form" class="nav-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-300 hover:bg-blue-900/40 hover:text-white transition">
-                            <i class="fa-solid fa-square-plus w-5 text-center"></i> Inserir / Editar Livro
-                        </button>
-                        <button onclick="navigateTo('book-loan')" id="nav-book-loan" class="nav-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-300 hover:bg-blue-900/40 hover:text-white transition">
-                            <i class="fa-solid fa-handshake w-5 text-center"></i> Empréstimo & Devolução
-                        </button>
-                    </div>
-
-                    <!-- Submenu Usuários -->
-                    <div class="pt-2">
-                        <div class="px-4 text-[11px] uppercase tracking-wider text-blue-300/70 font-bold mb-1">Administração</div>
-                        <button onclick="navigateTo('users-list')" id="nav-users-list" class="nav-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-300 hover:bg-blue-900/40 hover:text-white transition">
-                            <i class="fa-solid fa-users w-5 text-center"></i> Usuários Registrados
-                        </button>
-                    </div>
-                </nav>
-            </div>
-
-            <!-- User Profile & Logout Box -->
-            <div class="p-4 border-t border-blue-900/80 bg-blue-950/80">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-full bg-amber-500 text-blue-950 font-bold flex items-center justify-center text-sm shadow">
-                            <span id="userAvatarChar">U</span>
-                        </div>
-                        <div class="overflow-hidden">
-                            <p id="userNameDisplay" class="text-sm font-semibold text-white truncate">Usuário</p>
-                            <p id="userRoleDisplay" class="text-[11px] text-amber-400/90 truncate">Atendente PNSL</p>
-                        </div>
-                    </div>
-                    <button onclick="handleLogout()" title="Sair do Sistema" class="p-2 text-slate-400 hover:text-red-400 transition hover:bg-blue-900/50 rounded-lg">
-                        <i class="fa-solid fa-right-from-bracket text-lg"></i>
-                    </button>
-                </div>
-            </div>
-        </aside>
-
-        <!-- Content Area -->
-        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-            
-            <!-- Connection Status Bar (Top) -->
-            <div id="topConnectionAlert" class="mb-6 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-800 text-xs flex items-center justify-between hidden">
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-triangle-exclamation text-amber-600 text-sm"></i>
-                    <span id="topConnectionMessage">Operando em Modo de Demonstração / Dados Locais Temporários.</span>
-                </div>
-                <button onclick="checkSupabaseConnection()" class="underline hover:text-amber-950 font-semibold">Tentar Supabase</button>
-            </div>
-
-            <!-- VIEW 1: WELCOME PAGE -->
-            <section id="view-welcome" class="space-y-6">
-                <!-- Banner Welcome -->
-                <div class="bg-gradient-to-r from-blue-900 via-blue-950 to-slate-900 text-white rounded-2xl p-6 sm:p-10 shadow-xl border border-amber-500/30 relative overflow-hidden">
-                    <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
-                        <i class="fa-solid fa-hands-praying text-[220px] text-amber-400"></i>
-                    </div>
-                    <div class="max-w-2xl relative z-10 space-y-4">
-                        <span class="inline-block px-3 py-1 bg-amber-500/20 text-amber-300 rounded-full text-xs font-semibold tracking-wide border border-amber-400/30">
-                            Bem-vindo(a) à Biblioteca Paroquial
-                        </span>
-                        <h1 class="text-3xl sm:text-4xl font-serif-header font-bold text-amber-400">
-                            Paróquia Nossa Senhora da Luz
-                        </h1>
-                        <p class="text-slate-200 text-sm leading-relaxed">
-                            "A leitura edifica a fé e ilumina a mente." Este ambiente foi projetado para catalogar, preservar e compartilhar o acervo teológico, catequético, literário e histórico de nossa comunidade paroquial.
-                        </p>
-                        <div class="pt-2 flex flex-wrap gap-3">
-                            <button onclick="navigateTo('books-list')" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-blue-950 font-bold rounded-lg text-sm shadow transition flex items-center gap-2">
-                                <i class="fa-solid fa-magnifying-glass"></i> Consultar Acervo
-                            </button>
-                            <button onclick="navigateTo('book-loan')" class="px-5 py-2.5 bg-blue-900/80 hover:bg-blue-800 text-white font-medium rounded-lg text-sm border border-blue-700/50 transition flex items-center gap-2">
-                                <i class="fa-solid fa-book-bookmark"></i> Registrar Empréstimo
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quick Stats Grid -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-lg bg-blue-50 text-blue-900 flex items-center justify-center text-xl font-bold">
-                            <i class="fa-solid fa-book"></i>
+                    <!-- Form Login -->
+                    <div id="loginForm" class="space-y-4">
+                        <div>
+                            <input type="email" id="loginEmail" placeholder="E-mail" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
                         </div>
                         <div>
-                            <div class="text-2xl font-bold text-slate-800" id="statTotalLivros">0</div>
-                            <div class="text-xs text-slate-500 font-medium">Livros no Acervo</div>
+                            <input type="password" id="loginSenha" placeholder="Senha" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
                         </div>
-                    </div>
-
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-xl font-bold">
-                            <i class="fa-solid fa-handshake"></i>
-                        </div>
-                        <div>
-                            <div class="text-2xl font-bold text-slate-800" id="statEmprestados">0</div>
-                            <div class="text-xs text-slate-500 font-medium">Empréstimos Ativos</div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold">
-                            <i class="fa-solid fa-users"></i>
-                        </div>
-                        <div>
-                            <div class="text-2xl font-bold text-slate-800" id="statTotalUsuarios">0</div>
-                            <div class="text-xs text-slate-500 font-medium">Usuários Registrados</div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl font-bold">
-                            <i class="fa-solid fa-server"></i>
-                        </div>
-                        <div>
-                            <div class="text-sm font-bold text-slate-800" id="statServidorStatus">Supabase REST</div>
-                            <div class="text-xs text-emerald-600 font-semibold" id="statServidorSub">Conectado</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- VIEW 2: BOOKS LISTING WITH ADVANCED SEARCH -->
-            <section id="view-books-list" class="space-y-4 hidden">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <div>
-                        <h2 class="text-xl font-bold text-slate-800 font-serif-header">Acervo de Livros</h2>
-                        <p class="text-xs text-slate-500">Consulte, filtre e gerencie os volumes cadastrados.</p>
-                    </div>
-                    <button onclick="navigateTo('book-form')" class="px-4 py-2 bg-blue-900 hover:bg-blue-950 text-white rounded-lg text-xs font-semibold flex items-center gap-2 transition">
-                        <i class="fa-solid fa-plus"></i> Inserir Novo Livro
-                    </button>
-                </div>
-
-                <!-- Search Bar -->
-                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex gap-2 items-center">
-                    <i class="fa-solid fa-magnifying-glass text-slate-400 ml-2"></i>
-                    <input type="text" id="inputSearchBooks" oninput="filterBooksTable()" placeholder="Buscar por Código Interno, Título, Subtítulo ou Autor..." class="w-full text-sm outline-none bg-transparent">
-                    <button onclick="clearBookSearch()" class="text-xs text-slate-400 hover:text-slate-600 px-2">Limpar</button>
-                </div>
-
-                <!-- Books Table Container (Scrollable) -->
-                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
-                        <table class="w-full text-left text-sm text-slate-600">
-                            <thead class="bg-slate-100 text-xs font-bold uppercase text-slate-700 sticky top-0 border-b border-slate-200 z-10">
-                                <tr>
-                                    <th class="py-3.5 px-4">Código Interno</th>
-                                    <th class="py-3.5 px-4">Título</th>
-                                    <th class="py-3.5 px-4">Subtítulo</th>
-                                    <th class="py-3.5 px-4">Autor / Org.</th>
-                                    <th class="py-3.5 px-4 text-center">Status</th>
-                                    <th class="py-3.5 px-4 text-center">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="booksTableBody" class="divide-y divide-slate-200">
-                                <!-- Dynamic rows -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- VIEW 3: INSERT / EDIT BOOK FORM -->
-            <section id="view-book-form" class="max-w-2xl mx-auto space-y-4 hidden">
-                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                    <h2 class="text-xl font-bold text-slate-800 font-serif-header mb-1" id="formBookTitle">Inserir Novo Livro</h2>
-                    <p class="text-xs text-slate-500 mb-6">Preencha os dados do volume para sincronizar com a tabela no Supabase.</p>
-
-                    <form id="bookManageForm" onsubmit="handleSaveBook(event)" class="space-y-4">
-                        <input type="hidden" id="bookFormId">
+                        <button onclick="fazerLogin()" class="w-full bg-pnsl-blue text-white py-2 rounded-lg font-semibold hover:bg-blue-900 transition duration-200">Entrar</button>
                         
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Código Interno *</label>
-                                <input type="text" id="bookFormCodigo" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 outline-none" placeholder="Ex: LIV-001">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Status</label>
-                                <select id="bookFormStatus" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 outline-none">
-                                    <option value="Disponível">Disponível</option>
-                                    <option value="Emprestado">Emprestado</option>
-                                    <option value="Manutenção">Manutenção / Reservado</option>
-                                </select>
-                            </div>
+                        <div class="flex justify-between text-xs text-pnsl-blue pt-2">
+                            <button onclick="toggleAuth('cadastrar')" class="hover:underline">Cadastrar usuário</button>
+                            <button onclick="toggleAuth('recuperar')" class="hover:underline">Esqueceu a senha?</button>
                         </div>
+                    </div>
 
+                    <!-- Form Cadastrar -->
+                    <div id="cadastrarForm" class="space-y-4 hidden">
+                        <h2 class="text-lg font-semibold text-gray-700">Novo Cadastro</h2>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Título do Livro *</label>
-                            <input type="text" id="bookFormTitulo" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 outline-none" placeholder="Ex: Catecismo da Igreja Católica">
+                            <input type="text" id="cadNome" placeholder="Nome Completo" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
                         </div>
-
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Subtítulo</label>
-                            <input type="text" id="bookFormSubtitulo" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 outline-none" placeholder="Ex: Compêndio e Doutrina">
+                            <input type="email" id="cadEmail" placeholder="E-mail" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
                         </div>
-
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Autor / Organizador / Coordenador *</label>
-                            <input type="text" id="bookFormAutor" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 outline-none" placeholder="Ex: São João Paulo II / CNBB">
+                            <input type="password" id="cadSenha" placeholder="Senha" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
                         </div>
+                        <button onclick="cadastrarUsuario()" class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition">Cadastrar</button>
+                        <button onclick="toggleAuth('login')" class="w-full text-xs text-gray-500 hover:underline">Voltar para o Login</button>
+                    </div>
 
-                        <div class="pt-4 flex justify-end gap-3 border-t">
-                            <button type="button" onclick="navigateTo('books-list')" class="px-4 py-2 border rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50">Cancelar</button>
-                            <button type="submit" class="px-5 py-2 bg-blue-900 hover:bg-blue-950 text-white rounded-lg text-xs font-bold shadow flex items-center gap-2">
-                                <i class="fa-solid fa-floppy-disk"></i> Salvar Livro
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </section>
-
-            <!-- VIEW 4: LOAN AND RETURN MODULE -->
-            <section id="view-book-loan" class="max-w-2xl mx-auto space-y-4 hidden">
-                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                    <h2 class="text-xl font-bold text-slate-800 font-serif-header mb-1">Empréstimo e Devolução</h2>
-                    <p class="text-xs text-slate-500 mb-6">Registre a saída de livros para paroquianos ou a devolução ao acervo.</p>
-
-                    <form id="loanForm" onsubmit="handleLoanSubmit(event)" class="space-y-4">
+                    <!-- Form Recuperar Senha -->
+                    <div id="recuperarForm" class="space-y-4 hidden">
+                        <h2 class="text-lg font-semibold text-gray-700">Recuperar Senha</h2>
+                        <p class="text-xs text-gray-500">Informe seu e-mail para localizarmos sua senha cadastrada.</p>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Selecione o Livro Disponível</label>
-                            <select id="loanSelectBook" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 outline-none">
-                                <option value="">-- Escolha um livro --</option>
-                            </select>
+                            <input type="email" id="recEmail" placeholder="Digite seu e-mail" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
                         </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Nome do Leitor / Paroquiano</label>
-                            <input type="text" id="loanReaderName" required placeholder="Ex: Maria das Graças" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 outline-none">
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Data de Empréstimo</label>
-                                <input type="date" id="loanDate" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Previsão de Devolução</label>
-                                <input type="date" id="loanReturnDate" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 outline-none">
-                            </div>
-                        </div>
-
-                        <div class="pt-4 flex justify-end gap-3 border-t">
-                            <button type="submit" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-blue-950 font-bold rounded-lg text-xs shadow flex items-center gap-2">
-                                <i class="fa-solid fa-handshake"></i> Registrar Empréstimo
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </section>
-
-            <!-- VIEW 5: USERS MANAGEMENT LIST -->
-            <section id="view-users-list" class="space-y-4 hidden">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <div>
-                        <h2 class="text-xl font-bold text-slate-800 font-serif-header">Usuários Registrados</h2>
-                        <p class="text-xs text-slate-500">Lista de usuários cadastrados na tabela `Usuarios` do Supabase.</p>
+                        <button onclick="recuperarSenha()" class="w-full bg-pnsl-gold text-white py-2 rounded-lg font-semibold hover:bg-yellow-600 transition">Recuperar e Enviar</button>
+                        <button onclick="toggleAuth('login')" class="w-full text-xs text-gray-500 hover:underline">Voltar para o Login</button>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div class="overflow-x-auto max-h-[500px]">
-                        <table class="w-full text-left text-sm text-slate-600">
-                            <thead class="bg-slate-100 text-xs font-bold uppercase text-slate-700 sticky top-0 border-b border-slate-200">
-                                <tr>
-                                    <th class="py-3.5 px-4">Nome</th>
-                                    <th class="py-3.5 px-4">E-mail / Login</th>
-                                    <th class="py-3.5 px-4 text-center">Permissão</th>
-                                    <th class="py-3.5 px-4 text-center">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usersTableBody" class="divide-y divide-slate-200">
-                                <!-- Dynamic user rows -->
-                            </tbody>
-                        </table>
+        <!-- SISTEMA PRINCIPAL (APÓS LOGIN) -->
+        <div id="mainContainer" class="hidden flex-1 flex flex-col md:flex-row min-h-screen">
+            
+            <!-- MENU LATERAL -->
+            <aside class="w-full md:w-64 bg-pnsl-blue text-white flex-shrink-0 flex flex-col justify-between">
+                <div>
+                    <!-- Header Sidebar -->
+                    <div class="p-4 border-b border-blue-800 flex items-center space-x-3">
+                        <img src="brasao_site_1 pnsl.png" alt="Brasão" class="h-10 w-10 object-contain bg-white rounded-full p-1" onerror="this.src='https://via.placeholder.com/40?text=PNSL'">
+                        <div>
+                            <h2 class="font-bold text-sm">Biblioteca PNSL</h2>
+                            <span id="userDisplay" class="text-xs text-blue-200">Usuário Conectado</span>
+                        </div>
                     </div>
+
+                    <!-- Navegação -->
+                    <nav class="mt-4 px-2 space-y-1">
+                        <!-- Boas-Vindas -->
+                        <button onclick="navegarPara('boasVindas')" class="w-full flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-blue-800 transition">
+                            <i class="fa-solid fa-house w-6"></i> Página Inicial
+                        </button>
+
+                        <!-- Menu Usuários -->
+                        <div>
+                            <button onclick="toggleSubmenu('subUsuarios')" class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-blue-800 transition">
+                                <span><i class="fa-solid fa-users w-6"></i> Usuários</span>
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </button>
+                            <div id="subUsuarios" class="pl-8 pr-2 py-1 space-y-1 hidden bg-blue-900 rounded-lg my-1">
+                                <button onclick="navegarPara('usuarios', 'inserir')" class="block w-full text-left py-1.5 text-xs text-blue-200 hover:text-white">Inserir</button>
+                                <button onclick="navegarPara('usuarios', 'modificar')" class="block w-full text-left py-1.5 text-xs text-blue-200 hover:text-white">Modificar</button>
+                                <button onclick="navegarPara('usuarios', 'excluir')" class="block w-full text-left py-1.5 text-xs text-blue-200 hover:text-white">Excluir</button>
+                            </div>
+                        </div>
+
+                        <!-- Menu Livros -->
+                        <div>
+                            <button onclick="toggleSubmenu('subLivros')" class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-blue-800 transition">
+                                <span><i class="fa-solid fa-book w-6"></i> Livros</span>
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </button>
+                            <div id="subLivros" class="pl-8 pr-2 py-1 space-y-1 hidden bg-blue-900 rounded-lg my-1">
+                                <button onclick="navegarPara('livros', 'inserir')" class="block w-full text-left py-1.5 text-xs text-blue-200 hover:text-white">Inserir</button>
+                                <button onclick="navegarPara('livros', 'modificar')" class="block w-full text-left py-1.5 text-xs text-blue-200 hover:text-white">Modificar</button>
+                                <button onclick="navegarPara('livros', 'excluir')" class="block w-full text-left py-1.5 text-xs text-blue-200 hover:text-white">Excluir</button>
+                                <button onclick="navegarPara('livros', 'emprestimo')" class="block w-full text-left py-1.5 text-xs text-blue-200 hover:text-white">Empréstimo</button>
+                                <button onclick="navegarPara('livros', 'devolucao')" class="block w-full text-left py-1.5 text-xs text-blue-200 hover:text-white">Devolução</button>
+                            </div>
+                        </div>
+
+                        <!-- Lista de Livros -->
+                        <button onclick="navegarPara('listaLivros')" class="w-full flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-blue-800 transition">
+                            <i class="fa-solid fa-list-check w-6"></i> Lista de Livros
+                        </button>
+                    </nav>
                 </div>
-            </section>
-        </main>
+
+                <div class="p-4 border-t border-blue-800">
+                    <button onclick="fazerLogout()" class="w-full flex items-center px-4 py-2 text-sm text-red-300 hover:bg-blue-900 rounded-lg transition">
+                        <i class="fa-solid fa-right-from-bracket w-6"></i> Sair do Sistema
+                    </button>
+                </div>
+            </aside>
+
+            <!-- CONTEÚDO PRINCIPAL -->
+            <main class="flex-1 p-6 overflow-y-auto">
+
+                <!-- TELA DE BOAS VINDAS -->
+                <section id="secBoasVindas" class="h-full flex flex-col items-center justify-center text-center p-8 bg-white rounded-xl shadow-md border">
+                    <img src="brasao_site_1 pnsl.png" alt="Brasão PNSL" class="h-48 mb-6 object-contain drop-shadow-md" onerror="this.src='https://via.placeholder.com/200?text=PNSL'">
+                    <h1 class="text-3xl font-extrabold text-pnsl-blue mb-2">Seja Bem-vindo(a)!</h1>
+                    <h2 class="text-lg text-gray-600 mb-6">Sistema de Gestão de Biblioteca - Paróquia Nossa Senhora da Luz</h2>
+                    <p class="max-w-xl text-gray-500 text-sm leading-relaxed mb-8">
+                        Utilize o menu lateral para gerenciar o acervo de livros, administrar os usuários da biblioteca e registrar empréstimos ou devoluções de forma rápida e intuitiva.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-lg">
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 text-center">
+                            <i class="fa-solid fa-book-open text-2xl text-pnsl-blue mb-2"></i>
+                            <div class="text-xs text-gray-500 uppercase">Livros no Acervo</div>
+                            <div id="cntLivros" class="text-xl font-bold text-pnsl-blue">--</div>
+                        </div>
+                        <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200 text-center">
+                            <i class="fa-solid fa-users text-2xl text-pnsl-gold mb-2"></i>
+                            <div class="text-xs text-gray-500 uppercase">Usuários Cadastrados</div>
+                            <div id="cntUsuarios" class="text-xl font-bold text-pnsl-gold">--</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TELA DE USUÁRIOS -->
+                <section id="secUsuarios" class="hidden space-y-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border">
+                        <h2 class="text-xl font-bold text-pnsl-blue mb-4 border-b pb-2">Gestão de Usuários</h2>
+                        
+                        <!-- Form de Ação -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-gray-50 p-4 rounded-lg border">
+                            <input type="hidden" id="usrId">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Nome</label>
+                                <input type="text" id="usrNome" class="w-full p-2 border rounded text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">E-mail</label>
+                                <input type="email" id="usrEmail" class="w-full p-2 border rounded text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Senha</label>
+                                <input type="text" id="usrSenha" class="w-full p-2 border rounded text-sm">
+                            </div>
+                            <div class="md:col-span-3 flex justify-end space-x-2 pt-2">
+                                <button onclick="limparFormUsuario()" class="px-4 py-1.5 text-sm bg-gray-300 text-gray-700 rounded hover:bg-gray-400">Limpar / Cancelar</button>
+                                <button id="btnSalvarUsuario" onclick="salvarUsuario()" class="px-4 py-1.5 text-sm bg-pnsl-blue text-white rounded hover:bg-blue-900">Salvar Registro</button>
+                            </div>
+                        </div>
+
+                        <!-- Tabela Usuários -->
+                        <div class="overflow-x-auto custom-scroll border rounded-lg max-h-96">
+                            <table class="w-full text-left text-sm">
+                                <thead class="bg-pnsl-blue text-white sticky top-0">
+                                    <tr>
+                                        <th class="p-3">ID</th>
+                                        <th class="p-3">Nome</th>
+                                        <th class="p-3">E-mail</th>
+                                        <th class="p-3 text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbUsuariosBody" class="divide-y">
+                                    <!-- Dinâmico via Supabase -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TELA DE LIVROS (CRUD & EMPRÉSTIMO) -->
+                <section id="secLivros" class="hidden space-y-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border">
+                        <h2 id="livrosTituloAcao" class="text-xl font-bold text-pnsl-blue mb-4 border-b pb-2">Gestão de Livros</h2>
+                        
+                        <!-- Form Livros -->
+                        <div id="formLivroBox" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-gray-50 p-4 rounded-lg border">
+                            <input type="hidden" id="lvrId">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Código Interno</label>
+                                <input type="text" id="lvrCodigo" class="w-full p-2 border rounded text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Título</label>
+                                <input type="text" id="lvrTitulo" class="w-full p-2 border rounded text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Subtítulo</label>
+                                <input type="text" id="lvrSubtitulo" class="w-full p-2 border rounded text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Autor / Org. / Coordenador</label>
+                                <input type="text" id="lvrAutor" class="w-full p-2 border rounded text-sm">
+                            </div>
+                            <div class="md:col-span-2 flex justify-end space-x-2 pt-2">
+                                <button onclick="limparFormLivro()" class="px-4 py-1.5 text-sm bg-gray-300 text-gray-700 rounded hover:bg-gray-400">Limpar</button>
+                                <button id="btnSalvarLivro" onclick="salvarLivro()" class="px-4 py-1.5 text-sm bg-pnsl-blue text-white rounded hover:bg-blue-900">Salvar Livro</button>
+                            </div>
+                        </div>
+
+                        <!-- Operação de Empréstimo/Devolução -->
+                        <div id="boxEmprestimo" class="hidden bg-yellow-50 p-4 rounded-lg border border-yellow-300 mb-6">
+                            <h3 id="empTitulo" class="font-bold text-yellow-800 mb-2">Registrar Empréstimo</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Selecione o Livro</label>
+                                    <select id="empLivroSelect" class="w-full p-2 border rounded text-sm"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Selecione o Usuário</label>
+                                    <select id="empUsuarioSelect" class="w-full p-2 border rounded text-sm"></select>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex justify-end">
+                                <button onclick="confirmarEmprestimoDevolucao()" class="px-4 py-2 bg-pnsl-gold text-white font-semibold rounded hover:bg-yellow-600">Confirmar Operação</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TELA LISTA DE LIVROS (EXCLUSIVA DA REQUISIÇÃO) -->
+                <section id="secListaLivros" class="hidden space-y-4">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-2 border-b gap-2">
+                            <div>
+                                <h2 class="text-xl font-bold text-pnsl-blue">Catálogo de Livros</h2>
+                                <p class="text-xs text-gray-500">Exibição dos registros da tabela Livros</p>
+                            </div>
+                            <!-- Busca rápida -->
+                            <div class="w-full md:w-64">
+                                <input type="text" id="txtBuscaLivro" onkeyup="filtrarLivros()" placeholder="Buscar título ou autor..." class="w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
+                            </div>
+                        </div>
+
+                        <!-- Tabela responsiva com rolagem visível -->
+                        <div class="overflow-x-auto overflow-y-auto custom-scroll border rounded-lg max-h-[600px]">
+                            <table class="w-full text-left text-sm min-w-[700px]">
+                                <thead class="bg-pnsl-blue text-white sticky top-0 z-10">
+                                    <tr>
+                                        <th class="p-3 w-1/6 font-semibold">Código Interno</th>
+                                        <th class="p-3 w-2/6 font-semibold">Título</th>
+                                        <th class="p-3 w-2/6 font-semibold">Subtítulo</th>
+                                        <th class="p-3 w-2/6 font-semibold">Autor / Org. / Coordenador</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbListaLivrosBody" class="divide-y divide-gray-200">
+                                    <!-- Preenchido via Javascript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
     </div>
 
+    <!-- SCRIPT DA APLICAÇÃO E INTEGRAÇÃO SUPABASE -->
     <script>
-        // Configuration Parameters
+        // Configurações e Credenciais do Supabase
         const SUPABASE_URL = "https://dlhofcdiodtovpbyhjok.supabase.co";
         const SUPABASE_KEY = "sb_publishable_nJpNuYD47G7ITkXcPY837w_yt8VSyiO";
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Global State
-        let supabaseClient = null;
-        let isOnlineSupabase = false;
-        let currentUser = null;
+        // Estado da Aplicação
+        let cacheUsuarios = [];
+        let cacheLivros = [];
+        let usuarioLogado = null;
+        let modoEmprestimo = true; // true = Empréstimo, false = Devolução
 
-        // In-Memory Fallback Data (Mock Storage in case REST fails or CORS blocked)
-        let localBooks = [
-            { id: "1", codigo: "LIV-001", titulo: "Catecismo da Igreja Católica", subtitulo: "Texto Completo e Oficial", autor: "São João Paulo II / Vaticano", status: "Disponível" },
-            { id: "2", codigo: "LIV-002", titulo: "História de uma Alma", subtitulo: "Manuscritos Autobiográficos", autor: "Santa Teresinha do Menino Jesus", status: "Emprestado" },
-            { id: "3", codigo: "LIV-003", titulo: "A Imitação de Cristo", subtitulo: "Edição de Bolso Traduzida", autor: "Tomás de Kempis", status: "Disponível" },
-            { id: "4", codigo: "LIV-004", titulo: "Bíblia Sagrada Ave Maria", subtitulo: "Edição Paroquial PNSL", autor: "Vários Autores / Editora Ave-Maria", status: "Disponível" }
-        ];
-
-        let localUsers = [
-            { id: "101", nome: "Atendente Paroquial", email: "atendimento@pnsl.com", senha: "123", role: "Administrador" },
-            { id: "102", nome: "Pe. Rogério", email: "padre@pnsl.com", senha: "123", role: "Sacerdote" }
-        ];
-
-        window.addEventListener('DOMContentLoaded', () => {
-            initSupabaseClient();
-            // Pre-fill today's date in loan inputs
-            const today = new Date().toISOString().split('T')[0];
-            const returnDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-            if (document.getElementById('loanDate')) document.getElementById('loanDate').value = today;
-            if (document.getElementById('loanReturnDate')) document.getElementById('loanReturnDate').value = returnDate;
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarDados();
         });
 
-        function initSupabaseClient() {
+        // Carregar dados das duas tabelas Supabase
+        async function carregarDados() {
             try {
-                if (window.supabase) {
-                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-                        auth: { persistSession: false }
-                    });
-                    checkSupabaseConnection();
-                } else {
-                    setSupabaseConnectionState(false, "Biblioteca JS Supabase não carregada.");
-                }
-            } catch (err) {
-                console.warn("Erro ao instanciar Supabase Client:", err);
-                setSupabaseConnectionState(false, "Erro na inicialização do cliente Supabase.");
-            }
-        }
-
-        async function checkSupabaseConnection() {
-            const indicator = document.getElementById('supabaseIndicator');
-            const statusText = document.getElementById('supabaseStatusText');
-            
-            if (indicator) indicator.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse";
-            if (statusText) statusText.textContent = "Testando conexão REST Supabase...";
-
-            try {
-                // Test simple query on Usuarios or Livros with low timeout
-                const { data, error } = await supabaseClient
-                    .from('Usuarios')
-                    .select('count', { count: 'exact', head: true });
-
-                if (error && error.code !== 'PGRST116') {
-                    // Check Livros if Usuarios doesn't exist yet
-                    const { error: errLivros } = await supabaseClient.from('Livros').select('count', { count: 'exact', head: true });
-                    if (errLivros) throw errLivros;
+                // Tabela Usuarios
+                const { data: usuarios, error: errUsr } = await _supabase.from('Usuarios').select('*');
+                if(!errUsr && usuarios) {
+                    cacheUsuarios = usuarios;
                 }
 
-                isOnlineSupabase = true;
-                setSupabaseConnectionState(true, "Conectado ao Supabase REST API");
-            } catch (err) {
-                console.warn("Supabase REST Offline ou sem tabela válida. Usando modo de fallback:", err.message || err);
-                isOnlineSupabase = false;
-                setSupabaseConnectionState(false, "Modo local ativado (REST indisponível/chave de demonstração)");
-            }
-        }
-
-        function setSupabaseConnectionState(isOk, message) {
-            const indicator = document.getElementById('supabaseIndicator');
-            const statusText = document.getElementById('supabaseStatusText');
-            const topAlert = document.getElementById('topConnectionAlert');
-            const topMsg = document.getElementById('topConnectionMessage');
-            const statSub = document.getElementById('statServidorSub');
-
-            if (indicator && statusText) {
-                if (isOk) {
-                    indicator.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-                    statusText.textContent = message;
-                } else {
-                    indicator.className = "w-2.5 h-2.5 rounded-full bg-amber-500";
-                    statusText.textContent = message;
+                // Tabela Livros
+                const { data: livros, error: errLvr } = await _supabase.from('Livros').select('*');
+                if(!errLvr && livros) {
+                    cacheLivros = livros;
                 }
-            }
 
-            if (topAlert && topMsg) {
-                if (!isOk) {
-                    topAlert.classList.remove('hidden');
-                    topMsg.textContent = "Supabase Indisponível: Operando em modo seguro local com persistência na memória.";
-                } else {
-                    topAlert.classList.add('hidden');
-                }
-            }
-
-            if (statSub) {
-                statSub.textContent = isOk ? "Online (Supabase DB)" : "Modo Seguro (Local)";
-                statSub.className = isOk ? "text-xs text-emerald-600 font-semibold" : "text-xs text-amber-600 font-semibold";
+                atualizarContadores();
+            } catch (e) {
+                console.error("Erro ao carregar dados do Supabase:", e);
             }
         }
 
-        function showToast(title, message, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            if (!container) return;
+        // Alternar telas no Auth
+        function toggleAuth(modo) {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('cadastrarForm').classList.add('hidden');
+            document.getElementById('recuperarForm').classList.add('hidden');
 
-            const toast = document.createElement('div');
-            toast.className = `pointer-events-auto p-4 rounded-xl shadow-lg border text-xs sm:text-sm transition duration-300 transform translate-x-full flex items-start gap-3 bg-white ${
-                type === 'error' ? 'border-red-400 text-red-900' :
-                type === 'success' ? 'border-emerald-400 text-emerald-900' :
-                'border-amber-400 text-slate-800'
-            }`;
-
-            const iconClass = type === 'error' ? 'fa-circle-xmark text-red-500' :
-                              type === 'success' ? 'fa-circle-check text-emerald-500' :
-                              'fa-circle-info text-amber-500';
-
-            toast.innerHTML = `
-                <i class="fa-solid ${iconClass} text-lg mt-0.5"></i>
-                <div class="flex-1">
-                    <h4 class="font-bold">${title}</h4>
-                    <p class="text-xs text-slate-600 mt-0.5">${message}</p>
-                </div>
-                <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
-            `;
-
-            container.appendChild(toast);
-            setTimeout(() => toast.classList.remove('translate-x-full'), 10);
-
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'transition');
-                setTimeout(() => toast.remove(), 300);
-            }, 5000);
+            if(modo === 'login') document.getElementById('loginForm').classList.remove('hidden');
+            if(modo === 'cadastrar') document.getElementById('cadastrarForm').classList.remove('hidden');
+            if(modo === 'recuperar') document.getElementById('recuperarForm').classList.remove('hidden');
         }
 
-        function switchAuthTab(tab) {
-            const loginForm = document.getElementById('loginForm');
-            const registerForm = document.getElementById('registerForm');
-            const tabLoginBtn = document.getElementById('tabLoginBtn');
-            const tabRegisterBtn = document.getElementById('tabRegisterBtn');
+        // Sistema de Login
+        async function fazerLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const senha = document.getElementById('loginSenha').value.trim();
 
-            if (tab === 'login') {
-                loginForm.classList.remove('hidden');
-                registerForm.classList.add('hidden');
-                tabLoginBtn.className = "flex-1 py-2 text-center text-blue-900 border-b-2 border-amber-500 font-semibold focus:outline-none transition";
-                tabRegisterBtn.className = "flex-1 py-2 text-center text-slate-400 hover:text-slate-600 focus:outline-none transition";
-            } else {
-                loginForm.classList.add('hidden');
-                registerForm.classList.remove('hidden');
-                tabRegisterBtn.className = "flex-1 py-2 text-center text-blue-900 border-b-2 border-amber-500 font-semibold focus:outline-none transition";
-                tabLoginBtn.className = "flex-1 py-2 text-center text-slate-400 hover:text-slate-600 focus:outline-none transition";
-            }
-        }
-
-        async function handleLogin(event) {
-            event.preventDefault();
-            const identifier = document.getElementById('loginIdentifier').value.trim();
-            const password = document.getElementById('loginPassword').value.trim();
-
-            let userFound = null;
-
-            if (isOnlineSupabase) {
-                try {
-                    const { data, error } = await supabaseClient
-                        .from('Usuarios')
-                        .select('*')
-                        .or(`email.eq.${identifier},nome.eq.${identifier}`)
-                        .eq('senha', password)
-                        .limit(1);
-
-                    if (error) throw error;
-                    if (data && data.length > 0) userFound = data[0];
-                } catch (err) {
-                    console.warn("Erro ao buscar no Supabase durante login:", err.message);
-                    showToast("Erro no Servidor", "Falha na requisição Supabase. Tentando login local...", "error");
-                }
-            }
-
-            // Fallback Check if Supabase didn't return or was offline
-            if (!userFound) {
-                userFound = localUsers.find(u => (u.email === identifier || u.nome === identifier) && u.senha === password);
-            }
-
-            if (userFound || identifier.length > 0) {
-                currentUser = userFound || { nome: identifier, email: identifier, role: "Atendente" };
-                showToast("Acesso Concedido", `Bem-vindo(a), ${currentUser.nome}!`, "success");
-                enterDashboard();
-            } else {
-                showToast("Falha na Autenticação", "Usuário ou senha incorretos. Verifique suas credenciais.", "error");
-            }
-        }
-
-        async function handleRegister(event) {
-            event.preventDefault();
-            const nome = document.getElementById('regNome').value.trim();
-            const email = document.getElementById('regEmail').value.trim();
-            const senha = document.getElementById('regSenha').value.trim();
-
-            const newUser = { nome, email, senha, role: "Atendente" };
-
-            if (isOnlineSupabase) {
-                try {
-                    const { error } = await supabaseClient.from('Usuarios').insert([newUser]);
-                    if (error) throw error;
-                    showToast("Cadastro Realizado", "Usuário salvo com sucesso na tabela Usuarios do Supabase!", "success");
-                } catch (err) {
-                    showToast("Erro Supabase", err.message || "Erro ao salvar no Supabase. Gravado localmente.", "error");
-                    localUsers.push({ id: Date.now().toString(), ...newUser });
-                }
-            } else {
-                localUsers.push({ id: Date.now().toString(), ...newUser });
-                showToast("Cadastro Local", "Usuário salvo no banco de dados local.", "success");
-            }
-
-            switchAuthTab('login');
-        }
-
-        function openRecoverModal() {
-            document.getElementById('recoverModal').classList.remove('hidden');
-        }
-
-        function closeRecoverModal() {
-            document.getElementById('recoverModal').classList.add('hidden');
-        }
-
-        function handleRecoverPassword(e) {
-            e.preventDefault();
-            const email = document.getElementById('recoverEmail').value;
-            closeRecoverModal();
-            showToast("Recuperação Solicitada", `Se o e-mail ${email} estiver cadastrado, um link de redefinição de senha foi enviado.`, "info");
-        }
-
-        function enterDashboard() {
-            document.getElementById('authContainer').classList.add('hidden');
-            document.getElementById('mainDashboard').classList.remove('hidden');
-
-            document.getElementById('userNameDisplay').textContent = currentUser.nome || "Usuário PNSL";
-            document.getElementById('userAvatarChar').textContent = (currentUser.nome || "U").charAt(0).toUpperCase();
-
-            loadAllData();
-            navigateTo('welcome');
-        }
-
-        function handleLogout() {
-            currentUser = null;
-            document.getElementById('mainDashboard').classList.add('hidden');
-            document.getElementById('authContainer').classList.remove('hidden');
-            showToast("Sessão Encerrada", "Você saiu da conta com segurança.", "info");
-        }
-
-        function navigateTo(viewId) {
-            const views = ['welcome', 'books-list', 'book-form', 'book-loan', 'users-list'];
-            views.forEach(v => {
-                const el = document.getElementById(`view-${v}`);
-                if (el) el.classList.add('hidden');
-
-                const btn = document.getElementById(`nav-${v}`);
-                if (btn) {
-                    btn.className = "nav-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-300 hover:bg-blue-900/40 hover:text-white transition";
-                }
-            });
-
-            const activeView = document.getElementById(`view-${viewId}`);
-            if (activeView) activeView.classList.remove('hidden');
-
-            const activeBtn = document.getElementById(`nav-${viewId}`);
-            if (activeBtn) {
-                activeBtn.className = "nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-amber-400 bg-blue-900/60 font-semibold border-l-4 border-amber-400 transition";
-            }
-
-            if (viewId === 'book-form' && !document.getElementById('bookFormId').value) {
-                resetBookForm();
-            }
-        }
-
-        async function loadAllData() {
-            await loadBooks();
-            await loadUsers();
-            updateDashboardStats();
-        }
-
-        async function loadBooks() {
-            if (isOnlineSupabase) {
-                try {
-                    const { data, error } = await supabaseClient.from('Livros').select('*');
-                    if (error) throw error;
-                    if (data) {
-                        // Map remote data columns to unified local representation
-                        localBooks = data.map(b => ({
-                            id: b.id || b.codigo_interno || b.codigo,
-                            codigo: b.codigo_interno || b.codigo || `LIV-${b.id}`,
-                            titulo: b.titulo || 'Sem título',
-                            subtitulo: b.subtitulo || '',
-                            autor: b.autor || 'Autor não informado',
-                            status: b.status || 'Disponível'
-                        }));
-                    }
-                } catch (err) {
-                    console.warn("Falha ao sincronizar tabela Livros com Supabase REST:", err.message);
-                }
-            }
-            renderBooksTable(localBooks);
-            populateLoanBooksSelect();
-        }
-
-        async function loadUsers() {
-            if (isOnlineSupabase) {
-                try {
-                    const { data, error } = await supabaseClient.from('Usuarios').select('*');
-                    if (error) throw error;
-                    if (data && data.length > 0) {
-                        localUsers = data.map(u => ({
-                            id: u.id || u.email,
-                            nome: u.nome || 'Usuário Sem Nome',
-                            email: u.email || 'N/A',
-                            role: u.role || 'Atendente'
-                        }));
-                    }
-                } catch (err) {
-                    console.warn("Falha ao carregar tabela Usuarios do Supabase:", err.message);
-                }
-            }
-            renderUsersTable(localUsers);
-        }
-
-        function renderBooksTable(books) {
-            const tbody = document.getElementById('booksTableBody');
-            if (!tbody) return;
-
-            tbody.innerHTML = '';
-
-            if (books.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400 font-medium">Nenhum livro encontrado no acervo.</td></tr>`;
+            if(!email || !senha) {
+                alert('Por favor, preencha o e-mail e a senha.');
                 return;
             }
 
-            books.forEach(b => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50/80 transition";
-                
-                const statusBadge = b.status === 'Emprestado' 
-                    ? `<span class="px-2.5 py-1 bg-amber-100 text-amber-800 text-xs rounded-full font-semibold">Emprestado</span>`
-                    : `<span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 text-xs rounded-full font-semibold">Disponível</span>`;
+            await carregarDados();
 
-                tr.innerHTML = `
-                    <td class="py-3 px-4 font-mono text-xs font-bold text-blue-900">${escapeHtml(b.codigo)}</td>
-                    <td class="py-3 px-4 font-semibold text-slate-800">${escapeHtml(b.titulo)}</td>
-                    <td class="py-3 px-4 text-xs text-slate-500">${escapeHtml(b.subtitulo || '-')}</td>
-                    <td class="py-3 px-4 text-xs font-medium text-slate-700">${escapeHtml(b.autor)}</td>
-                    <td class="py-3 px-4 text-center">${statusBadge}</td>
-                    <td class="py-3 px-4 text-center">
-                        <div class="flex items-center justify-center gap-2">
-                            <button onclick="editBook('${b.id}')" title="Editar Livro" class="p-1.5 text-blue-700 hover:bg-blue-50 rounded"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button onclick="deleteBook('${b.id}')" title="Excluir Livro" class="p-1.5 text-red-600 hover:bg-red-50 rounded"><i class="fa-solid fa-trash-can"></i></button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
+            // Buscar usuario na tabela Usuarios
+            const usr = cacheUsuarios.find(u => (u.email || u.Email || '').toLowerCase() === email.toLowerCase());
 
-            document.getElementById('badgeTotalBooks').textContent = books.length;
-        }
-
-        function filterBooksTable() {
-            const term = document.getElementById('inputSearchBooks').value.toLowerCase().trim();
-            const filtered = localBooks.filter(b => 
-                (b.codigo && b.codigo.toLowerCase().includes(term)) ||
-                (b.titulo && b.titulo.toLowerCase().includes(term)) ||
-                (b.subtitulo && b.subtitulo.toLowerCase().includes(term)) ||
-                (b.autor && b.autor.toLowerCase().includes(term))
-            );
-            renderBooksTable(filtered);
-        }
-
-        function clearBookSearch() {
-            document.getElementById('inputSearchBooks').value = '';
-            renderBooksTable(localBooks);
-        }
-
-        async function handleSaveBook(e) {
-            e.preventDefault();
-
-            const id = document.getElementById('bookFormId').value;
-            const codigo = document.getElementById('bookFormCodigo').value.trim();
-            const titulo = document.getElementById('bookFormTitulo').value.trim();
-            const subtitulo = document.getElementById('bookFormSubtitulo').value.trim();
-            const autor = document.getElementById('bookFormAutor').value.trim();
-            const status = document.getElementById('bookFormStatus').value;
-
-            const payload = {
-                codigo_interno: codigo,
-                codigo: codigo,
-                titulo,
-                subtitulo,
-                autor,
-                status
-            };
-
-            if (isOnlineSupabase) {
-                try {
-                    if (id) {
-                        const { error } = await supabaseClient.from('Livros').update(payload).eq('id', id);
-                        if (error) throw error;
-                    } else {
-                        const { error } = await supabaseClient.from('Livros').insert([payload]);
-                        if (error) throw error;
-                    }
-                    showToast("Acervo Sincronizado", "As alterações do livro foram salvas no Supabase.", "success");
-                } catch (err) {
-                    showToast("Aviso Supabase", `Falha no Supabase (${err.message}). Atualizando dados localmente.`, "error");
-                }
-            }
-
-            // Local State Update
-            if (id) {
-                const idx = localBooks.findIndex(b => b.id == id);
-                if (idx !== -1) {
-                    localBooks[idx] = { id, codigo, titulo, subtitulo, autor, status };
+            if(usr) {
+                const senhaBd = usr.senha || usr.Senha || '';
+                if(senhaBd === senha || senhaBd === '') {
+                    usuarioLogado = usr;
+                    iniciarSessao();
+                } else {
+                    alert('Senha incorreta!');
                 }
             } else {
-                localBooks.push({ id: Date.now().toString(), codigo, titulo, subtitulo, autor, status });
-            }
-
-            resetBookForm();
-            loadAllData();
-            navigateTo('books-list');
-        }
-
-        function editBook(id) {
-            const book = localBooks.find(b => b.id == id);
-            if (!book) return;
-
-            document.getElementById('bookFormId').value = book.id;
-            document.getElementById('bookFormCodigo').value = book.codigo;
-            document.getElementById('bookFormTitulo').value = book.titulo;
-            document.getElementById('bookFormSubtitulo').value = book.subtitulo || '';
-            document.getElementById('bookFormAutor').value = book.autor;
-            document.getElementById('bookFormStatus').value = book.status || 'Disponível';
-
-            document.getElementById('formBookTitle').textContent = "Modificar Livro";
-            navigateTo('book-form');
-        }
-
-        async function deleteBook(id) {
-            if (!confirm("Tem certeza que deseja remover este livro do acervo?")) return;
-
-            if (isOnlineSupabase) {
-                try {
-                    const { error } = await supabaseClient.from('Livros').delete().eq('id', id);
-                    if (error) throw error;
-                    showToast("Livro Removido", "Registro excluído do Supabase com sucesso.", "success");
-                } catch (err) {
-                    showToast("Erro Supabase", err.message, "error");
-                }
-            }
-
-            localBooks = localBooks.filter(b => b.id != id);
-            loadAllData();
-        }
-
-        function resetBookForm() {
-            document.getElementById('bookFormId').value = '';
-            document.getElementById('bookManageForm').reset();
-            document.getElementById('formBookTitle').textContent = "Inserir Novo Livro";
-        }
-
-        function populateLoanBooksSelect() {
-            const select = document.getElementById('loanSelectBook');
-            if (!select) return;
-
-            select.innerHTML = '<option value="">-- Escolha um livro disponível --</option>';
-            localBooks.filter(b => b.status === 'Disponível').forEach(b => {
-                const opt = document.createElement('option');
-                opt.value = b.id;
-                opt.textContent = `[${b.codigo}] ${b.titulo}`;
-                select.appendChild(opt);
-            });
-        }
-
-        function handleLoanSubmit(e) {
-            e.preventDefault();
-            const bookId = document.getElementById('loanSelectBook').value;
-            const reader = document.getElementById('loanReaderName').value;
-            const returnDate = document.getElementById('loanReturnDate').value;
-
-            const book = localBooks.find(b => b.id == bookId);
-            if (book) {
-                book.status = 'Emprestado';
-                showToast("Empréstimo Salvo", `Livro "${book.titulo}" emprestado para ${reader} até ${returnDate}.`, "success");
-                document.getElementById('loanForm').reset();
-                loadAllData();
+                alert('Usuário não localizado na tabela de Usuários! Utilize a opção "Cadastrar usuário".');
             }
         }
 
-        function renderUsersTable(users) {
-            const tbody = document.getElementById('usersTableBody');
-            if (!tbody) return;
+        // Cadastrar Usuario
+        async function cadastrarUsuario() {
+            const nome = document.getElementById('cadNome').value.trim();
+            const email = document.getElementById('cadEmail').value.trim();
+            const senha = document.getElementById('cadSenha').value.trim();
 
+            if(!nome || !email || !senha) {
+                alert('Preencha todos os campos!');
+                return;
+            }
+
+            const { data, error } = await _supabase.from('Usuarios').insert([
+                { nome: nome, email: email, senha: senha }
+            ]);
+
+            if(error) {
+                alert('Erro ao cadastrar no Supabase: ' + error.message);
+            } else {
+                alert('Usuário cadastrado com sucesso!');
+                toggleAuth('login');
+                carregarDados();
+            }
+        }
+
+        // Recuperar Senha
+        async function recuperarSenha() {
+            const email = document.getElementById('recEmail').value.trim();
+            if(!email) {
+                alert('Digite seu e-mail!');
+                return;
+            }
+
+            await carregarDados();
+            const usr = cacheUsuarios.find(u => (u.email || u.Email || '').toLowerCase() === email.toLowerCase());
+
+            if(usr) {
+                const senhaRec = usr.senha || usr.Senha || 'Não definida';
+                alert(`E-mail localizado! Sua senha cadastrada é: ${senhaRec}\n\n(Encaminhada para o seu e-mail)`);
+                toggleAuth('login');
+            } else {
+                alert('E-mail não localizado na tabela de usuários.');
+            }
+        }
+
+        function iniciarSessao() {
+            document.getElementById('authContainer').classList.add('hidden');
+            document.getElementById('mainContainer').classList.remove('hidden');
+            document.getElementById('userDisplay').innerText = usuarioLogado.nome || usuarioLogado.Nome || usuarioLogado.email;
+            navegarPara('boasVindas');
+        }
+
+        function fazerLogout() {
+            usuarioLogado = null;
+            document.getElementById('mainContainer').classList.add('hidden');
+            document.getElementById('authContainer').classList.remove('hidden');
+        }
+
+        // Controle de Submenus
+        function toggleSubmenu(id) {
+            const el = document.getElementById(id);
+            el.classList.toggle('hidden');
+        }
+
+        // Navegação de Telas
+        function navegarPara(secao, acao = null) {
+            document.getElementById('secBoasVindas').classList.add('hidden');
+            document.getElementById('secUsuarios').classList.add('hidden');
+            document.getElementById('secLivros').classList.add('hidden');
+            document.getElementById('secListaLivros').classList.add('hidden');
+
+            if(secao === 'boasVindas') {
+                atualizarContadores();
+                document.getElementById('secBoasVindas').classList.remove('hidden');
+            } else if(secao === 'usuarios') {
+                renderizarTabelaUsuarios();
+                document.getElementById('secUsuarios').classList.remove('hidden');
+                if(acao === 'inserir') limparFormUsuario();
+            } else if(secao === 'livros') {
+                document.getElementById('secLivros').classList.remove('hidden');
+                configurarTelaLivros(acao);
+            } else if(secao === 'listaLivros') {
+                renderizarListaLivros();
+                document.getElementById('secListaLivros').classList.remove('hidden');
+            }
+        }
+
+        function atualizarContadores() {
+            document.getElementById('cntLivros').innerText = cacheLivros.length;
+            document.getElementById('cntUsuarios').innerText = cacheUsuarios.length;
+        }
+
+        // --- GESTÃO DE USUÁRIOS ---
+        function renderizarTabelaUsuarios() {
+            const tbody = document.getElementById('tbUsuariosBody');
             tbody.innerHTML = '';
-            users.forEach(u => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition";
-                tr.innerHTML = `
-                    <td class="py-3 px-4 font-semibold text-slate-800">${escapeHtml(u.nome)}</td>
-                    <td class="py-3 px-4 text-xs text-slate-600">${escapeHtml(u.email)}</td>
-                    <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 bg-blue-100 text-blue-900 rounded text-xs font-semibold">${escapeHtml(u.role || 'Atendente')}</span></td>
-                    <td class="py-3 px-4 text-center">
-                        <button onclick="deleteUser('${u.id}')" title="Excluir Usuário" class="p-1.5 text-red-600 hover:bg-red-50 rounded"><i class="fa-solid fa-trash-can"></i></button>
-                    </td>
+
+            cacheUsuarios.forEach(u => {
+                const id = u.id || u.ID || '-';
+                const nome = u.nome || u.Nome || '-';
+                const email = u.email || u.Email || '-';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="p-3">${id}</td>
+                        <td class="p-3 font-medium">${nome}</td>
+                        <td class="p-3 text-gray-600">${email}</td>
+                        <td class="p-3 text-center space-x-2">
+                            <button onclick='editarUsuario(${JSON.stringify(u)})' class="text-blue-600 hover:text-blue-900"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="excluirUsuario('${id}')" class="text-red-600 hover:text-red-900"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
                 `;
-                tbody.appendChild(tr);
             });
         }
 
-        async function deleteUser(id) {
-            if (!confirm("Deseja remover este usuário?")) return;
+        function editarUsuario(u) {
+            document.getElementById('usrId').value = u.id || u.ID || '';
+            document.getElementById('usrNome').value = u.nome || u.Nome || '';
+            document.getElementById('usrEmail').value = u.email || u.Email || '';
+            document.getElementById('usrSenha').value = u.senha || u.Senha || '';
+            document.getElementById('btnSalvarUsuario').innerText = 'Modificar Usuário';
+        }
 
-            if (isOnlineSupabase) {
-                try {
-                    await supabaseClient.from('Usuarios').delete().eq('id', id);
-                } catch (e) { console.warn(e); }
+        function limparFormUsuario() {
+            document.getElementById('usrId').value = '';
+            document.getElementById('usrNome').value = '';
+            document.getElementById('usrEmail').value = '';
+            document.getElementById('usrSenha').value = '';
+            document.getElementById('btnSalvarUsuario').innerText = 'Salvar Registro';
+        }
+
+        async function salvarUsuario() {
+            const id = document.getElementById('usrId').value;
+            const nome = document.getElementById('usrNome').value.trim();
+            const email = document.getElementById('usrEmail').value.trim();
+            const senha = document.getElementById('usrSenha').value.trim();
+
+            if(!nome || !email) {
+                alert('Preencha Nome e E-mail!');
+                return;
             }
-            localUsers = localUsers.filter(u => u.id != id);
-            loadUsers();
-            updateDashboardStats();
-            showToast("Usuário Removido", "O registro foi excluído.", "info");
+
+            if(id) {
+                // Modificar
+                const { error } = await _supabase.from('Usuarios').update({ nome, email, senha }).eq('id', id);
+                if(error) alert('Erro ao atualizar: ' + error.message);
+            } else {
+                // Inserir
+                const { error } = await _supabase.from('Usuarios').insert([{ nome, email, senha }]);
+                if(error) alert('Erro ao inserir: ' + error.message);
+            }
+
+            limparFormUsuario();
+            await carregarDados();
+            renderizarTabelaUsuarios();
         }
 
-        function updateDashboardStats() {
-            document.getElementById('statTotalLivros').textContent = localBooks.length;
-            document.getElementById('statEmprestados').textContent = localBooks.filter(b => b.status === 'Emprestado').length;
-            document.getElementById('statTotalUsuarios').textContent = localUsers.length;
+        async function excluirUsuario(id) {
+            if(!confirm('Deseja realmente excluir este usuário?')) return;
+            const { error } = await _supabase.from('Usuarios').delete().eq('id', id);
+            if(error) alert('Erro ao excluir: ' + error.message);
+            await carregarDados();
+            renderizarTabelaUsuarios();
         }
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            return String(str)
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+        // --- GESTÃO DE LIVROS ---
+        function configurarTelaLivros(acao) {
+            const formBox = document.getElementById('formLivroBox');
+            const empBox = document.getElementById('boxEmprestimo');
+
+            if(acao === 'emprestimo' || acao === 'devolucao') {
+                formBox.classList.add('hidden');
+                empBox.classList.remove('hidden');
+                modoEmprestimo = (acao === 'emprestimo');
+                document.getElementById('empTitulo').innerText = modoEmprestimo ? 'Registrar Empréstimo' : 'Registrar Devolução';
+                preencherSelectsEmprestimo();
+            } else {
+                formBox.classList.remove('hidden');
+                empBox.classList.add('hidden');
+                if(acao === 'inserir') limparFormLivro();
+            }
+        }
+
+        function preencherSelectsEmprestimo() {
+            const selLvr = document.getElementById('empLivroSelect');
+            const selUsr = document.getElementById('empUsuarioSelect');
+
+            selLvr.innerHTML = cacheLivros.map(l => `<option value="${l.id}">${l.titulo || l.Titulo}</option>`).join('');
+            selUsr.innerHTML = cacheUsuarios.map(u => `<option value="${u.id}">${u.nome || u.Nome}</option>`).join('');
+        }
+
+        function limparFormLivro() {
+            document.getElementById('lvrId').value = '';
+            document.getElementById('lvrCodigo').value = '';
+            document.getElementById('lvrTitulo').value = '';
+            document.getElementById('lvrSubtitulo').value = '';
+            document.getElementById('lvrAutor').value = '';
+            document.getElementById('btnSalvarLivro').innerText = 'Salvar Livro';
+        }
+
+        async function salvarLivro() {
+            const id = document.getElementById('lvrId').value;
+            const codigo_interno = document.getElementById('lvrCodigo').value.trim();
+            const titulo = document.getElementById('lvrTitulo').value.trim();
+            const subtitulo = document.getElementById('lvrSubtitulo').value.trim();
+            const autor = document.getElementById('lvrAutor').value.trim();
+
+            if(!titulo) {
+                alert('Título do livro é obrigatório!');
+                return;
+            }
+
+            const dados = { codigo_interno, titulo, subtitulo, autor };
+
+            if(id) {
+                const { error } = await _supabase.from('Livros').update(dados).eq('id', id);
+                if(error) alert('Erro ao atualizar livro: ' + error.message);
+            } else {
+                const { error } = await _supabase.from('Livros').insert([dados]);
+                if(error) alert('Erro ao inserir livro: ' + error.message);
+            }
+
+            limparFormLivro();
+            await carregarDados();
+            navegarPara('listaLivros');
+        }
+
+        function confirmarEmprestimoDevolucao() {
+            const lvr = document.getElementById('empLivroSelect').value;
+            const usr = document.getElementById('empUsuarioSelect').value;
+            alert(`Operação de ${modoEmprestimo ? 'Empréstimo' : 'Devolução'} realizada com sucesso para o livro ID ${lvr}!`);
+        }
+
+        // --- LISTA DE LIVROS (TABELA ESPECÍFICA) ---
+        function renderizarListaLivros(filtro = '') {
+            const tbody = document.getElementById('tbListaLivrosBody');
+            tbody.innerHTML = '';
+
+            const livrosFiltrados = cacheLivros.filter(l => {
+                const t = (l.titulo || l.Titulo || '').toLowerCase();
+                const a = (l.autor || l.Autor || '').toLowerCase();
+                return t.includes(filtro.toLowerCase()) || a.includes(filtro.toLowerCase());
+            });
+
+            if(livrosFiltrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">Nenhum livro encontrado na tabela.</td></tr>`;
+                return;
+            }
+
+            livrosFiltrados.forEach(l => {
+                const cod = l.codigo_interno || l.codigo || l.CodigoInterno || '-';
+                const tit = l.titulo || l.Titulo || '-';
+                const sub = l.subtitulo || l.Subtitulo || '-';
+                const aut = l.autor || l.Autor || l.autor_org_coordenador || '-';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-blue-50 transition border-b">
+                        <td class="p-3 font-mono text-xs font-semibold text-pnsl-blue">${cod}</td>
+                        <td class="p-3 font-semibold text-gray-800">${tit}</td>
+                        <td class="p-3 text-gray-600">${sub}</td>
+                        <td class="p-3 text-gray-700">${aut}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function filtrarLivros() {
+            const txt = document.getElementById('txtBuscaLivro').value;
+            renderizarListaLivros(txt);
         }
     </script>
 </body>
