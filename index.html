@@ -75,7 +75,7 @@
                     <div id="cadastrarForm" class="space-y-4 hidden">
                         <h2 class="text-lg font-semibold text-gray-700">Novo Cadastro</h2>
                         <div>
-                            <input type="text" id="cadNome" placeholder="Nome Completo" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+                            <input type="text" id="cadUsuario" placeholder="Nome do Usuário" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
                         </div>
                         <div>
                             <input type="email" id="cadEmail" placeholder="E-mail" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
@@ -120,11 +120,12 @@
                         </button>
 
                         <div>
-                            <button onclick="toggleSubmenu('subUsuarios')" class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-blue-800 transition">
+                            <button onclick="navegarPara('usuariosMenuInicial'); toggleSubmenu('subUsuarios');" class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-blue-800 transition">
                                 <span><i class="fa-solid fa-users w-6"></i> Usuários</span>
                                 <i class="fa-solid fa-chevron-down text-xs"></i>
                             </button>
                             <div id="subUsuarios" class="pl-8 pr-2 py-1 space-y-1 hidden bg-blue-900 rounded-lg my-1">
+                                <button onclick="navegarPara('usuarios', 'lista')" class="block w-full text-left py-1.5 text-xs text-blue-200 hover:text-white">Lista Usuários</button>
                                 <button onclick="navegarPara('usuarios', 'inserir')" class="block w-full text-left py-1.5 text-xs text-blue-200 hover:text-white">Inserir</button>
                                 <button onclick="navegarPara('usuarios', 'modificar')" class="block w-full text-left py-1.5 text-xs text-blue-200 hover:text-white">Modificar</button>
                                 <button onclick="navegarPara('usuarios', 'excluir')" class="block w-full text-left py-1.5 text-xs text-blue-200 hover:text-white">Excluir</button>
@@ -160,21 +161,28 @@
 
             <main class="flex-1 p-6 overflow-y-auto">
 
-                <!-- TELA DE BOAS VINDAS (SEM CARDS DE CONTAGEM) -->
+                <!-- TELA DE BOAS VINDAS -->
                 <section id="secBoasVindas" class="h-full flex flex-col items-center justify-center text-center p-8 bg-white rounded-xl shadow-md border">
                     <img src="brasao_site_1 pnsl.png" alt="Brasão PNSL" class="h-56 mb-6 object-contain drop-shadow-md" onerror="this.src='https://via.placeholder.com/200?text=PNSL'">
                     <h1 class="text-3xl font-extrabold text-pnsl-blue mb-2">Seja Bem-vindo(a)!</h1>
                     <h2 class="text-lg text-gray-600 max-w-lg">Sistema de Gestão de Biblioteca - Paróquia Nossa Senhora da Luz</h2>
                 </section>
 
+                <!-- TELA INICIAL DO MENU USUÁRIOS (SOMENTE BRASÃO) -->
+                <section id="secUsuariosMenuInicial" class="hidden h-full flex flex-col items-center justify-center text-center p-8 bg-white rounded-xl shadow-md border">
+                    <img src="brasao_site_1 pnsl.png" alt="Brasão PNSL" class="h-64 object-contain drop-shadow-md" onerror="this.src='https://via.placeholder.com/250?text=PNSL'">
+                </section>
+
+                <!-- MÓDULO DE USUÁRIOS -->
                 <section id="secUsuarios" class="hidden space-y-6">
                     <div class="bg-white p-6 rounded-xl shadow-sm border">
-                        <h2 class="text-xl font-bold text-pnsl-blue mb-4 border-b pb-2">Gestão de Usuários</h2>
+                        <h2 id="usrTituloAcao" class="text-xl font-bold text-pnsl-blue mb-4 border-b pb-2">Gestão de Usuários</h2>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-gray-50 p-4 rounded-lg border">
+                        <!-- Form de Inserir / Modificar -->
+                        <div id="boxFormUsuario" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-gray-50 p-4 rounded-lg border">
                             <input type="hidden" id="usrId">
                             <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1">Nome</label>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Nome / Usuário</label>
                                 <input type="text" id="usrNome" class="w-full p-2 border rounded text-sm">
                             </div>
                             <div>
@@ -185,20 +193,37 @@
                                 <label class="block text-xs font-semibold text-gray-600 mb-1">Senha</label>
                                 <input type="text" id="usrSenha" class="w-full p-2 border rounded text-sm">
                             </div>
-                            <div class="md:col-span-3 flex justify-end space-x-2 pt-2">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Tipo de Usuário</label>
+                                <select id="usrTipo" class="w-full p-2 border rounded text-sm bg-white">
+                                    <option value="Comum">Comum</option>
+                                    <option value="Administrador">Administrador</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2 flex justify-end space-x-2 pt-2">
                                 <button onclick="limparFormUsuario()" class="px-4 py-1.5 text-sm bg-gray-300 text-gray-700 rounded hover:bg-gray-400">Limpar</button>
                                 <button id="btnSalvarUsuario" onclick="salvarUsuario()" class="px-4 py-1.5 text-sm bg-pnsl-blue text-white rounded hover:bg-blue-900">Salvar Registro</button>
                             </div>
                         </div>
 
-                        <div class="overflow-x-auto custom-scroll border rounded-lg max-h-96">
+                        <!-- Form/Painel de Seleção para Modificar / Excluir -->
+                        <div id="boxAcaoUsuarioSelect" class="hidden bg-gray-50 p-4 rounded-lg border mb-6">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1" id="lblUsuarioSelect">Selecione o Usuário</label>
+                            <div class="flex gap-2">
+                                <select id="usrSelectOp" class="w-full p-2 border rounded text-sm bg-white"></select>
+                                <button id="btnExecutarAcaoUsr" onclick="executarAcaoSelecionadaUsr()" class="px-4 py-2 bg-pnsl-blue text-white font-semibold rounded hover:bg-blue-900 text-sm">Carregar</button>
+                            </div>
+                        </div>
+
+                        <!-- Tabela Lista Usuários (Sem coluna de ações) -->
+                        <div id="boxTabelaUsuarios" class="overflow-x-auto custom-scroll border rounded-lg max-h-96">
                             <table class="w-full text-left text-sm">
                                 <thead class="bg-pnsl-blue text-white sticky top-0">
                                     <tr>
                                         <th class="p-3">ID</th>
-                                        <th class="p-3">Nome</th>
+                                        <th class="p-3">Nome / Usuário</th>
                                         <th class="p-3">E-mail</th>
-                                        <th class="p-3 text-center">Ações</th>
+                                        <th class="p-3">Tipo de Usuário</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tbUsuariosBody" class="divide-y"></tbody>
@@ -295,6 +320,7 @@
         let cacheLivros = [];
         let usuarioLogado = null;
         let modoEmprestimo = true;
+        let modoSubmenuUsuario = 'lista'; // 'lista', 'inserir', 'modificar', 'excluir'
 
         function mostrarFeedback(msg, tipo = 'error') {
             const box = document.getElementById('authFeedback');
@@ -325,6 +351,19 @@
             return '';
         }
 
+        async function inserirUsuarioTabela(nome, email, senha, tipo_usuario = 'Comum') {
+            let { error } = await _supabase.from('Usuarios').insert([{ usuario: nome, email, senha, tipo_usuario }]);
+            if (!error) return { success: true };
+
+            ({ error } = await _supabase.from('Usuarios').insert([{ nome, email, senha, tipo_usuario }]));
+            if (!error) return { success: true };
+
+            ({ error } = await _supabase.from('Usuarios').insert([{ Usuario: nome, Email: email, Senha: senha, Tipo_Usuario: tipo_usuario }]));
+            if (!error) return { success: true };
+
+            return { success: false, error };
+        }
+
         async function fazerLogin() {
             const emailDig = document.getElementById('loginEmail').value.trim();
             const senhaDig = document.getElementById('loginSenha').value.trim();
@@ -334,18 +373,18 @@
                 return;
             }
 
-            mostrarFeedback('Consultando tabela Usuarios...', 'success');
+            mostrarFeedback('Consultando...', 'success');
 
             try {
                 const { data: todosUsuarios, error } = await _supabase.from('Usuarios').select('*');
 
                 if (error) {
-                    mostrarFeedback('Erro ao conectar com a tabela Usuarios: ' + error.message);
+                    mostrarFeedback('Erro ao conectar: ' + error.message);
                     return;
                 }
 
                 if (!todosUsuarios || todosUsuarios.length === 0) {
-                    mostrarFeedback('A tabela Usuarios está vazia. Cadastre um novo usuário.');
+                    mostrarFeedback('Usuário não localizado. Cadastre um novo usuário.');
                     return;
                 }
 
@@ -357,7 +396,7 @@
                 });
 
                 if (!usr) {
-                    mostrarFeedback('Usuário não localizado na tabela Usuarios! Utilize a opção "Cadastrar usuário".');
+                    mostrarFeedback('Usuário não localizado! Utilize a opção "Cadastrar usuário".');
                     return;
                 }
 
@@ -376,8 +415,9 @@
             }
         }
 
+        // CADASTRO DE NOVO USUÁRIO (TIPO COMUM POR PADRÃO)
         async function cadastrarUsuario() {
-            const nome = document.getElementById('cadNome').value.trim();
+            const nome = document.getElementById('cadUsuario').value.trim();
             const email = document.getElementById('cadEmail').value.trim();
             const senha = document.getElementById('cadSenha').value.trim();
 
@@ -396,13 +436,21 @@
                 return;
             }
 
-            const { error } = await _supabase.from('Usuarios').insert([{ nome, email, senha }]);
+            // Inserção com tipo_usuario Comum
+            const res = await inserirUsuarioTabela(nome, email, senha, 'Comum');
 
-            if (error) {
-                mostrarFeedback('Erro ao cadastrar no Supabase: ' + error.message);
+            if (!res.success) {
+                mostrarFeedback('Erro ao cadastrar no Supabase: ' + res.error.message);
             } else {
-                mostrarFeedback('Usuário cadastrado com sucesso! Efetue o login.', 'success');
-                setTimeout(() => toggleAuth('login'), 1200);
+                mostrarFeedback('Usuário cadastrado com sucesso! Redirecionando para o login...', 'success');
+                document.getElementById('cadUsuario').value = '';
+                document.getElementById('cadEmail').value = '';
+                document.getElementById('cadSenha').value = '';
+                
+                setTimeout(() => {
+                    toggleAuth('login');
+                    document.getElementById('loginEmail').value = email;
+                }, 1500);
             }
         }
 
@@ -432,7 +480,7 @@
             document.getElementById('authContainer').classList.add('hidden');
             document.getElementById('mainContainer').classList.remove('hidden');
             
-            const nomeExibicao = getValorCampo(usuarioLogado, 'nome', 'Nome') || getValorCampo(usuarioLogado, 'email', 'Email');
+            const nomeExibicao = getValorCampo(usuarioLogado, 'usuario', 'Usuario', 'nome', 'Nome') || getValorCampo(usuarioLogado, 'email', 'Email');
             document.getElementById('userDisplay').innerText = nomeExibicao;
             
             await carregarDadosGlobais();
@@ -460,16 +508,18 @@
 
         function navegarPara(secao, acao = null) {
             document.getElementById('secBoasVindas').classList.add('hidden');
+            document.getElementById('secUsuariosMenuInicial').classList.add('hidden');
             document.getElementById('secUsuarios').classList.add('hidden');
             document.getElementById('secLivros').classList.add('hidden');
             document.getElementById('secListaLivros').classList.add('hidden');
 
             if (secao === 'boasVindas') {
                 document.getElementById('secBoasVindas').classList.remove('hidden');
+            } else if (secao === 'usuariosMenuInicial') {
+                document.getElementById('secUsuariosMenuInicial').classList.remove('hidden');
             } else if (secao === 'usuarios') {
-                renderizarTabelaUsuarios();
                 document.getElementById('secUsuarios').classList.remove('hidden');
-                if (acao === 'inserir') limparFormUsuario();
+                configurarTelaUsuarios(acao);
             } else if (secao === 'livros') {
                 document.getElementById('secLivros').classList.remove('hidden');
                 configurarTelaLivros(acao);
@@ -479,24 +529,83 @@
             }
         }
 
+        // CONFIGURAÇÃO DOS SUBMENUS DE USUÁRIOS
+        function configurarTelaUsuarios(subAcao) {
+            modoSubmenuUsuario = subAcao || 'lista';
+            const formBox = document.getElementById('boxFormUsuario');
+            const selectBox = document.getElementById('boxAcaoUsuarioSelect');
+            const tabelaBox = document.getElementById('boxTabelaUsuarios');
+            const titulo = document.getElementById('usrTituloAcao');
+            const btnExec = document.getElementById('btnExecutarAcaoUsr');
+
+            formBox.classList.add('hidden');
+            selectBox.classList.add('hidden');
+            tabelaBox.classList.add('hidden');
+
+            if (modoSubmenuUsuario === 'lista') {
+                titulo.innerText = "Lista de Usuários Cadastrados";
+                tabelaBox.classList.remove('hidden');
+                renderizarTabelaUsuarios();
+            } else if (modoSubmenuUsuario === 'inserir') {
+                titulo.innerText = "Inserir Novo Usuário";
+                limparFormUsuario();
+                formBox.classList.remove('hidden');
+            } else if (modoSubmenuUsuario === 'modificar') {
+                titulo.innerText = "Modificar Usuário";
+                selectBox.classList.remove('hidden');
+                btnExec.innerText = "Carregar para Modificação";
+                btnExec.className = "px-4 py-2 bg-pnsl-blue text-white font-semibold rounded hover:bg-blue-900 text-sm";
+                preencherSelectUsuarios();
+            } else if (modoSubmenuUsuario === 'excluir') {
+                titulo.innerText = "Excluir Usuário";
+                selectBox.classList.remove('hidden');
+                btnExec.innerText = "Excluir Usuário Selecionado";
+                btnExec.className = "px-4 py-2 bg-red-600 text-white font-semibold rounded hover:bg-red-700 text-sm";
+                preencherSelectUsuarios();
+            }
+        }
+
+        function preencherSelectUsuarios() {
+            const sel = document.getElementById('usrSelectOp');
+            sel.innerHTML = cacheUsuarios.map(u => {
+                const id = getValorCampo(u, 'id', 'ID');
+                const nome = getValorCampo(u, 'usuario', 'Usuario', 'nome', 'Nome');
+                const email = getValorCampo(u, 'email', 'Email');
+                return `<option value="${id}">${nome} (${email})</option>`;
+            }).join('');
+        }
+
+        function executarAcaoSelecionadaUsr() {
+            const id = document.getElementById('usrSelectOp').value;
+            if (!id) return;
+
+            const usr = cacheUsuarios.find(u => getValorCampo(u, 'id', 'ID') == id);
+
+            if (modoSubmenuUsuario === 'modificar') {
+                if (!usr) return;
+                editarUsuario(usr);
+                document.getElementById('boxFormUsuario').classList.remove('hidden');
+            } else if (modoSubmenuUsuario === 'excluir') {
+                excluirUsuario(id);
+            }
+        }
+
         function renderizarTabelaUsuarios() {
             const tbody = document.getElementById('tbUsuariosBody');
             tbody.innerHTML = '';
 
             cacheUsuarios.forEach(u => {
                 const id = getValorCampo(u, 'id', 'ID') || '-';
-                const nome = getValorCampo(u, 'nome', 'Nome') || '-';
+                const nome = getValorCampo(u, 'usuario', 'Usuario', 'nome', 'Nome') || '-';
                 const email = getValorCampo(u, 'email', 'Email') || '-';
+                const tipo = getValorCampo(u, 'tipo_usuario', 'Tipo_Usuario', 'tipoUsuario') || 'Comum';
 
                 tbody.innerHTML += `
-                    <tr class="hover:bg-gray-50">
-                        <td class="p-3">${id}</td>
-                        <td class="p-3 font-medium">${nome}</td>
+                    <tr class="hover:bg-gray-50 border-b">
+                        <td class="p-3 font-mono text-xs">${id}</td>
+                        <td class="p-3 font-medium text-gray-800">${nome}</td>
                         <td class="p-3 text-gray-600">${email}</td>
-                        <td class="p-3 text-center space-x-2">
-                            <button onclick='editarUsuario(${JSON.stringify(u)})' class="text-blue-600 hover:text-blue-900"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button onclick="excluirUsuario('${id}')" class="text-red-600 hover:text-red-900"><i class="fa-solid fa-trash"></i></button>
-                        </td>
+                        <td class="p-3"><span class="px-2 py-1 rounded text-xs font-semibold ${tipo === 'Administrador' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}">${tipo}</span></td>
                     </tr>
                 `;
             });
@@ -504,9 +613,10 @@
 
         function editarUsuario(u) {
             document.getElementById('usrId').value = getValorCampo(u, 'id', 'ID');
-            document.getElementById('usrNome').value = getValorCampo(u, 'nome', 'Nome');
+            document.getElementById('usrNome').value = getValorCampo(u, 'usuario', 'Usuario', 'nome', 'Nome');
             document.getElementById('usrEmail').value = getValorCampo(u, 'email', 'Email');
             document.getElementById('usrSenha').value = getValorCampo(u, 'senha', 'Senha');
+            document.getElementById('usrTipo').value = getValorCampo(u, 'tipo_usuario', 'Tipo_Usuario') || 'Comum';
             document.getElementById('btnSalvarUsuario').innerText = 'Modificar Usuário';
         }
 
@@ -515,6 +625,7 @@
             document.getElementById('usrNome').value = '';
             document.getElementById('usrEmail').value = '';
             document.getElementById('usrSenha').value = '';
+            document.getElementById('usrTipo').value = 'Comum';
             document.getElementById('btnSalvarUsuario').innerText = 'Salvar Registro';
         }
 
@@ -523,6 +634,7 @@
             const nome = document.getElementById('usrNome').value.trim();
             const email = document.getElementById('usrEmail').value.trim();
             const senha = document.getElementById('usrSenha').value.trim();
+            const tipo_usuario = document.getElementById('usrTipo').value;
 
             if (!nome || !email) {
                 alert('Preencha o Nome e o E-mail!');
@@ -530,21 +642,39 @@
             }
 
             if (id) {
-                await _supabase.from('Usuarios').update({ nome, email, senha }).eq('id', id);
+                let { error } = await _supabase.from('Usuarios').update({ usuario: nome, email, senha, tipo_usuario }).eq('id', id);
+                if (error) {
+                    ({ error } = await _supabase.from('Usuarios').update({ nome, email, senha, tipo_usuario }).eq('id', id));
+                }
+                if (error) {
+                    alert('Erro ao atualizar usuário no Supabase: ' + error.message);
+                    return;
+                }
             } else {
-                await _supabase.from('Usuarios').insert([{ nome, email, senha }]);
+                const res = await inserirUsuarioTabela(nome, email, senha, tipo_usuario);
+                if (!res.success) {
+                    alert('Erro ao inserir usuário no Supabase: ' + res.error.message);
+                    return;
+                }
             }
 
             limparFormUsuario();
             await carregarDadosGlobais();
-            renderizarTabelaUsuarios();
+            navegarPara('usuarios', 'lista');
         }
 
         async function excluirUsuario(id) {
-            if (!confirm('Deseja excluir este usuário?')) return;
-            await _supabase.from('Usuarios').delete().eq('id', id);
+            if (!confirm('Deseja realmente excluir este usuário da tabela no Supabase?')) return;
+            
+            const { error } = await _supabase.from('Usuarios').delete().eq('id', id);
+            
+            if (error) {
+                alert('Erro ao excluir usuário no Supabase: ' + error.message);
+                return;
+            }
+
             await carregarDadosGlobais();
-            renderizarTabelaUsuarios();
+            navegarPara('usuarios', 'lista');
         }
 
         function configurarTelaLivros(acao) {
@@ -569,7 +699,7 @@
             const selUsr = document.getElementById('empUsuarioSelect');
 
             selLvr.innerHTML = cacheLivros.map(l => `<option value="${getValorCampo(l, 'id', 'ID')}">${getValorCampo(l, 'titulo', 'Titulo')}</option>`).join('');
-            selUsr.innerHTML = cacheUsuarios.map(u => `<option value="${getValorCampo(u, 'id', 'ID')}">${getValorCampo(u, 'nome', 'Nome')}</option>`).join('');
+            selUsr.innerHTML = cacheUsuarios.map(u => `<option value="${getValorCampo(u, 'id', 'ID')}">${getValorCampo(u, 'usuario', 'Usuario', 'nome', 'Nome')}</option>`).join('');
         }
 
         function limparFormLivro() {
