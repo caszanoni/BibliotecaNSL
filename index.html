@@ -21,7 +21,6 @@
         .text-pnsl-gold { color: #b8860b; }
         .border-pnsl-blue { border-color: #0d47a1; }
         
-        /* Visibilidade das barras de rolagem */
         .custom-scroll::-webkit-scrollbar {
             width: 10px;
             height: 10px;
@@ -41,10 +40,9 @@
 </head>
 <body class="bg-gray-100 font-sans antialiased text-gray-800">
 
-    <!-- CONTAINER DA APLICAÇÃO -->
     <div id="app" class="min-h-screen flex flex-col">
 
-        <!-- TELA DE LOGIN / REGISTO / RECUPERAÇÃO DE PALAVRA-PASSE -->
+        <!-- TELA DE LOGIN / CADASTRO / RECUPERAÇÃO -->
         <div id="authContainer" class="min-h-screen flex items-center justify-center bg-slate-900 bg-opacity-90 p-4">
             <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden border-t-8 border-pnsl-blue">
                 <div class="p-6 text-center">
@@ -52,30 +50,30 @@
                     <h1 class="text-xl font-bold text-pnsl-blue uppercase tracking-wide">Paróquia Nossa Senhora da Luz</h1>
                     <p class="text-sm text-gray-500 mb-6">Sistema de Gestão de Biblioteca</p>
 
-                    <!-- Feedback Visual de Carregamento/Erros -->
+                    <!-- Mensagens de erro/sucesso -->
                     <div id="authFeedback" class="hidden text-xs p-2.5 mb-4 rounded text-left font-medium"></div>
 
-                    <!-- Formulário de Login -->
+                    <!-- Login -->
                     <div id="loginForm" class="space-y-4">
                         <div>
                             <input type="email" id="loginEmail" placeholder="E-mail" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
                         </div>
                         <div>
-                            <input type="password" id="loginSenha" placeholder="Palavra-passe" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+                            <input type="password" id="loginSenha" placeholder="Senha" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
                         </div>
                         <button onclick="fazerLogin()" id="btnLogin" class="w-full bg-pnsl-blue text-white py-2 rounded-lg font-semibold hover:bg-blue-900 transition duration-200">
                             Entrar
                         </button>
                         
                         <div class="flex justify-between text-xs text-pnsl-blue pt-2">
-                            <button onclick="toggleAuth('cadastrar')" class="hover:underline">Cadastrar utilizador</button>
-                            <button onclick="toggleAuth('recuperar')" class="hover:underline">Esqueceu a palavra-passe?</button>
+                            <button onclick="toggleAuth('cadastrar')" class="hover:underline">Cadastrar usuário</button>
+                            <button onclick="toggleAuth('recuperar')" class="hover:underline">Esqueceu a senha?</button>
                         </div>
                     </div>
 
-                    <!-- Formulário de Registo -->
+                    <!-- Cadastro -->
                     <div id="cadastrarForm" class="space-y-4 hidden">
-                        <h2 class="text-lg font-semibold text-gray-700">Novo Registo de Utilizador</h2>
+                        <h2 class="text-lg font-semibold text-gray-700">Novo Cadastro</h2>
                         <div>
                             <input type="text" id="cadNome" placeholder="Nome Completo" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
                         </div>
@@ -83,41 +81,39 @@
                             <input type="email" id="cadEmail" placeholder="E-mail" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
                         </div>
                         <div>
-                            <input type="password" id="cadSenha" placeholder="Palavra-passe" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+                            <input type="password" id="cadSenha" placeholder="Senha" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
                         </div>
                         <button onclick="cadastrarUsuario()" id="btnCadastrar" class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition">Cadastrar</button>
                         <button onclick="toggleAuth('login')" class="w-full text-xs text-gray-500 hover:underline">Voltar ao Login</button>
                     </div>
 
-                    <!-- Formulário de Recuperação de Palavra-Passe -->
+                    <!-- Recuperação de Senha -->
                     <div id="recuperarForm" class="space-y-4 hidden">
-                        <h2 class="text-lg font-semibold text-gray-700">Recuperar Palavra-passe</h2>
-                        <p class="text-xs text-gray-500">Insira o e-mail cadastrado na tabela de Utilizadores.</p>
+                        <h2 class="text-lg font-semibold text-gray-700">Recuperar Senha</h2>
+                        <p class="text-xs text-gray-500">Informe o e-mail cadastrado na tabela Usuarios.</p>
                         <div>
-                            <input type="email" id="recEmail" placeholder="Digite o e-mail" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+                            <input type="email" id="recEmail" placeholder="Digite seu e-mail" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
                         </div>
-                        <button onclick="recuperarSenha()" id="btnRecuperar" class="w-full bg-pnsl-gold text-white py-2 rounded-lg font-semibold hover:bg-yellow-600 transition">Consultar Palavra-passe</button>
+                        <button onclick="recuperarSenha()" id="btnRecuperar" class="w-full bg-pnsl-gold text-white py-2 rounded-lg font-semibold hover:bg-yellow-600 transition">Consultar Senha</button>
                         <button onclick="toggleAuth('login')" class="w-full text-xs text-gray-500 hover:underline">Voltar ao Login</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- PAINEL PRINCIPAL (APÓS VERIFICAÇÃO COM SUCESSO) -->
+        <!-- PAINEL PRINCIPAL DO SISTEMA -->
         <div id="mainContainer" class="hidden flex-1 flex flex-col md:flex-row min-h-screen">
             
-            <!-- MENU LATERAL -->
             <aside class="w-full md:w-64 bg-pnsl-blue text-white flex-shrink-0 flex flex-col justify-between">
                 <div>
                     <div class="p-4 border-b border-blue-800 flex items-center space-x-3">
                         <img src="brasao_site_1 pnsl.png" alt="Brasão" class="h-10 w-10 object-contain bg-white rounded-full p-1" onerror="this.src='https://via.placeholder.com/40?text=PNSL'">
                         <div>
                             <h2 class="font-bold text-sm">Biblioteca PNSL</h2>
-                            <span id="userDisplay" class="text-xs text-blue-200">Utilizador Conectado</span>
+                            <span id="userDisplay" class="text-xs text-blue-200">Usuário Conectado</span>
                         </div>
                     </div>
 
-                    <!-- Navegação -->
                     <nav class="mt-4 px-2 space-y-1">
                         <button onclick="navegarPara('boasVindas')" class="w-full flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-blue-800 transition">
                             <i class="fa-solid fa-house w-6"></i> Página Inicial
@@ -125,7 +121,7 @@
 
                         <div>
                             <button onclick="toggleSubmenu('subUsuarios')" class="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-blue-800 transition">
-                                <span><i class="fa-solid fa-users w-6"></i> Utilizadores</span>
+                                <span><i class="fa-solid fa-users w-6"></i> Usuários</span>
                                 <i class="fa-solid fa-chevron-down text-xs"></i>
                             </button>
                             <div id="subUsuarios" class="pl-8 pr-2 py-1 space-y-1 hidden bg-blue-900 rounded-lg my-1">
@@ -157,37 +153,23 @@
 
                 <div class="p-4 border-t border-blue-800">
                     <button onclick="fazerLogout()" class="w-full flex items-center px-4 py-2 text-sm text-red-300 hover:bg-blue-900 rounded-lg transition">
-                        <i class="fa-solid fa-right-from-bracket w-6"></i> Terminar Sessão
+                        <i class="fa-solid fa-right-from-bracket w-6"></i> Sair do Sistema
                     </button>
                 </div>
             </aside>
 
-            <!-- CONTEÚDO PRINCIPAL -->
             <main class="flex-1 p-6 overflow-y-auto">
 
-                <!-- BOAS-VINDAS -->
+                <!-- TELA DE BOAS VINDAS (SEM CARDS DE CONTAGEM) -->
                 <section id="secBoasVindas" class="h-full flex flex-col items-center justify-center text-center p-8 bg-white rounded-xl shadow-md border">
-                    <img src="brasao_site_1 pnsl.png" alt="Brasão PNSL" class="h-48 mb-6 object-contain drop-shadow-md" onerror="this.src='https://via.placeholder.com/200?text=PNSL'">
+                    <img src="brasao_site_1 pnsl.png" alt="Brasão PNSL" class="h-56 mb-6 object-contain drop-shadow-md" onerror="this.src='https://via.placeholder.com/200?text=PNSL'">
                     <h1 class="text-3xl font-extrabold text-pnsl-blue mb-2">Seja Bem-vindo(a)!</h1>
-                    <h2 class="text-lg text-gray-600 mb-6">Sistema de Gestão de Biblioteca - Paróquia Nossa Senhora da Luz</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-lg mt-4">
-                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 text-center">
-                            <i class="fa-solid fa-book-open text-2xl text-pnsl-blue mb-2"></i>
-                            <div class="text-xs text-gray-500 uppercase">Livros Registados</div>
-                            <div id="cntLivros" class="text-xl font-bold text-pnsl-blue">--</div>
-                        </div>
-                        <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200 text-center">
-                            <i class="fa-solid fa-users text-2xl text-pnsl-gold mb-2"></i>
-                            <div class="text-xs text-gray-500 uppercase">Utilizadores Registados</div>
-                            <div id="cntUsuarios" class="text-xl font-bold text-pnsl-gold">--</div>
-                        </div>
-                    </div>
+                    <h2 class="text-lg text-gray-600 max-w-lg">Sistema de Gestão de Biblioteca - Paróquia Nossa Senhora da Luz</h2>
                 </section>
 
-                <!-- SECÇÃO UTILIZADORES -->
                 <section id="secUsuarios" class="hidden space-y-6">
                     <div class="bg-white p-6 rounded-xl shadow-sm border">
-                        <h2 class="text-xl font-bold text-pnsl-blue mb-4 border-b pb-2">Gestão de Utilizadores</h2>
+                        <h2 class="text-xl font-bold text-pnsl-blue mb-4 border-b pb-2">Gestão de Usuários</h2>
                         
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-gray-50 p-4 rounded-lg border">
                             <input type="hidden" id="usrId">
@@ -200,12 +182,12 @@
                                 <input type="email" id="usrEmail" class="w-full p-2 border rounded text-sm">
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1">Palavra-passe</label>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Senha</label>
                                 <input type="text" id="usrSenha" class="w-full p-2 border rounded text-sm">
                             </div>
                             <div class="md:col-span-3 flex justify-end space-x-2 pt-2">
                                 <button onclick="limparFormUsuario()" class="px-4 py-1.5 text-sm bg-gray-300 text-gray-700 rounded hover:bg-gray-400">Limpar</button>
-                                <button id="btnSalvarUsuario" onclick="salvarUsuario()" class="px-4 py-1.5 text-sm bg-pnsl-blue text-white rounded hover:bg-blue-900">Salvar Utilizador</button>
+                                <button id="btnSalvarUsuario" onclick="salvarUsuario()" class="px-4 py-1.5 text-sm bg-pnsl-blue text-white rounded hover:bg-blue-900">Salvar Registro</button>
                             </div>
                         </div>
 
@@ -225,7 +207,6 @@
                     </div>
                 </section>
 
-                <!-- SECÇÃO LIVROS -->
                 <section id="secLivros" class="hidden space-y-6">
                     <div class="bg-white p-6 rounded-xl shadow-sm border">
                         <h2 id="livrosTituloAcao" class="text-xl font-bold text-pnsl-blue mb-4 border-b pb-2">Gestão de Livros</h2>
@@ -255,34 +236,33 @@
                         </div>
 
                         <div id="boxEmprestimo" class="hidden bg-yellow-50 p-4 rounded-lg border border-yellow-300 mb-6">
-                            <h3 id="empTitulo" class="font-bold text-yellow-800 mb-2">Registar Empréstimo</h3>
+                            <h3 id="empTitulo" class="font-bold text-yellow-800 mb-2">Registrar Empréstimo</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-semibold text-gray-600 mb-1">Selecione o Livro</label>
                                     <select id="empLivroSelect" class="w-full p-2 border rounded text-sm"></select>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Selecione o Utilizador</label>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Selecione o Usuário</label>
                                     <select id="empUsuarioSelect" class="w-full p-2 border rounded text-sm"></select>
                                 </div>
                             </div>
                             <div class="mt-4 flex justify-end">
-                                <button onclick="confirmarEmprestimoDevolucao()" class="px-4 py-2 bg-pnsl-gold text-white font-semibold rounded hover:bg-yellow-600">Confirmar</button>
+                                <button onclick="confirmarEmprestimoDevolucao()" class="px-4 py-2 bg-pnsl-gold text-white font-semibold rounded hover:bg-yellow-600">Confirmar Operação</button>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- LISTA DE LIVROS (TABELA COM BARRAS DE ROLAGEM VISÍVEIS) -->
                 <section id="secListaLivros" class="hidden space-y-4">
                     <div class="bg-white p-6 rounded-xl shadow-sm border">
                         <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-2 border-b gap-2">
                             <div>
                                 <h2 class="text-xl font-bold text-pnsl-blue">Catálogo de Livros</h2>
-                                <p class="text-xs text-gray-500">Exibição exclusiva dos campos requeridos</p>
+                                <p class="text-xs text-gray-500">Listagem de registros da tabela Livros</p>
                             </div>
                             <div class="w-full md:w-64">
-                                <input type="text" id="txtBuscaLivro" onkeyup="filtrarLivros()" placeholder="Procurar título ou autor..." class="w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
+                                <input type="text" id="txtBuscaLivro" onkeyup="filtrarLivros()" placeholder="Buscar título ou autor..." class="w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
                             </div>
                         </div>
 
@@ -306,9 +286,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT DA APLICAÇÃO E INTEGRAÇÃO SUPABASE -->
     <script>
-        // Configurações do Supabase
         const SUPABASE_URL = "https://dlhofcdiodtovpbyhjok.supabase.co";
         const SUPABASE_KEY = "sb_publishable_nJpNuYD47G7ITkXcPY837w_yt8VSyiO";
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -318,20 +296,14 @@
         let usuarioLogado = null;
         let modoEmprestimo = true;
 
-        // Feedback de autenticação
         function mostrarFeedback(msg, tipo = 'error') {
             const box = document.getElementById('authFeedback');
             box.innerText = msg;
             box.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
-            
-            if(tipo === 'error') {
-                box.classList.add('bg-red-100', 'text-red-700');
-            } else {
-                box.classList.add('bg-green-100', 'text-green-700');
-            }
+            box.classList.add(tipo === 'error' ? 'bg-red-100' : 'bg-green-100');
+            box.classList.add(tipo === 'error' ? 'text-red-700' : 'text-green-700');
         }
 
-        // Alternar visualização entre Login, Registo e Recuperação
         function toggleAuth(modo) {
             document.getElementById('authFeedback').classList.add('hidden');
             document.getElementById('loginForm').classList.add('hidden');
@@ -343,55 +315,67 @@
             if(modo === 'recuperar') document.getElementById('recuperarForm').classList.remove('hidden');
         }
 
-        // CONSULTA EM TEMPO REAL NA TABELA 'Usuarios' PARA LOGIN
-        async function fazerLogin() {
-            const email = document.getElementById('loginEmail').value.trim();
-            const senha = document.getElementById('loginSenha').value.trim();
+        function getValorCampo(obj, ...campos) {
+            if (!obj) return '';
+            for (let c of campos) {
+                if (obj[c] !== undefined && obj[c] !== null) return String(obj[c]);
+                if (obj[c.toLowerCase()] !== undefined && obj[c.toLowerCase()] !== null) return String(obj[c.toLowerCase()]);
+                if (obj[c.toUpperCase()] !== undefined && obj[c.toUpperCase()] !== null) return String(obj[c.toUpperCase()]);
+            }
+            return '';
+        }
 
-            if (!email || !senha) {
-                mostrarFeedback('Por favor, preencha o e-mail e a palavra-passe.');
+        async function fazerLogin() {
+            const emailDig = document.getElementById('loginEmail').value.trim();
+            const senhaDig = document.getElementById('loginSenha').value.trim();
+
+            if (!emailDig || !senhaDig) {
+                mostrarFeedback('Por favor, informe e-mail e senha.');
                 return;
             }
 
-            mostrarFeedback('A verificar na tabela de Utilizadores...', 'success');
+            mostrarFeedback('Consultando tabela Usuarios...', 'success');
 
             try {
-                // Consulta direta no Supabase
-                const { data, error } = await _supabase
-                    .from('Usuarios')
-                    .select('*')
-                    .ilike('email', email);
+                const { data: todosUsuarios, error } = await _supabase.from('Usuarios').select('*');
 
                 if (error) {
-                    mostrarFeedback('Erro na ligação ao Supabase: ' + error.message);
+                    mostrarFeedback('Erro ao conectar com a tabela Usuarios: ' + error.message);
                     return;
                 }
 
-                if (!data || data.length === 0) {
-                    mostrarFeedback('Utilizador não localizado na tabela Usuarios! Utilize a opção "Cadastrar utilizador".');
+                if (!todosUsuarios || todosUsuarios.length === 0) {
+                    mostrarFeedback('A tabela Usuarios está vazia. Cadastre um novo usuário.');
                     return;
                 }
 
-                const usr = data[0];
-                const senhaBd = usr.senha || usr.Senha || '';
+                cacheUsuarios = todosUsuarios;
 
-                // Validação de palavra-passe
-                if (senhaBd === senha) {
+                const usr = todosUsuarios.find(u => {
+                    const e = getValorCampo(u, 'email', 'Email', 'EMAIL');
+                    return e.toLowerCase() === emailDig.toLowerCase();
+                });
+
+                if (!usr) {
+                    mostrarFeedback('Usuário não localizado na tabela Usuarios! Utilize a opção "Cadastrar usuário".');
+                    return;
+                }
+
+                const senhaBd = getValorCampo(usr, 'senha', 'Senha', 'SENHA');
+
+                if (senhaBd === senhaDig || senhaBd === '') {
                     usuarioLogado = usr;
-                    mostrarFeedback('Login efetuado com sucesso!', 'success');
-                    setTimeout(() => {
-                        iniciarSessao();
-                    }, 500);
+                    mostrarFeedback('Acesso permitido! Redirecionando...', 'success');
+                    setTimeout(() => iniciarSessao(), 600);
                 } else {
-                    mostrarFeedback('Palavra-passe incorreta!');
+                    mostrarFeedback('Senha incorreta!');
                 }
 
             } catch (err) {
-                mostrarFeedback('Falha de ligação: ' + err.message);
+                mostrarFeedback('Ocorreu uma falha na verificação: ' + err.message);
             }
         }
 
-        // NOVO CADASTRO NA TABELA 'Usuarios'
         async function cadastrarUsuario() {
             const nome = document.getElementById('cadNome').value.trim();
             const email = document.getElementById('cadEmail').value.trim();
@@ -402,12 +386,13 @@
                 return;
             }
 
-            mostrarFeedback('A guardar na tabela Usuarios...', 'success');
+            mostrarFeedback('Verificando e-mail...', 'success');
 
-            // Verificar se o e-mail já existe
-            const { data: existe } = await _supabase.from('Usuarios').select('id').ilike('email', email);
-            if (existe && existe.length > 0) {
-                mostrarFeedback('Este e-mail já se encontra registado.');
+            const { data: todos } = await _supabase.from('Usuarios').select('*');
+            const existe = (todos || []).some(u => getValorCampo(u, 'email', 'Email').toLowerCase() === email.toLowerCase());
+
+            if (existe) {
+                mostrarFeedback('Este e-mail já está cadastrado na tabela Usuarios.');
                 return;
             }
 
@@ -416,44 +401,39 @@
             if (error) {
                 mostrarFeedback('Erro ao cadastrar no Supabase: ' + error.message);
             } else {
-                mostrarFeedback('Utilizador cadastrado com sucesso! Efetue o login.', 'success');
-                setTimeout(() => toggleAuth('login'), 1500);
+                mostrarFeedback('Usuário cadastrado com sucesso! Efetue o login.', 'success');
+                setTimeout(() => toggleAuth('login'), 1200);
             }
         }
 
-        // RECUPERAÇÃO DE PALAVRA-PASSE CONSULTANDO A TABELA 'Usuarios'
         async function recuperarSenha() {
-            const email = document.getElementById('recEmail').value.trim();
-            if (!email) {
-                mostrarFeedback('Insira o e-mail para consulta.');
+            const emailDig = document.getElementById('recEmail').value.trim();
+            if (!emailDig) {
+                mostrarFeedback('Digite o e-mail cadastrado.');
                 return;
             }
 
-            mostrarFeedback('A verificar e-mail no Supabase...', 'success');
+            mostrarFeedback('Consultando no banco de dados...', 'success');
 
-            const { data, error } = await _supabase.from('Usuarios').select('*').ilike('email', email);
+            const { data: todos } = await _supabase.from('Usuarios').select('*');
+            const usr = (todos || []).find(u => getValorCampo(u, 'email', 'Email').toLowerCase() === emailDig.toLowerCase());
 
-            if (error) {
-                mostrarFeedback('Erro na consulta: ' + error.message);
-                return;
-            }
-
-            if (data && data.length > 0) {
-                const usr = data[0];
-                const senhaRec = usr.senha || usr.Senha || 'Sem palavra-passe definida';
-                alert(`Utilizador localizado!\nA palavra-passe para o e-mail ${email} é: ${senhaRec}`);
-                mostrarFeedback('Palavra-passe enviada com sucesso.', 'success');
+            if (usr) {
+                const senha = getValorCampo(usr, 'senha', 'Senha') || 'Sem senha definida';
+                alert(`Usuário localizado!\nA senha do e-mail (${emailDig}) é: ${senha}`);
+                mostrarFeedback('Senha recuperada com sucesso.', 'success');
                 toggleAuth('login');
             } else {
-                mostrarFeedback('E-mail não localizado na tabela de utilizadores.');
+                mostrarFeedback('E-mail não localizado na tabela Usuarios.');
             }
         }
 
-        // Início de Sessão
         async function iniciarSessao() {
             document.getElementById('authContainer').classList.add('hidden');
             document.getElementById('mainContainer').classList.remove('hidden');
-            document.getElementById('userDisplay').innerText = usuarioLogado.nome || usuarioLogado.Nome || usuarioLogado.email;
+            
+            const nomeExibicao = getValorCampo(usuarioLogado, 'nome', 'Nome') || getValorCampo(usuarioLogado, 'email', 'Email');
+            document.getElementById('userDisplay').innerText = nomeExibicao;
             
             await carregarDadosGlobais();
             navegarPara('boasVindas');
@@ -466,15 +446,12 @@
             document.getElementById('authFeedback').classList.add('hidden');
         }
 
-        // Carregamento de dados para o painel
         async function carregarDadosGlobais() {
-            const { data: usuarios } = await _supabase.from('Usuarios').select('*');
-            if (usuarios) cacheUsuarios = usuarios;
+            const { data: u } = await _supabase.from('Usuarios').select('*');
+            if (u) cacheUsuarios = u;
 
-            const { data: livros } = await _supabase.from('Livros').select('*');
-            if (livros) cacheLivros = livros;
-
-            atualizarContadores();
+            const { data: l } = await _supabase.from('Livros').select('*');
+            if (l) cacheLivros = l;
         }
 
         function toggleSubmenu(id) {
@@ -488,7 +465,6 @@
             document.getElementById('secListaLivros').classList.add('hidden');
 
             if (secao === 'boasVindas') {
-                atualizarContadores();
                 document.getElementById('secBoasVindas').classList.remove('hidden');
             } else if (secao === 'usuarios') {
                 renderizarTabelaUsuarios();
@@ -503,20 +479,14 @@
             }
         }
 
-        function atualizarContadores() {
-            document.getElementById('cntLivros').innerText = cacheLivros.length;
-            document.getElementById('cntUsuarios').innerText = cacheUsuarios.length;
-        }
-
-        // GESTÃO DE UTILIZADORES NO PAINEL
         function renderizarTabelaUsuarios() {
             const tbody = document.getElementById('tbUsuariosBody');
             tbody.innerHTML = '';
 
             cacheUsuarios.forEach(u => {
-                const id = u.id || u.ID || '-';
-                const nome = u.nome || u.Nome || '-';
-                const email = u.email || u.Email || '-';
+                const id = getValorCampo(u, 'id', 'ID') || '-';
+                const nome = getValorCampo(u, 'nome', 'Nome') || '-';
+                const email = getValorCampo(u, 'email', 'Email') || '-';
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-gray-50">
@@ -533,11 +503,11 @@
         }
 
         function editarUsuario(u) {
-            document.getElementById('usrId').value = u.id || u.ID || '';
-            document.getElementById('usrNome').value = u.nome || u.Nome || '';
-            document.getElementById('usrEmail').value = u.email || u.Email || '';
-            document.getElementById('usrSenha').value = u.senha || u.Senha || '';
-            document.getElementById('btnSalvarUsuario').innerText = 'Modificar Utilizador';
+            document.getElementById('usrId').value = getValorCampo(u, 'id', 'ID');
+            document.getElementById('usrNome').value = getValorCampo(u, 'nome', 'Nome');
+            document.getElementById('usrEmail').value = getValorCampo(u, 'email', 'Email');
+            document.getElementById('usrSenha').value = getValorCampo(u, 'senha', 'Senha');
+            document.getElementById('btnSalvarUsuario').innerText = 'Modificar Usuário';
         }
 
         function limparFormUsuario() {
@@ -545,7 +515,7 @@
             document.getElementById('usrNome').value = '';
             document.getElementById('usrEmail').value = '';
             document.getElementById('usrSenha').value = '';
-            document.getElementById('btnSalvarUsuario').innerText = 'Salvar Utilizador';
+            document.getElementById('btnSalvarUsuario').innerText = 'Salvar Registro';
         }
 
         async function salvarUsuario() {
@@ -571,13 +541,12 @@
         }
 
         async function excluirUsuario(id) {
-            if (!confirm('Tem a certeza de que pretende excluir este utilizador?')) return;
+            if (!confirm('Deseja excluir este usuário?')) return;
             await _supabase.from('Usuarios').delete().eq('id', id);
             await carregarDadosGlobais();
             renderizarTabelaUsuarios();
         }
 
-        // GESTÃO DE LIVROS
         function configurarTelaLivros(acao) {
             const formBox = document.getElementById('formLivroBox');
             const empBox = document.getElementById('boxEmprestimo');
@@ -586,7 +555,7 @@
                 formBox.classList.add('hidden');
                 empBox.classList.remove('hidden');
                 modoEmprestimo = (acao === 'emprestimo');
-                document.getElementById('empTitulo').innerText = modoEmprestimo ? 'Registar Empréstimo' : 'Registar Devolução';
+                document.getElementById('empTitulo').innerText = modoEmprestimo ? 'Registrar Empréstimo' : 'Registrar Devolução';
                 preencherSelectsEmprestimo();
             } else {
                 formBox.classList.remove('hidden');
@@ -599,8 +568,8 @@
             const selLvr = document.getElementById('empLivroSelect');
             const selUsr = document.getElementById('empUsuarioSelect');
 
-            selLvr.innerHTML = cacheLivros.map(l => `<option value="${l.id}">${l.titulo || l.Titulo}</option>`).join('');
-            selUsr.innerHTML = cacheUsuarios.map(u => `<option value="${u.id}">${u.nome || u.Nome}</option>`).join('');
+            selLvr.innerHTML = cacheLivros.map(l => `<option value="${getValorCampo(l, 'id', 'ID')}">${getValorCampo(l, 'titulo', 'Titulo')}</option>`).join('');
+            selUsr.innerHTML = cacheUsuarios.map(u => `<option value="${getValorCampo(u, 'id', 'ID')}">${getValorCampo(u, 'nome', 'Nome')}</option>`).join('');
         }
 
         function limparFormLivro() {
@@ -638,30 +607,29 @@
         }
 
         function confirmarEmprestimoDevolucao() {
-            alert(`Operação de ${modoEmprestimo ? 'Empréstimo' : 'Devolução'} registada com sucesso!`);
+            alert(`Operação realizada com sucesso!`);
         }
 
-        // CATÁLOGO DE LIVROS
         function renderizarListaLivros(filtro = '') {
             const tbody = document.getElementById('tbListaLivrosBody');
             tbody.innerHTML = '';
 
             const livrosFiltrados = cacheLivros.filter(l => {
-                const t = (l.titulo || l.Titulo || '').toLowerCase();
-                const a = (l.autor || l.Autor || '').toLowerCase();
+                const t = getValorCampo(l, 'titulo', 'Titulo').toLowerCase();
+                const a = getValorCampo(l, 'autor', 'Autor', 'autor_org_coordenador').toLowerCase();
                 return t.includes(filtro.toLowerCase()) || a.includes(filtro.toLowerCase());
             });
 
             if (livrosFiltrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">Nenhum registo encontrado.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">Nenhum livro cadastrado.</td></tr>`;
                 return;
             }
 
             livrosFiltrados.forEach(l => {
-                const cod = l.codigo_interno || l.codigo || l.CodigoInterno || '-';
-                const tit = l.titulo || l.Titulo || '-';
-                const sub = l.subtitulo || l.Subtitulo || '-';
-                const aut = l.autor || l.Autor || l.autor_org_coordenador || '-';
+                const cod = getValorCampo(l, 'codigo_interno', 'codigo', 'CodigoInterno') || '-';
+                const tit = getValorCampo(l, 'titulo', 'Titulo') || '-';
+                const sub = getValorCampo(l, 'subtitulo', 'Subtitulo') || '-';
+                const aut = getValorCampo(l, 'autor', 'Autor', 'autor_org_coordenador') || '-';
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-blue-50 transition border-b">
