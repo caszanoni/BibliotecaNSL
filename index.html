@@ -119,7 +119,8 @@
                             <i class="fa-solid fa-house w-6"></i> Página Inicial
                         </button>
 
-                        <button onclick="navegarPara('usuarios')" class="w-full flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-blue-800 transition">
+                        <!-- Oculto por padrão; visível apenas para Administrador -->
+                        <button id="btnMenuUsuarios" onclick="navegarPara('usuarios')" class="hidden w-full flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-blue-800 transition">
                             <i class="fa-solid fa-users w-6"></i> Usuários
                         </button>
                     </nav>
@@ -356,8 +357,18 @@
             document.getElementById('mainContainer').classList.remove('hidden');
             
             const nomeExibicao = getValorCampo(usuarioLogado, 'usuario', 'Usuario', 'nome', 'Email') || 'Usuário';
-            document.getElementById('userDisplay').innerText = nomeExibicao;
+            const tipoUsuario = getValorCampo(usuarioLogado, 'tipo_usuario', 'tipo', 'Tipo', 'Tipo_Usuario') || 'Comum';
             
+            document.getElementById('userDisplay').innerText = `${nomeExibicao} (${tipoUsuario})`;
+            
+            // Exibe o menu Usuários SOMENTE para Administrador
+            const btnMenu = document.getElementById('btnMenuUsuarios');
+            if (tipoUsuario.toLowerCase() === 'administrador') {
+                btnMenu.classList.remove('hidden');
+            } else {
+                btnMenu.classList.add('hidden');
+            }
+
             await carregarDadosGlobais();
             navegarPara('boasVindas');
         }
@@ -367,6 +378,7 @@
             document.getElementById('mainContainer').classList.add('hidden');
             document.getElementById('authContainer').classList.remove('hidden');
             document.getElementById('authFeedback').classList.add('hidden');
+            document.getElementById('btnMenuUsuarios').classList.add('hidden');
         }
 
         async function carregarDadosGlobais() {
@@ -381,6 +393,15 @@
             if (secao === 'boasVindas') {
                 document.getElementById('secBoasVindas').classList.remove('hidden');
             } else if (secao === 'usuarios') {
+                const tipoUsuario = getValorCampo(usuarioLogado, 'tipo_usuario', 'tipo', 'Tipo', 'Tipo_Usuario') || 'Comum';
+                
+                // Validação de segurança para garantir o acesso exclusivo de Administrador
+                if (tipoUsuario.toLowerCase() !== 'administrador') {
+                    alert('Acesso negado: Apenas administradores podem gerenciar usuários.');
+                    document.getElementById('secBoasVindas').classList.remove('hidden');
+                    return;
+                }
+
                 renderizarTabelaUsuarios();
                 document.getElementById('secUsuarios').classList.remove('hidden');
                 if (acao === 'inserir') limparFormUsuario();
@@ -470,7 +491,6 @@
 
             const dadosPayload = { usuario, email, senha, tipo_usuario };
 
-            // Se existe ID ou Email de Origem, trata-se de EDIÇÃO
             if (id || emailOriginal) {
                 let error = null;
 
@@ -487,7 +507,6 @@
                     return;
                 }
             } else {
-                // Se NÃO existe ID nem Email de Origem, trata-se de INCLUSÃO
                 const { error } = await _supabase.from('Usuarios').insert([dadosPayload]);
                 if (error) {
                     alert('Erro ao incluir usuário: ' + error.message);
