@@ -169,6 +169,7 @@
                                 <select id="usrTipo" class="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-blue-600 outline-none bg-white">
                                     <option value="Comum">Comum</option>
                                     <option value="Administrador">Administrador</option>
+			            <option value="Secretaria">Secretaria</option>
                                 </select>
                             </div>
                             <div class="md:col-span-4 flex justify-end space-x-2 pt-2">
@@ -372,21 +373,7 @@
             await carregarDadosGlobais();
             navegarPara('boasVindas');
         }
-
-        function fazerLogout() {
-            usuarioLogado = null;
-            document.getElementById('mainContainer').classList.add('hidden');
-            document.getElementById('authContainer').classList.remove('hidden');
-            document.getElementById('authFeedback').classList.add('hidden');
-            document.getElementById('btnMenuUsuarios').classList.add('hidden');
-        }
-
-        async function carregarDadosGlobais() {
-            const { data: u, error } = await _supabase.from('Usuarios').select('*');
-            if (u) cacheUsuarios = u;
-        }
-
-        function navegarPara(secao, acao = null) {
+ function navegarPara(secao, acao = null) {
             document.getElementById('secBoasVindas').classList.add('hidden');
             document.getElementById('secUsuarios').classList.add('hidden');
 
@@ -407,6 +394,20 @@
                 if (acao === 'inserir') limparFormUsuario();
             }
         }
+        function fazerLogout() {
+            usuarioLogado = null;
+            document.getElementById('mainContainer').classList.add('hidden');
+            document.getElementById('authContainer').classList.remove('hidden');
+            document.getElementById('authFeedback').classList.add('hidden');
+            document.getElementById('btnMenuUsuarios').classList.add('hidden');
+        }
+
+        async function carregarDadosGlobais() {
+            const { data: u, error } = await _supabase.from('Usuarios').select('*');
+            if (u) cacheUsuarios = u;
+        }
+
+       
 
         function renderizarTabelaUsuarios() {
             const tbody = document.getElementById('tbUsuariosBody');
