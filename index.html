@@ -119,6 +119,10 @@
                             <i class="fa-solid fa-house w-6"></i> Página Inicial
                         </button>
 
+                        <button onclick="navegarPara('listaLivros')" class="w-full flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-blue-800 transition">
+                            <i class="fa-solid fa-list-check w-6"></i> Lista de Livros
+                        </button>
+
                         <!-- Oculto por padrão; visível para Administrador e Secretaria -->
                         <button id="btnMenuUsuarios" onclick="navegarPara('usuarios')" class="hidden w-full flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-blue-800 transition">
                             <i class="fa-solid fa-users w-6"></i> Usuários
@@ -140,6 +144,36 @@
                     <img src="brasao_site_1 pnsl.png" alt="Brasão PNSL" class="h-56 mb-6 object-contain drop-shadow-md" onerror="this.src='https://via.placeholder.com/200?text=PNSL'">
                     <h1 class="text-3xl font-extrabold text-pnsl-blue mb-2">Seja Bem-vindo(a)!</h1>
                     <h2 class="text-lg text-gray-600 max-w-lg">Sistema de Gestão de Biblioteca - Paróquia Nossa Senhora da Luz</h2>
+                </section>
+
+                <!-- TELA DE LISTA DE LIVROS -->
+                <section id="secListaLivros" class="hidden space-y-4">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-2 border-b gap-2">
+                            <div>
+                                <h2 class="text-xl font-bold text-pnsl-blue">Catálogo de Livros</h2>
+                                <p class="text-xs text-gray-500">Listagem de registros da tabela Livros</p>
+                            </div>
+                            <div class="w-full md:w-64">
+                                <input type="text" id="txtBuscaLivro" onkeyup="filtrarLivros()" placeholder="Buscar título, autor ou editora..." class="w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto overflow-y-auto custom-scroll border rounded-lg max-h-[550px]">
+                            <table class="w-full text-left text-sm min-w-[800px]">
+                                <thead class="bg-pnsl-blue text-white sticky top-0 z-10">
+                                    <tr>
+                                        <th class="p-3 font-semibold">Código Interno</th>
+                                        <th class="p-3 font-semibold">Título</th>
+                                        <th class="p-3 font-semibold">Subtítulo</th>
+                                        <th class="p-3 font-semibold">Autor / Org. / Coordenador</th>
+                                        <th class="p-3 font-semibold">Editora</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbListaLivrosBody" class="divide-y divide-gray-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </section>
 
                 <!-- TELA DE USUÁRIOS -->
@@ -205,6 +239,7 @@
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let cacheUsuarios = [];
+        let cacheLivros = [];
         let usuarioLogado = null;
 
         function mostrarFeedback(msg, tipo = 'error') {
@@ -389,9 +424,13 @@
         function navegarPara(secao, acao = null) {
             document.getElementById('secBoasVindas').classList.add('hidden');
             document.getElementById('secUsuarios').classList.add('hidden');
+            document.getElementById('secListaLivros').classList.add('hidden');
 
             if (secao === 'boasVindas') {
                 document.getElementById('secBoasVindas').classList.remove('hidden');
+            } else if (secao === 'listaLivros') {
+                renderizarListaLivros();
+                document.getElementById('secListaLivros').classList.remove('hidden');
             } else if (secao === 'usuarios') {
                 const tipoUsuario = (getValorCampo(usuarioLogado, 'tipo_usuario', 'tipo', 'Tipo', 'Tipo_Usuario') || 'Comum').toLowerCase();
                 
@@ -418,8 +457,58 @@
         }
 
         async function carregarDadosGlobais() {
-            const { data: u, error } = await _supabase.from('Usuarios').select('*');
+            const { data: u } = await _supabase.from('Usuarios').select('*');
             if (u) cacheUsuarios = u;
+
+            const { data: l } = await _supabase.from('Livros').select('*');
+            if (l) cacheLivros = l;
+        }
+
+        function renderizarListaLivros(filtro = '') {
+            const tbody = document.getElementById('tbListaLivrosBody');
+            tbody.innerHTML = '';
+
+            const livrosFiltrados = cacheLivros.filter(l => {
+                const t = getValorCampo(l, 'titulo', 'Titulo').toLowerCase();
+                const a = getValorCampo(l, 'autor', 'Autor', 'autor_org_coordenador').toLowerCase();
+                const e = getValorCampo(l, 'editora', 'Editora').toLowerCase();
+                return t.includes(filtro.toLowerCase()) || a.includes(filtro.toLowerCase()) || e.includes(filtro.toLowerCase());
+            });
+
+            // Ordena numericamente pelo Código Interno
+            livrosFiltrados.sort((a, b) => {
+                const codA = parseFloat(getValorCampo(a, 'codigo_interno', 'codigo', 'Código Interno', 'codigo_livro')) || 0;
+                const codB = parseFloat(getValorCampo(b, 'codigo_interno', 'codigo', 'Código Interno', 'codigo_livro')) || 0;
+                return codA - codB;
+            });
+
+            if (livrosFiltrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">Nenhum livro cadastrado.</td></tr>`;
+                return;
+            }
+
+            livrosFiltrados.forEach(l => {
+                const cod = getValorCampo(l, 'codigo_interno', 'codigo', 'Código Interno', 'codigo_livro') || '-';
+                const tit = getValorCampo(l, 'titulo', 'Título') || '-';
+                const sub = getValorCampo(l, 'subtitulo', 'Subtítulo') || '-';
+                const aut = getValorCampo(l, 'autor', 'Autor', 'Autor / Org. / Coordenador') || '-';
+                const edt = getValorCampo(l, 'editora', 'Editora') || '-';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-blue-50 transition border-b">
+                        <td class="p-3 font-mono text-xs font-semibold text-pnsl-blue">${cod}</td>
+                        <td class="p-3 font-semibold text-gray-800">${tit}</td>
+                        <td class="p-3 text-gray-600">${sub}</td>
+                        <td class="p-3 text-gray-700">${aut}</td>
+                        <td class="p-3 text-gray-700">${edt}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function filtrarLivros() {
+            const txt = document.getElementById('txtBuscaLivro').value;
+            renderizarListaLivros(txt);
         }
 
         function renderizarTabelaUsuarios() {
