@@ -149,20 +149,26 @@
                 <!-- TELA DE LISTA DE LIVROS -->
                 <section id="secListaLivros" class="hidden space-y-6">
                     <div class="bg-white p-6 rounded-xl shadow-sm border">
-                        <div class="flex justify-between items-center mb-4 border-b pb-2">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 border-b pb-4">
                             <h2 class="text-xl font-bold text-pnsl-blue">Lista de Livros</h2>
-                            <button onclick="carregarEExibirLivros()" class="text-sm bg-pnsl-blue text-white px-3 py-1.5 rounded hover:bg-blue-900 transition flex items-center gap-2">
-                                <i class="fa-solid fa-rotate-right"></i> Atualizar Lista
-                            </button>
+                            
+                            <!-- Campo de Busca / Consulta -->
+                            <div class="flex flex-1 w-full md:w-auto md:max-w-md items-center gap-2">
+                                <div class="relative w-full">
+                                    <input type="text" id="inputBuscaLivros" oninput="filtrarLivrosLocalmente()" placeholder="Consultar por título, autor ou editora..." class="w-full pl-9 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
+                                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-400 text-sm"></i>
+                                </div>
+                                <button onclick="carregarEExibirLivros()" class="text-sm bg-pnsl-blue text-white px-3 py-2 rounded-lg hover:bg-blue-900 transition flex items-center gap-2 whitespace-nowrap">
+                                    <i class="fa-solid fa-rotate-right"></i> Atualizar
+                                </button>
+                            </div>
                         </div>
 
                         <div class="overflow-x-auto custom-scroll border rounded-lg max-h-[70vh]">
                             <table class="w-full text-left text-sm">
                                 <thead class="bg-pnsl-blue text-white sticky top-0 z-10">
                                     <tr>
-                                        <th class="p-3
-
-">Código Interno</th>
+                                        <th class="p-3">Código Interno</th>
                                         <th class="p-3">Título</th>
                                         <th class="p-3">Subtítulo</th>
                                         <th class="p-3">Autor / Org. / Coordenador</th>
@@ -240,6 +246,7 @@
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let cacheUsuarios = [];
+        let cacheLivros = [];
         let usuarioLogado = null;
 
         function mostrarFeedback(msg, tipo = 'error') {
@@ -297,7 +304,6 @@
             return '';
         }
 
-        // Função utilitária para preservar o valor exatamente como retornado, sem truncar nem alterar formatação numérica/texto
         function getValorSemTruncar(obj, ...campos) {
             if (!obj) return '';
             for (let c of campos) {
@@ -313,6 +319,18 @@
                 }
             }
             return '';
+        }
+
+        // Converte o Código Interno em partes numéricas para ordenação precisa (números antes e depois da vírgula)
+        function parseCodigoInterno(codigo) {
+            if (!codigo) return [Infinity, Infinity];
+            const partes = String(codigo).trim().split(/[,.]/);
+            const parte1 = parseInt(partes[0], 10);
+            const parte2 = partes.length > 1 ? parseInt(partes[1], 10) : 0;
+            return [
+                isNaN(parte1) ? Infinity : parte1,
+                isNaN(parte2) ? 0 : parte2
+            ];
         }
 
         async function fazerLogin() {
@@ -470,12 +488,9 @@
             tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Carregando livros...</td></tr>`;
 
             try {
-                // Consulta a tabela Livros ordenando por Assunto e por Numero_Livro_Assunto
                 const { data: livros, error } = await _supabase
                     .from('Livros')
-                    .select('*')
-                    .order('Assunto', { ascending: true })
-                    .order('Numero_Livro_Assunto', { ascending: true });
+                    .select('*');
 
                 if (error) {
                     tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-600">Erro ao buscar livros: ${error.message}</td></tr>`;
@@ -483,37 +498,85 @@
                 }
 
                 if (!livros || livros.length === 0) {
+                    cacheLivros = [];
                     tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">Nenhum livro encontrado na tabela Livros.</td></tr>`;
                     return;
                 }
 
-                tbody.innerHTML = '';
+                // Ordenação por Código Interno
+                livros.sort((a, b) => {
+                    const codA = getValorSemTruncar(a, 'Codigo_Interno', 'Código Interno', 'CodigoInterno', 'codigo_interno');
+                    const codB = getValorSemTruncar(b, 'Codigo_Interno', 'Código Interno', 'CodigoInterno', 'codigo_interno');
+                    
+                    const [p1A, p2A] = parseCodigoInterno(codA);
+                    const [p1B, p2B] = parseCodigoInterno(codB);
 
-                livros.forEach((livro) => {
-                    // Mapeamento dos campos solicitados com tratamento de nulos/vazio
-                    const codigoInterno = getValorSemTruncar(livro, 'Codigo_Interno', 'Código Interno', 'CodigoInterno', 'codigo_interno');
-                    const titulo = getValorCampo(livro, 'Titulo', 'Título', 'titulo') || '-';
-                    const subtitulo = getValorCampo(livro, 'Subtitulo', 'Subtítulo', 'subtitulo') || '-';
-                    const autor = getValorCampo(livro, 'Autor_Org_Coordenador', 'Autor / Org. / Coordenador', 'Autor', 'autor', 'Autor_Org_Coord') || '-';
-                    const editora = getValorCampo(livro, 'Editora', 'editora') || '-';
-
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-gray-50 border-b";
-
-                    tr.innerHTML = `
-                        <td class="p-3 font-mono text-gray-800 font-semibold">${codigoInterno !== '' ? codigoInterno : '-'}</td>
-                        <td class="p-3 font-medium text-gray-800">${titulo}</td>
-                        <td class="p-3 text-gray-600">${subtitulo}</td>
-                        <td class="p-3 text-gray-600">${autor}</td>
-                        <td class="p-3 text-gray-600">${editora}</td>
-                    `;
-
-                    tbody.appendChild(tr);
+                    if (p1A !== p1B) {
+                        return p1A - p1B;
+                    }
+                    return p2A - p2B;
                 });
+
+                cacheLivros = livros;
+                filtrarLivrosLocalmente();
 
             } catch (err) {
                 tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-600">Falha ao processar livros: ${err.message}</td></tr>`;
             }
+        }
+
+        function renderizarTabelaLivros(lista) {
+            const tbody = document.getElementById('tbLivrosBody');
+            tbody.innerHTML = '';
+
+            if (lista.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">Nenhum livro corresponde à pesquisa.</td></tr>`;
+                return;
+            }
+
+            lista.forEach((livro) => {
+                const codigoInterno = getValorSemTruncar(livro, 'Codigo_Interno', 'Código Interno', 'CodigoInterno', 'codigo_interno');
+                const titulo = getValorCampo(livro, 'Titulo', 'Título', 'titulo') || '-';
+                const subtitulo = getValorCampo(livro, 'Subtitulo', 'Subtítulo', 'subtitulo') || '-';
+                const autor = getValorCampo(livro, 'Autor_Org_Coordenador', 'Autor / Org. / Coordenador', 'Autor', 'autor', 'Autor_Org_Coord') || '-';
+                const editora = getValorCampo(livro, 'Editora', 'editora') || '-';
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 border-b";
+
+                tr.innerHTML = `
+                    <td class="p-3 font-mono text-gray-800 font-semibold">${codigoInterno !== '' ? codigoInterno : '-'}</td>
+                    <td class="p-3 font-medium text-gray-800">${titulo}</td>
+                    <td class="p-3 text-gray-600">${subtitulo}</td>
+                    <td class="p-3 text-gray-600">${autor}</td>
+                    <td class="p-3 text-gray-600">${editora}</td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filtrarLivrosLocalmente() {
+            const termo = document.getElementById('inputBuscaLivros').value.trim().toLowerCase();
+
+            if (!termo) {
+                renderizarTabelaLivros(cacheLivros);
+                return;
+            }
+
+            const livrosFiltrados = cacheLivros.filter(livro => {
+                const titulo = (getValorCampo(livro, 'Titulo', 'Título', 'titulo')).toLowerCase();
+                const subtitulo = (getValorCampo(livro, 'Subtitulo', 'Subtítulo', 'subtitulo')).toLowerCase();
+                const autor = (getValorCampo(livro, 'Autor_Org_Coordenador', 'Autor / Org. / Coordenador', 'Autor', 'autor', 'Autor_Org_Coord')).toLowerCase();
+                const editora = (getValorCampo(livro, 'Editora', 'editora')).toLowerCase();
+
+                return titulo.includes(termo) || 
+                       subtitulo.includes(termo) || 
+                       autor.includes(termo) || 
+                       editora.includes(termo);
+            });
+
+            renderizarTabelaLivros(livrosFiltrados);
         }
 
         function fazerLogout() {
